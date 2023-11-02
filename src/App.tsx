@@ -1,8 +1,8 @@
-import React from 'react';
-import { Router } from './navigation/Router';
-import { PersistGate } from 'redux-persist/integration/react';
-import { Provider } from 'react-redux';
-import { persistor, store } from './app/store';
+import React from 'react'
+import { Router } from './navigation/Router'
+import { PersistGate } from 'redux-persist/integration/react'
+import { Provider } from 'react-redux'
+import { persistor, store } from './core/app/store'
 
 function App() {
   return (
@@ -13,7 +13,7 @@ function App() {
         </PersistGate>
       </Provider>
     </React.StrictMode>
-  );
+  )
 }
 
-export default App;
+export default App
