@@ -19,6 +19,7 @@ export interface EHRLiteApiState {
   lastName?: string
   dateOfBirth?: number
   mobilePhone?: string
+  loginProcessStarted: boolean
 }
 
 const initialState: EHRLiteApiState = {
@@ -35,6 +36,7 @@ const initialState: EHRLiteApiState = {
   lastName: undefined,
   dateOfBirth: undefined,
   mobilePhone: undefined,
+  loginProcessStarted: false,
 }
 
 export const startAuthentication = createAsyncThunk(
@@ -43,13 +45,15 @@ export const startAuthentication = createAsyncThunk(
     _payload: {
       captchaToken: string
     },
-    { getState },
+    { getState, dispatch },
   ) => {
     const {
       auth: { email, firstName, lastName },
     } = getState() as { auth: EHRLiteApiState }
+    // dispatch(setLoginProcessStarted(true))
 
     if (!email) {
+      // dispatch(setLoginProcessStarted(false))
       throw new Error('No email provided')
     }
 
@@ -75,7 +79,7 @@ export const startAuthentication = createAsyncThunk(
     )
 
     apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
-
+    // dispatch(setLoginProcessStarted(false))
     return authProcess
   },
 )
@@ -84,12 +88,15 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
   const {
     auth: { authProcess, token },
   } = getState() as { auth: EHRLiteApiState }
+  dispatch(setLoginProcessStarted(true))
 
   if (!authProcess) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No authProcess provided')
   }
 
   if (!token) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
 
@@ -108,20 +115,23 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
       tokenTimestamp: +Date.now(),
     }),
   )
-
+  dispatch(setLoginProcessStarted(false))
   return User.toJSON(user)
 })
 
-export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState }) => {
+export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, dispatch }) => {
   const {
     auth: { email, token },
   } = getState() as { auth: EHRLiteApiState }
+  dispatch(setLoginProcessStarted(true))
 
   if (!email) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No email provided')
   }
 
   if (!token) {
+    dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
 
@@ -140,6 +150,7 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState }
 
   apiCache[`${user.groupId}/${user.id}`] = api
 
+  dispatch(setLoginProcessStarted(false))
   return User.toJSON(user)
 })
 
@@ -179,6 +190,9 @@ export const api = createSlice({
     resetCredentials: (state) => {
       state.online = false
     },
+    setLoginProcessStarted(state, { payload: status }: PayloadAction<boolean>) {
+      state.loginProcessStarted = status
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(startAuthentication.fulfilled, (state, { payload: authProcess }) => {
@@ -207,4 +221,4 @@ export const api = createSlice({
   },
 })
 
-export const { setRegistrationInformation, setToken, setEmail, setUser, resetCredentials } = api.actions
+export const { setRegistrationInformation, setToken, setEmail, setUser, resetCredentials, setLoginProcessStarted } = api.actions

@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { useAppDispatch } from '../../core/app/hooks'
-import { logout } from '../../services/auth.api'
+import { useAppDispatch } from '../../../core/app/hooks'
+import { logout } from '../../../services/auth.api'
 
 export type NavItem = {
   label: string

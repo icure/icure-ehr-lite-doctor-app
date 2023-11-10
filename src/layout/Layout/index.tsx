@@ -3,7 +3,6 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppDispatch, useAppSelector } from '../../core/app/hooks'
 import { routes } from '../../navigation/Router'
 import { login, setEmail, setToken } from '../../services/auth.api'
-import logo from '../../logo.svg'
 
 function Layout() {
   const navigate = useNavigate()
@@ -31,9 +30,6 @@ function Layout() {
 
   return (
     <div>
-      <a href="https://docs.icure.com" target="_blank" rel="noreferrer">
-        <img src={logo} className="logo" alt="iCure logo" />
-      </a>
       <Outlet />
     </div>
   )

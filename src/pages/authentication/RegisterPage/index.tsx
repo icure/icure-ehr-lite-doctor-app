@@ -1,8 +1,9 @@
 import React, { useState } from 'react'
-import { useAppDispatch } from '../../core/app/hooks'
-import SignupForm from '../../components/SignupForm'
-import { completeAuthentication, setRegistrationInformation, setToken, startAuthentication } from '../../services/auth.api'
-
+import { useAppDispatch } from '../../../core/app/hooks'
+import SignupForm from '../../../components/authentication/SignupForm'
+import { completeAuthentication, setRegistrationInformation, setToken, startAuthentication } from '../../../services/auth.api'
+import logo from '../../../assets/logo_vertical.svg'
+import '../index.css'
 export default function RegisterPage() {
   const dispatch = useAppDispatch()
 
@@ -16,9 +17,11 @@ export default function RegisterPage() {
   }
 
   return (
-    <>
-      <h1>Register</h1>
+    <div className="auth-page">
+      <div className="auth-page__logo">
+        <img src={logo} alt="petra-care logo" />
+      </div>
       <SignupForm callback={handleSubmitSignup} validationCallback={handleSubmitValidation} />
-    </>
+    </div>
   )
 }

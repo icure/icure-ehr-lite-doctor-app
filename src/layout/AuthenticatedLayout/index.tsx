@@ -2,9 +2,8 @@ import React, { useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 
 import { useAppSelector } from '../../core/app/hooks'
-import { AuthenticatedNavigation } from '../../components/AuthenticatedNavigation'
+import { AuthenticatedNavigation } from '../../components/authentication/AuthenticatedNavigation'
 import { routes } from '../../navigation/Router'
-import logo from '../../logo.svg'
 
 function AuthenticatedLayout() {
   const navigate = useNavigate()
@@ -21,9 +20,6 @@ function AuthenticatedLayout() {
 
   return (
     <div>
-      <a href="https://docs.icure.com" target="_blank" rel="noreferrer">
-        <img src={logo} className="logo" alt="iCure logo" />
-      </a>
       <Outlet />
       <AuthenticatedNavigation />
     </div>

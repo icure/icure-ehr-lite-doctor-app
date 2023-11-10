@@ -112,4 +112,25 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
+.auth-page {
+  width: 100vw;
+  min-height: 100vh;
+  display: flex;
+  padding: 50px 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 50px;
+  background: #f2f9ff;
+}
+@media screen and (max-width: calc(576px - 1px)) {
+  .auth-page {
+    padding: 24px 0;
+    gap: 24px;
+  }
+}
+@media screen and (max-width: calc(576px - 1px)) {
+  .auth-page__logo {
+    width: 70px;
+  }
+}
 /*# sourceMappingURL=index.css.map */
