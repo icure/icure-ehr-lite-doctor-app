@@ -45,17 +45,17 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
         </div>
         <div className="auth-form__inputs">
           <Form.Item name="firstName" label="First Name" rules={[{ required: true, message: 'First Name is required' }]}>
-            <Input placeholder="First Name" />
+            <Input placeholder="First Name" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
           <Form.Item name="lastName" label="Last Name" rules={[{ required: true, message: 'Last Name is required' }]}>
-            <Input placeholder="Last Name" />
+            <Input placeholder="Last Name" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }]}>
-            <Input placeholder="Email" />
+            <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
           {waitingForToken && (
             <Form.Item name="validationCode" label="Validation Code" rules={[{ required: true, message: 'Validation Code is required' }]}>
-              <Input placeholder="Validation Code" />
+              <Input placeholder="Validation Code" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
           )}
         </div>

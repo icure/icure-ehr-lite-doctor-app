@@ -2,7 +2,6 @@ import React, { useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
 
 import { useAppSelector } from '../../core/app/hooks'
-import { AuthenticatedNavigation } from '../../components/authentication/AuthenticatedNavigation'
 import { routes } from '../../navigation/Router'
 
 function AuthenticatedLayout() {
@@ -21,7 +20,6 @@ function AuthenticatedLayout() {
   return (
     <div>
       <Outlet />
-      <AuthenticatedNavigation />
     </div>
   )
 }

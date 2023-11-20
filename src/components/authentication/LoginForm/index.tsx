@@ -57,12 +57,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) =
         </div>
         <div className="auth-form__inputs">
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }]}>
-            <Input placeholder="Email" />
+            <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
 
           {waitingForToken && (
             <Form.Item name="validationCode" label="Validation Code" rules={[{ required: true, message: 'Validation code is required' }]}>
-              <Input placeholder="Validation Code" />
+              <Input placeholder="Validation Code" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
           )}
         </div>

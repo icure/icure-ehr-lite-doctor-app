@@ -16,5 +16,15 @@ export const ANTD_NEW_THEME = {
     Form: {
       itemMarginBottom: 0,
     },
+    Tooltip: {
+      colorBgSpotlight: '#1F2C4E',
+    },
+    Modal: {
+      margin: 0,
+    },
+    Input: {
+      fontSizeLG: 13,
+      fontSize: 13,
+    },
   },
 }
