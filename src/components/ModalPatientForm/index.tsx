@@ -4,7 +4,7 @@ import { Form, Input } from 'antd'
 import { CustomModal } from '../CustomModal'
 import './index.css'
 
-interface modalPatientFormProps {
+interface ModalPatientFormProps {
   mode: 'edit' | 'create'
   isVisible: boolean
   onClose: () => void
@@ -12,7 +12,7 @@ interface modalPatientFormProps {
   initialValue?: any
 }
 
-export const ModalPatientForm = ({ mode, isVisible, onClose, onSubmit, initialValue }: modalPatientFormProps): JSX.Element => {
+export const ModalPatientForm = ({ mode, isVisible, onClose, onSubmit, initialValue }: ModalPatientFormProps): JSX.Element => {
   const [form] = Form.useForm()
 
   const handleSubmit = (value: any) => {

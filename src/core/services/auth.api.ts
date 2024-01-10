@@ -1,7 +1,10 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { revertAll, setSavedCredentials } from '../core/app/config'
-import storage from '../core/app/storage'
-import { AnonymousEHRLiteApi, AuthenticationProcess, EHRLiteApi, ICURE_CLOUD_URL, SimpleCryptoStrategies, User } from '@icure/ehr-lite-sdk'
+import { revertAll, setSavedCredentials } from '../app'
+import storage from '../storage'
+import { AnonymousEHRLiteApi, AuthenticationProcess, EHRLiteApi, User } from '@icure/ehr-lite-sdk'
+import { ua2b64 } from '@icure/api'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { SimpleEHRLiteCryptoStrategies } from '@icure/ehr-lite-sdk/services/EHRLiteCryptoStrategies'
 
 const apiCache: { [key: string]: EHRLiteApi | AnonymousEHRLiteApi } = {}
 
@@ -39,6 +42,79 @@ const initialState: EHRLiteApiState = {
   loginProcessStarted: false,
 }
 
+function getError(e: Error): FetchBaseQueryError {
+  return { status: 'CUSTOM_ERROR', error: e.message, data: undefined }
+}
+
+export const guard = async <T>(
+  guardedInputs: unknown[],
+  lambda: () => Promise<T>,
+  ClassInstance?: { [key: string]: any },
+): Promise<{ error: FetchBaseQueryError } | { data: T | undefined }> => {
+  if (guardedInputs.some((x) => !x)) {
+    return { data: undefined }
+  }
+  try {
+    const res = await lambda()
+    const curate = (result: T): T => {
+      // return (
+      //   result === null || result === undefined
+      //     ? null
+      //     : res instanceof ArrayBuffer
+      //     ? ua2b64(res)
+      //     : Array.isArray(result)
+      //     ? result.map(curate)
+      //     : typeof result === 'object'
+      //     ? result
+      //     : result
+      // ) as T
+
+      if (result === null || result === undefined) {
+        return null as T
+      } else if (res instanceof ArrayBuffer) {
+        return ua2b64(res) as T
+      } else if (Array.isArray(result)) {
+        return result.map(curate) as T
+      } else if (typeof result === 'object' && ClassInstance) {
+        return ClassInstance.toJSON(result)
+      } else {
+        return result as T
+      }
+    }
+    return { data: curate(res) }
+  } catch (e) {
+    return { error: getError(e as Error) }
+  }
+}
+
+export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLiteApi: EHRLiteApiState } | undefined): Promise<EHRLiteApi | undefined> => {
+  const state = getState()
+  if (!state) {
+    throw new Error('No state found')
+  }
+
+  const initialState = 'ehrLiteApi' in state ? state.ehrLiteApi : state
+  const { user } = initialState
+
+  if (!user) {
+    return undefined
+  }
+
+  const cachedApi = apiCache[`${user.groupId}/${user.id}`] as EHRLiteApi
+
+  return cachedApi
+}
+
+export const ehrLiteApi = async (getState: () => unknown) => {
+  const state = getState() as { ehrLiteApi: EHRLiteApiState }
+  return await getApiFromState(() => state)
+}
+
+export const currentUser = (getState: () => unknown) => {
+  const state = getState() as { ehrLiteApi: EHRLiteApiState }
+  return state.ehrLiteApi.user
+}
+
 export const startAuthentication = createAsyncThunk(
   'ehrLiteApi/startAuthentication',
   async (
@@ -48,12 +124,12 @@ export const startAuthentication = createAsyncThunk(
     { getState, dispatch },
   ) => {
     const {
-      auth: { email, firstName, lastName },
-    } = getState() as { auth: EHRLiteApiState }
-    // dispatch(setLoginProcessStarted(true))
+      ehrLiteApi: { email, firstName, lastName },
+    } = getState() as { ehrLiteApi: EHRLiteApiState }
+    dispatch(setLoginProcessStarted(true))
 
     if (!email) {
-      // dispatch(setLoginProcessStarted(false))
+      dispatch(setLoginProcessStarted(false))
       throw new Error('No email provided')
     }
 
@@ -63,7 +139,7 @@ export const startAuthentication = createAsyncThunk(
       .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
       .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
       .withStorage(storage)
-      .withCryptoStrategies(new SimpleCryptoStrategies([]))
+      .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
       .build()
 
     const authProcess = await anonymousApi.authenticationApi.startAuthentication(
@@ -79,15 +155,15 @@ export const startAuthentication = createAsyncThunk(
     )
 
     apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
-    // dispatch(setLoginProcessStarted(false))
+    dispatch(setLoginProcessStarted(false))
     return authProcess
   },
 )
 
 export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthentication', async (_payload, { getState, dispatch }) => {
   const {
-    auth: { authProcess, token },
-  } = getState() as { auth: EHRLiteApiState }
+    ehrLiteApi: { authProcess, token },
+  } = getState() as { ehrLiteApi: EHRLiteApiState }
   dispatch(setLoginProcessStarted(true))
 
   if (!authProcess) {
@@ -121,8 +197,8 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
 
 export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, dispatch }) => {
   const {
-    auth: { email, token },
-  } = getState() as { auth: EHRLiteApiState }
+    ehrLiteApi: { email, token },
+  } = getState() as { ehrLiteApi: EHRLiteApiState }
   dispatch(setLoginProcessStarted(true))
 
   if (!email) {
@@ -143,7 +219,7 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, 
     .withStorage(storage)
     .withUserName(email)
     .withPassword(token)
-    .withCryptoStrategies(new SimpleCryptoStrategies([]))
+    .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
     .build()
 
   const user = await api.userApi.getLogged()
@@ -158,6 +234,7 @@ export const logout = createAsyncThunk('ehrLiteApi/logout', async (_payload, { d
   dispatch(revertAll())
   dispatch(resetCredentials())
 })
+
 export const api = createSlice({
   name: 'ehrLiteApi',
   initialState,
@@ -193,6 +270,9 @@ export const api = createSlice({
     setLoginProcessStarted(state, { payload: status }: PayloadAction<boolean>) {
       state.loginProcessStarted = status
     },
+    setWaitingForToken(state, { payload: status }: PayloadAction<boolean>) {
+      state.waitingForToken = status
+    },
   },
   extraReducers: (builder) => {
     builder.addCase(startAuthentication.fulfilled, (state, { payload: authProcess }) => {
@@ -221,4 +301,4 @@ export const api = createSlice({
   },
 })
 
-export const { setRegistrationInformation, setToken, setEmail, setUser, resetCredentials, setLoginProcessStarted } = api.actions
+export const { setRegistrationInformation, setToken, setEmail, setUser, resetCredentials, setLoginProcessStarted, setWaitingForToken } = api.actions

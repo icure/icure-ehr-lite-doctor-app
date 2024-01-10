@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
-import { useAppDispatch } from '../../../core/app/hooks'
+import React, { useEffect, useState } from 'react'
+import { useAppDispatch } from '../../../core/hooks'
 import SignupForm from '../../../components/authentication/SignupForm'
-import { completeAuthentication, setRegistrationInformation, setToken, startAuthentication } from '../../../services/auth.api'
+import { completeAuthentication, setRegistrationInformation, setToken, setWaitingForToken } from '../../../core/services/auth.api'
 import logo from '../../../assets/logo_vertical.svg'
 import '../index.css'
 export default function RegisterPage() {
@@ -15,6 +15,12 @@ export default function RegisterPage() {
     dispatch(setToken({ token: validationCode }))
     dispatch(completeAuthentication())
   }
+
+  useEffect(() => {
+    return () => {
+      dispatch(setWaitingForToken(false))
+    }
+  }, [])
 
   return (
     <div className="auth-page">

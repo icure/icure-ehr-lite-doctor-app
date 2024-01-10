@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react'
 import { Outlet, useNavigate } from 'react-router-dom'
-import { useAppDispatch, useAppSelector } from '../../core/app/hooks'
+import { useAppDispatch, useAppSelector } from '../../core/hooks'
 import { routes } from '../../navigation/Router'
-import { login, setEmail, setToken } from '../../services/auth.api'
+import { login, setEmail, setToken } from '../../core/services/auth.api'
 
 function Layout() {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
 
   const { online, lsUsername, lsToken } = useAppSelector((state) => ({
-    ...state.auth,
+    ...state.ehrLiteApi,
     lsUsername: state.app?.savedCredentials?.login,
     lsToken: state.app?.savedCredentials?.token,
   }))

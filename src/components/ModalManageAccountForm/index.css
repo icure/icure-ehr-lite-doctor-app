@@ -112,74 +112,38 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
-.header {
-  height: 80px;
+.modalAddConsultation {
+  width: 100%;
   display: flex;
-  padding: 0 24px;
-  justify-content: space-between;
-  align-items: center;
-  flex: 1 0 0;
   align-self: stretch;
-  background: #f2f9ff;
+  max-height: 700px;
 }
 @media screen and (max-width: calc(768px - 1px)) {
-  .header {
-    padding: 0 12px;
+  .modalAddConsultation {
+    flex-grow: 1;
   }
 }
-@media screen and (max-width: calc(576px - 1px)) {
-  .header__logoHolder img {
-    width: 120px;
-  }
-}
-.header__userDrowdown {
-  display: flex;
-  padding: 6px 8px;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-  border-radius: 6px;
-  border: 1px solid transparent;
-}
-.header__userDrowdown__item {
-  display: flex;
-  gap: 8px;
-}
-.header__userDrowdown__item svg {
-  width: 14px;
-  height: 14px;
-}
-.header__userDrowdown--active,
-.header__userDrowdown:hover {
-  border-radius: 6px;
-  border: 1px solid #084b83;
-  box-shadow: 0 0 0 2px rgba(8, 75, 131, 0.2);
-}
-.header__userDrowdown__heading {
+.modalAddConsultation__form {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: flex-end;
+  padding: 24px;
+  flex: 1 0 0;
 }
-.header__userDrowdown__heading__name {
-  color: #303443;
-  font-family: Lato700, sans-serif;
-  font-size: 14px;
+@media screen and (max-width: calc(768px - 1px)) {
+  .modalAddConsultation__form {
+    padding: 12px;
+  }
 }
-.header__userDrowdown__heading__speciality {
-  color: #6a6d78;
-  font-size: 12px;
-}
-.header__userDrowdown__picture {
+.modalAddConsultation__form__inputs {
   display: flex;
-  width: 40px;
-  height: 40px;
-  justify-content: center;
-  align-items: center;
-  border-radius: 150px;
-  overflow: hidden;
+  flex-direction: column;
+  flex: 1 0 0;
+  gap: 12px;
+  padding-bottom: 24px;
 }
-.header__userDrowdown__picture img {
-  width: 100%;
+@media screen and (max-width: calc(768px - 1px)) {
+  .modalAddConsultation__form__inputs {
+    padding-bottom: 12px;
+  }
 }
 /*# sourceMappingURL=index.css.map */

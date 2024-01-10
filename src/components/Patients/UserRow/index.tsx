@@ -127,7 +127,7 @@ export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagno
               <Icon component={stethoscopeIcn} />
             </div>
           </Tooltip>
-          <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={() => setOverFlowMenuOpen(!isOverFlowMenuOpen)}>
+          <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={(open: boolean) => setOverFlowMenuOpen(open)}>
             <div className={`userRow__btnGroup__item ${isOverFlowMenuOpen && 'userRow__btnGroup__item--active'}`}>
               <Icon component={moreVerticalIcn} />
             </div>

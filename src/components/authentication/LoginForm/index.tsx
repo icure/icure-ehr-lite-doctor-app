@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input, Button, Form } from 'antd'
 
-import { useAppDispatch, useAppSelector } from '../../../core/app/hooks'
+import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { startAuthentication } from '../../../services/auth.api'
+import { startAuthentication } from '../../../core/services/auth.api'
 
 import '../index.css'
 import { SpinLoader } from '../../SpinLoader'
@@ -24,7 +24,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) =
   }
 
   const { waitingForToken, loginProcessStarted } = useAppSelector((state) => ({
-    ...state.auth,
+    ...state.ehrLiteApi,
   }))
 
   const handleSubmit = (values: { email: string; validationCode: string }) => {

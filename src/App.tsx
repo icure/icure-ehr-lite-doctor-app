@@ -4,7 +4,7 @@ import { Provider } from 'react-redux'
 import { ConfigProvider } from 'antd'
 
 import { Router } from './navigation/Router'
-import { persistor, store } from './core/app/store'
+import { persistor, store } from './core/store'
 import { ANTD_NEW_THEME } from './helpers/antdTheme'
 
 function App() {

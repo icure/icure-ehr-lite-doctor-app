@@ -2,10 +2,10 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input, Button, Form, Checkbox } from 'antd'
 
-import { useAppDispatch, useAppSelector } from '../../../core/app/hooks'
+import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { startAuthentication } from '../../../services/auth.api'
+import { startAuthentication } from '../../../core/services/auth.api'
 import { SpinLoader } from '../../SpinLoader'
 
 interface SignupFormProps {
@@ -16,12 +16,13 @@ interface SignupFormProps {
 const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback }) => {
   const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined)
   const dispatch = useAppDispatch()
+
   const doneCallback = (solution: string) => {
     setCaptchaToken(solution)
   }
 
   const { waitingForToken, loginProcessStarted } = useAppSelector((state) => ({
-    ...state.auth,
+    ...state.ehrLiteApi,
   }))
 
   const handleSubmit = (values: { firstName: string; lastName: string; email: string; validationCode: string }) => {
@@ -29,10 +30,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
     if (waitingForToken) {
       validationCallback(email, validationCode)
     } else {
+      !!captchaToken && dispatch(startAuthentication({ captchaToken: captchaToken }))
       callback(firstName, lastName, email)
-    }
-    if (!!captchaToken) {
-      dispatch(startAuthentication({ captchaToken: captchaToken }))
     }
   }
 

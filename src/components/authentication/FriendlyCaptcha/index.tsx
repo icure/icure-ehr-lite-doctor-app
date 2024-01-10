@@ -41,7 +41,7 @@ const FriendlyCaptcha = ({ successCallback }: FriendlyCaptchaProps) => {
     }
   }, [container])
 
-  return <div ref={container} className="frc-captcha" data-sitekey={process.env.REACT_APP_FRIENDLY_CAPTCHA_SITE_KEY} />
+  return <div ref={container} className="frc-captcha" data-sitekey={process.env.REACT_APP_FRIENDLY_CAPTCHA_SITE_KEY} data-start="none" />
 }
 
 export default FriendlyCaptcha
