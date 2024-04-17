@@ -23,7 +23,7 @@ export const CustomModal = ({ isVisible, handleClose, handleOk, children, width,
       borderBottom: `1px solid #DCE7F2`,
       padding: innerWidth < breakpoints.md ? '16px' : '20px 24px',
       background: '#EEF6FE',
-      borderRadius: innerWidth < breakpoints.md ? '15px 15px 0px 0px' : '8px 8px 0px 0px',
+      borderRadius: '8px 8px 0px 0px',
       margin: 0,
     },
     mask: {
@@ -62,10 +62,11 @@ export const CustomModal = ({ isVisible, handleClose, handleOk, children, width,
         display: 'flex',
         background: 'rgba(8, 75, 131, 0.25)',
         overflow: 'hidden',
+        maxWidth: '100vw',
       }
     } else {
       return {
-        top: 40,
+        top: 100,
       }
     }
   }

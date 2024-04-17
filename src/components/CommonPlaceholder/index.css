@@ -112,54 +112,34 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
-.PatientImgCrop .ant-modal-body {
-  flex-direction: column;
+.CommonPlaceholder {
+  width: 95%;
+  height: 100%;
+  padding: 56px;
+  display: flex;
+  justify-content: center;
+  border: 1px dashed #3d87c5;
+  border-radius: 8px;
+  background: #fbfdff;
+  margin: 0 auto;
 }
-.modalPatientForm {
+.CommonPlaceholder__container {
   width: 100%;
-  display: flex;
-  align-self: stretch;
-  max-height: 700px;
-  position: relative;
-}
-@media screen and (max-width: calc(768px - 1px)) {
-  .modalPatientForm {
-    flex-grow: 1;
-  }
-}
-.modalPatientForm__form {
-  display: flex;
-  padding: 24px 24px 0 24px;
-  flex-direction: column;
-  flex: 1 0 0;
-}
-@media screen and (max-width: calc(768px - 1px)) {
-  .modalPatientForm__form {
-    padding: 12px 12px 0 12px;
-  }
-}
-.modalPatientForm__form__infoBlock {
+  max-width: 500px;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
   gap: 12px;
-  padding-bottom: 24px;
 }
-@media screen and (max-width: calc(768px - 1px)) {
-  .modalPatientForm__form__infoBlock {
-    padding-bottom: 12px;
-  }
+.CommonPlaceholder__container h6 {
+  font-size: 16px;
+  font-family: "Lato700";
+  color: #1f2c4e;
 }
-.modalPatientForm__form__infoBlock__title {
-  color: #303443;
-  font-family: Lato700, sans-serif;
-  font-size: 13px;
-  font-style: normal;
-  line-height: normal;
-}
-.modalPatientForm__form__infoBlock__inputs {
-  display: flex;
-  padding-left: 12px;
-  flex-direction: column;
-  gap: 12px;
+.CommonPlaceholder__container p {
+  font-size: 14px;
+  color: #1f2c4e;
+  text-align: center;
 }
 /*# sourceMappingURL=index.css.map */

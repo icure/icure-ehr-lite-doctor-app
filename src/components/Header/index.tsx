@@ -8,19 +8,27 @@ import logo_horizontal from '../../assets/logo_horizontal.svg'
 import userPicture from '../../assets/userPicture.png'
 import { arrowDownIcn, logOutIcn, manageUserIcn } from '../../assets/CustomIcons'
 import { useAppDispatch, useAppSelector } from '../../core/hooks'
-import { logout } from '../../core/services/auth.api'
+import { EHRLiteApiState, logout } from '../../core/services/auth.api'
 import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
+import { ModalManageAccountForm } from '../ModalManageAccountForm'
+import { createPortal } from 'react-dom'
+import { createSelector } from '@reduxjs/toolkit'
 
+const reduxSelector = createSelector(
+  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
+  (ehrLiteApi: EHRLiteApiState) => ({
+    user: ehrLiteApi.user,
+    healthcarePartyId: ehrLiteApi.user?.healthcarePartyId,
+  }),
+)
 export const Header = () => {
   const [isUserDropdownOpen, setUserDropdownOpen] = useState(false)
+  const [isModalManageAccountFormOpen, setModalManageAccountFormOpen] = useState(false)
   const dispatch = useAppDispatch()
 
-  const { user, healthcarePartyId } = useAppSelector((s) => ({
-    user: s.ehrLiteApi.user,
-    healthcarePartyId: s.ehrLiteApi.user?.healthcarePartyId,
-  }))
+  const { user, healthcarePartyId } = useAppSelector(reduxSelector)
 
-  const { data: practitioner, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPractitionerQuery(healthcarePartyId || '', { skip: !healthcarePartyId })
+  const { data: practitioner, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
 
   const handleLogout = () => {
     dispatch(logout())
@@ -49,6 +57,10 @@ export const Header = () => {
   ]
   const onClick: MenuProps['onClick'] = ({ key }) => {
     switch (key) {
+      case 'manageAccount': {
+        setModalManageAccountFormOpen(true)
+        break
+      }
       case 'logout': {
         handleLogout()
         break
@@ -57,26 +69,32 @@ export const Header = () => {
   }
 
   return (
-    <div className="header">
-      <div className="header__logoHolder">
-        <img src={logo_horizontal} alt="petraCare logo" />
+    <>
+      <div className="header">
+        <div className="header__logoHolder">
+          <img src={logo_horizontal} alt="petraCare logo" />
+        </div>
+        {!isPractitionarFetching && (
+          <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={(open: boolean) => setUserDropdownOpen(open)}>
+            <div className={`header__userDrowdown ${isUserDropdownOpen && 'header__userDrowdown--active'}`}>
+              <div className="header__userDrowdown__heading">
+                <p className="header__userDrowdown__heading__name">{practitioner?.firstName + ' ' + practitioner?.lastName}</p>
+                <p className="header__userDrowdown__heading__speciality">{practitioner?.speciality}</p>
+              </div>
+              <div className="header__userDrowdown__picture">
+                <img src={userPicture} alt={user?.name ?? 'Dear User!'} />
+              </div>
+              <div className="header__userDrowdown__arrow">
+                <Icon component={arrowDownIcn} />
+              </div>
+            </div>
+          </Dropdown>
+        )}
       </div>
-      {!isPractitionarFetching && (
-        <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={(open: boolean) => setUserDropdownOpen(open)}>
-          <div className={`header__userDrowdown ${isUserDropdownOpen && 'header__userDrowdown--active'}`}>
-            <div className="header__userDrowdown__heading">
-              <p className="header__userDrowdown__heading__name">{practitioner?.firstName + ' ' + practitioner?.lastName}</p>
-              <p className="header__userDrowdown__heading__speciality">Your speciality</p>
-            </div>
-            <div className="header__userDrowdown__picture">
-              <img src={userPicture} alt={user?.name ?? 'Dear User!'} />
-            </div>
-            <div className="header__userDrowdown__arrow">
-              <Icon component={arrowDownIcn} />
-            </div>
-          </div>
-        </Dropdown>
+      {createPortal(
+        <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitioner} />,
+        document.body,
       )}
-    </div>
+    </>
   )
 }

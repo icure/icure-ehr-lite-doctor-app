@@ -1,10 +1,11 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { revertAll, setSavedCredentials } from '../app'
 import storage from '../storage'
-import { AnonymousEHRLiteApi, AuthenticationProcess, EHRLiteApi, User } from '@icure/ehr-lite-sdk'
+import { AnonymousEHRLiteApi, AuthenticationProcess, EHRLiteApi, EmailMessage, Organisation, Patient, Practitioner, SMSMessage, User } from '@icure/ehr-lite-sdk'
 import { ua2b64 } from '@icure/api'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { SimpleEHRLiteCryptoStrategies } from '@icure/ehr-lite-sdk/services/EHRLiteCryptoStrategies'
+import { EHRLiteMessageFactory } from '@icure/ehr-lite-sdk/services/EHRLiteMessageFactory'
 
 const apiCache: { [key: string]: EHRLiteApi | AnonymousEHRLiteApi } = {}
 
@@ -83,6 +84,7 @@ export const guard = async <T>(
     }
     return { data: curate(res) }
   } catch (e) {
+    console.error(e)
     return { error: getError(e as Error) }
   }
 }
@@ -134,7 +136,7 @@ export const startAuthentication = createAsyncThunk(
     }
 
     const anonymousApi = await new AnonymousEHRLiteApi.Builder()
-      .withICureBaseUrl('https://krakenc.icure.cloud')
+      .withICureBaseUrl('https://api.icure.cloud')
       .withCrypto(crypto)
       .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
       .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
@@ -142,17 +144,14 @@ export const startAuthentication = createAsyncThunk(
       .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
       .build()
 
-    const authProcess = await anonymousApi.authenticationApi.startAuthentication(
-      _payload.captchaToken,
+    const authProcess = await anonymousApi.authenticationApi.startAuthentication({
+      recaptcha: _payload.captchaToken,
       email,
-      undefined,
       firstName,
       lastName,
-      process.env.REACT_APP_PARENT_ORGANISATION_ID,
-      undefined,
-      6,
-      'friendly-captcha',
-    )
+      validationCodeLength: 6,
+      recaptchaType: 'friendly-captcha',
+    })
 
     apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
     dispatch(setLoginProcessStarted(false))
@@ -195,6 +194,36 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
   return User.toJSON(user)
 })
 
+class InvitationMessageFactory implements EHRLiteMessageFactory {
+  readonly preferredMessageType = 'email'
+
+  getPatientInvitationEmail(
+    recipientUser: User,
+    recipientPatient: Patient,
+    recipientPassword: string,
+    invitingUser: User,
+    invitingDataOwner: Organisation | Practitioner,
+  ): EmailMessage {
+    return {
+      from: 'nobody@nowhere.boh',
+      subject: `${recipientUser.login}|${recipientPassword}`,
+      html: `User: ${recipientUser.id}`,
+    }
+  }
+
+  getPatientInvitationSMS(
+    recipientUser: User,
+    recipientPatient: Patient,
+    recipientPassword: string,
+    invitingUser: User,
+    invitingDataOwner: Organisation | Practitioner,
+  ): SMSMessage {
+    return {
+      message: `${recipientUser.login}|${recipientPassword}`,
+    }
+  }
+}
+
 export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, dispatch }) => {
   const {
     ehrLiteApi: { email, token },
@@ -212,13 +241,15 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, 
   }
 
   const api = await new EHRLiteApi.Builder()
-    .withICureBaseUrl('https://krakenc.icure.cloud')
+    .withICureBaseUrl('https://api.icure.cloud')
+
     .withCrypto(crypto)
     .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
     .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
     .withStorage(storage)
     .withUserName(email)
     .withPassword(token)
+    .withMessageFactory(new InvitationMessageFactory())
     .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
     .build()
 

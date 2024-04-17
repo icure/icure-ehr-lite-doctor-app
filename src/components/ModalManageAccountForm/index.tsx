@@ -1,40 +1,68 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Form, Input } from 'antd'
+import { Practitioner, Location, LocationAddressTypeEnum, ContactPoint } from '@icure/ehr-lite-sdk'
 
 import { CustomModal } from '../CustomModal'
+import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practitionerApi'
+import { SpinLoader } from '../SpinLoader'
 import './index.css'
 
-interface ModalAddConsultationProps {
+interface ModalManageAccountFormProps {
   isVisible: boolean
   onClose: () => void
-  onSubmit: (value: any) => void
+  practitionerToBeUpdated?: Practitioner
 }
-export const ModalAddConsultation = ({ isVisible, onClose, onSubmit }: ModalAddConsultationProps): JSX.Element => {
+export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): JSX.Element => {
   const [form] = Form.useForm()
-
+  const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
   const handleSubmit = (value: any) => {
-    onSubmit(value)
-    form.submit()
+    const { firstName, lastName, emailAddress, speciality } = value
+    const address = new Location({
+      addressType: LocationAddressTypeEnum.HOME,
+      telecoms: [
+        new ContactPoint({
+          system: 'email',
+          value: emailAddress,
+        }),
+      ],
+    })
+
+    updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address] }))
+    form.resetFields()
   }
+
+  useEffect(() => {
+    if (isPractitionerUpdatedSuccessfully) {
+      onClose()
+    }
+  }, [isPractitionerUpdatedSuccessfully])
+
+  const practitionerEmail = practitionerToBeUpdated?.addresses[0].telecoms.find((item) => item.system === 'email')?.value
+
   return (
-    <CustomModal isVisible={isVisible} handleClose={onClose} closeBtnTitle="Cancel" handleOk={handleSubmit} okBtnTitle="Save" title="Add consultation">
-      <div className="modalAddConsultation">
-        <Form className="modalAddConsultation__form" layout="vertical" colon={false} form={form}>
-          <div className="modalAddConsultation__form__inputs">
-            <Form.Item name="reason_for_visit" label="Reason for visit" rules={[{ required: true, message: 'Reason for visit is required' }]}>
-              <Input.TextArea placeholder="Type the Reason for visit" size="large" style={{ fontSize: 13 }} />
+    <CustomModal isVisible={isVisible} handleClose={onClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Add consultation">
+      <div className="modalManageAccountForm">
+        {isPractitionerUpdatingLoading && <SpinLoader />}
+        <Form
+          className="modalManageAccountForm__form"
+          layout="vertical"
+          onFinish={(values) => handleSubmit(values)}
+          colon={false}
+          form={form}
+          initialValues={{ emailAddress: practitionerEmail, ...practitionerToBeUpdated }}
+        >
+          <div className="modalManageAccountForm__form__inputs">
+            <Form.Item name="firstName" label="First name" rules={[{ required: true, message: 'First name is required' }]}>
+              <Input placeholder="First name" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
-            <Form.Item name="anamnesis" label="Anamnesis" rules={[{ required: true, message: 'Anamnesis is required' }]}>
-              <Input.TextArea placeholder="Type the Anamnesis" size="large" style={{ fontSize: 13 }} />
+            <Form.Item name="lastName" label="Last name" rules={[{ required: true, message: 'Last name is required' }]}>
+              <Input placeholder="Last name" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
-            <Form.Item name="clinical_exam" label="Clinical Exam" rules={[{ required: true, message: 'Clinical Exam is required' }]}>
-              <Input.TextArea placeholder="Type the Clinical Exam" size="large" style={{ fontSize: 13 }} />
+            <Form.Item name="emailAddress" label="Email address" rules={[{ required: true, message: 'Email address is required' }]}>
+              <Input placeholder="Email address" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
-            <Form.Item name="diagnosis" label="Diagnosis" rules={[{ required: true, message: 'Diagnosis is required' }]}>
-              <Input.TextArea placeholder="Type the Diagnosis" size="large" style={{ fontSize: 13 }} />
-            </Form.Item>
-            <Form.Item name="treatment" label="Treatment" rules={[{ required: true, message: 'Treatment is required' }]}>
-              <Input.TextArea placeholder="Type the Treatment" size="large" style={{ fontSize: 13 }} />
+            <Form.Item name="speciality" label="Speciality" rules={[{ required: true, message: 'Speciality is required' }]}>
+              <Input placeholder="Speciality" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
           </div>
         </Form>

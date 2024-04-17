@@ -112,37 +112,37 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
-.modalAddConsultation {
+.modalManageAccountForm {
   width: 100%;
   display: flex;
   align-self: stretch;
   max-height: 700px;
+  position: relative;
 }
 @media screen and (max-width: calc(768px - 1px)) {
-  .modalAddConsultation {
+  .modalManageAccountForm {
     flex-grow: 1;
   }
 }
-.modalAddConsultation__form {
+.modalManageAccountForm__form {
   display: flex;
   flex-direction: column;
   padding: 24px;
   flex: 1 0 0;
 }
 @media screen and (max-width: calc(768px - 1px)) {
-  .modalAddConsultation__form {
+  .modalManageAccountForm__form {
     padding: 12px;
   }
 }
-.modalAddConsultation__form__inputs {
+.modalManageAccountForm__form__inputs {
   display: flex;
   flex-direction: column;
   flex: 1 0 0;
   gap: 12px;
-  padding-bottom: 24px;
 }
 @media screen and (max-width: calc(768px - 1px)) {
-  .modalAddConsultation__form__inputs {
+  .modalManageAccountForm__form__inputs {
     padding-bottom: 12px;
   }
 }

@@ -1,4 +1,4 @@
-@import '../../../style/index';
+@import '../../../style/less/index';
 
 .userRow {
   width: 100%;
@@ -20,7 +20,7 @@
     gap: 12px;
   });
 
-  &__picture {
+  &__picture, &__userAvatarPlaceholder {
     width: 45px;
     height: 45px;
     display: flex;
@@ -37,6 +37,27 @@
       width: 35px;
       height: 35px;
     });
+  }
+
+  &__userAvatarPlaceholder{
+    background-color: @blue-600;
+    border-radius: 50%;
+
+    svg {
+      width: 24px;
+      height: 24px;
+
+      path {
+        fill: @grey-100;
+      }
+
+      .media-breakpoint-down(@md,
+      {
+        width: 20px;
+        height: 20px;
+      });
+    }
+
   }
 
   &__contentDesktop {
@@ -195,7 +216,7 @@
       }
 
       &__dropdownRow {
-        width: 150px;
+        width: 165px;
         display: flex;
         gap: 8px;
 

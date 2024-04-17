@@ -1,10 +1,17 @@
-@import '../../style/index';
+@import '../../style/less/index';
+
+.PatientImgCrop{
+  .ant-modal-body{
+    flex-direction: column;
+  }
+}
 
 .modalPatientForm {
   width: 100%;
   display: flex;
   align-self: stretch;
   max-height: 700px;
+  position: relative;
 
   .media-breakpoint-down(@md,
   {

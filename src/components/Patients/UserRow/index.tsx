@@ -3,22 +3,22 @@ import Icon from '@ant-design/icons'
 import type { MenuProps } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
+import { Patient, User } from '@icure/ehr-lite-sdk'
 
-import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn } from '../../../assets/CustomIcons'
+import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, sendIcn, userAvatarPlaceholderIcn } from '../../../assets/CustomIcons'
 import { ModalPatientForm } from '../../ModalPatientForm'
-import { ModalAddConsultation } from '../../ModalAddConsultation'
+import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalPatienProfile } from '../../ModalPatienProfile'
 import './index.css'
+import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 
 interface UserRowProps {
-  picture: ReactElement
-  name: string
-  dateOfBirth: string
-  phoneNumber: string
-  email: string
-  diagnosis: string
+  patient: Patient
+  invitePatient: () => void
+  deletePatient: () => void
+  editPatient?: (editedPatient: Patient) => void
 }
-export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagnosis }: UserRowProps): JSX.Element => {
+export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: UserRowProps): JSX.Element => {
   const [isOverFlowMenuOpen, setOverFlowMenuOpen] = useState(false)
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
   const [isAddConsultationModalOpen, setAddConsultationModalOpen] = useState(false)
@@ -59,6 +59,17 @@ export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagno
       ),
     },
     {
+      key: 'invite_patient',
+      label: (
+        <div className="userRow__btnGroup__item__dropdownRow">
+          <div className="userRow__btnGroup__item__dropdownRow__icn">
+            <Icon component={sendIcn} />
+          </div>
+          <span>Send Invitation Email</span>
+        </div>
+      ),
+    },
+    {
       key: 'delete_patient',
       danger: true,
       label: (
@@ -85,24 +96,37 @@ export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagno
         setPatientFormModalOpen(true)
         break
       }
+      case 'invite_patient': {
+        invitePatient()
+        break
+      }
       case 'delete_patient': {
+        deletePatient()
         break
       }
     }
   }
 
+  const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
+
   return (
     <>
       <div className="userRow">
-        <div className="userRow__picture">{picture}</div>
+        {picture ? (
+          <div className="userRow__picture">{picture}</div>
+        ) : (
+          <div className="userRow__userAvatarPlaceholder">
+            <Icon component={userAvatarPlaceholderIcn} />
+          </div>
+        )}
         <div className="userRow__contentDesktop">
           <div className="userRow__contentDesktop__item userRow__contentDesktop__item--name">
             <span className="userRow__contentDesktop__item__title">Name:</span>
-            <span className="userRow__contentDesktop__item__value userRow__contentDesktop__item__value--name">{name}</span>
+            <span className="userRow__contentDesktop__item__value userRow__contentDesktop__item__value--name">{userNameOneString}</span>
           </div>
           <div className="userRow__contentDesktop__item userRow__contentDesktop__item--dateOfBirth">
             <span className="userRow__contentDesktop__item__title">Date of birth:</span>
-            <span className="userRow__contentDesktop__item__value">{dateOfBirth}</span>
+            <span className="userRow__contentDesktop__item__value">{userDateOfBirthOneString}</span>
           </div>
           <div className="userRow__contentDesktop__item userRow__contentDesktop__item--phoneNumber">
             <span className="userRow__contentDesktop__item__title">Phone number:</span>
@@ -110,16 +134,16 @@ export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagno
           </div>
           <div className="userRow__contentDesktop__item userRow__contentDesktop__item--email">
             <span className="userRow__contentDesktop__item__title">E-mail address:</span>
-            <span className="userRow__contentDesktop__item__value">{email}</span>
+            <span className="userRow__contentDesktop__item__value">{emailAddress}</span>
           </div>
-          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--diafnosis">
-            <span className="userRow__contentDesktop__item__title">Diagnosis:</span>
-            <span className="userRow__contentDesktop__item__value">{diagnosis}</span>
+          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--diagnosis">
+            <span className="userRow__contentDesktop__item__title">Home address:</span>
+            <span className="userRow__contentDesktop__item__value">{userHomeAddressOneString}</span>
           </div>
         </div>
         <div className="userRow__contentMobile">
-          <span className="userRow__contentMobile__name">{name}</span>
-          <span className="userRow__contentMobile__value">{dateOfBirth + ', ' + diagnosis}</span>
+          <span className="userRow__contentMobile__name">{userNameOneString}</span>
+          <span className="userRow__contentMobile__value">{userDateOfBirthOneString + ', ' + phoneNumber + ', ' + emailAddress + ', ' + userHomeAddressOneString}</span>
         </div>
         <div className="userRow__btnGroup">
           <Tooltip title="Add consultation">
@@ -134,15 +158,14 @@ export const UserRow = ({ picture, name, dateOfBirth, email, phoneNumber, diagno
           </Dropdown>
         </div>
       </div>
-      {createPortal(
-        <ModalPatientForm mode="edit" isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} onSubmit={() => console.log('hi')} />,
-        document.body,
-      )}
-      {createPortal(
-        <ModalAddConsultation isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} onSubmit={() => console.log('hi')} />,
-        document.body,
-      )}
-      {createPortal(<ModalPatienProfile isVisible={isPatientProfileModalOpen} onClose={() => setPatientProfileModalOpen(false)} />, document.body)}
+      {isPatientFormModalOpen &&
+        createPortal(<ModalPatientForm mode="edit" patientToEdit={patient} isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} />, document.body)}
+      {isAddConsultationModalOpen &&
+        createPortal(
+          <ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} onSubmit={() => console.log('hi')} />,
+          document.body,
+        )}
+      {isPatientProfileModalOpen && createPortal(<ModalPatienProfile isVisible={isPatientProfileModalOpen} onClose={() => setPatientProfileModalOpen(false)} />, document.body)}
     </>
   )
 }

@@ -5,7 +5,7 @@ import { ConfigProvider } from 'antd'
 
 import { Router } from './navigation/Router'
 import { persistor, store } from './core/store'
-import { ANTD_NEW_THEME } from './helpers/antdTheme'
+import { ANTD_NEW_THEME } from './style/antd/antdTheme'
 
 function App() {
   return (

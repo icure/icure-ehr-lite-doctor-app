@@ -131,7 +131,8 @@ body * {
     gap: 12px;
   }
 }
-.userRow__picture {
+.userRow__picture,
+.userRow__userAvatarPlaceholder {
   width: 45px;
   height: 45px;
   display: flex;
@@ -139,13 +140,32 @@ body * {
   align-items: center;
   flex-shrink: 0;
 }
-.userRow__picture img {
+.userRow__picture img,
+.userRow__userAvatarPlaceholder img {
   border-radius: 50%;
 }
 @media screen and (max-width: calc(768px - 1px)) {
-  .userRow__picture {
+  .userRow__picture,
+  .userRow__userAvatarPlaceholder {
     width: 35px;
     height: 35px;
+  }
+}
+.userRow__userAvatarPlaceholder {
+  background-color: #8da6bf;
+  border-radius: 50%;
+}
+.userRow__userAvatarPlaceholder svg {
+  width: 24px;
+  height: 24px;
+}
+.userRow__userAvatarPlaceholder svg path {
+  fill: #fcfcfd;
+}
+@media screen and (max-width: calc(768px - 1px)) {
+  .userRow__userAvatarPlaceholder svg {
+    width: 20px;
+    height: 20px;
   }
 }
 .userRow__contentDesktop {
@@ -286,7 +306,7 @@ body * {
   }
 }
 .userRow__btnGroup__item__dropdownRow {
-  width: 150px;
+  width: 165px;
   display: flex;
   gap: 8px;
 }

@@ -10,7 +10,7 @@ export const SpinLoader = () => {
   const antIcon = <LoadingOutlined style={{ fontSize: 42 }} spin />
   return (
     <div className="SpinLoader">
-      <Spin tip="Loading" size="large" indicator={antIcon} />
+      <Spin size="large" indicator={antIcon} />
     </div>
   )
 }

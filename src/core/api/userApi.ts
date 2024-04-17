@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { User } from '@icure/ehr-lite-sdk'
+import { Patient, User } from '@icure/ehr-lite-sdk'
 import { guard, ehrLiteApi, currentUser, setUser } from '../services/auth.api'
 
 export const userApiRtk = createApi({
@@ -26,22 +26,27 @@ export const userApiRtk = createApi({
       },
       providesTags: ['User'],
     }),
-    // updateUser: builder.mutation<User | undefined, User>({
-    //   async queryFn(user, { getState, dispatch }) {
-    //     const userApi = (await ehrLiteApi(getState))?.userApi
-    //     return guard([userApi], async () => {
-    //       const updatedUser = await userApi?.createOrModify(user)
-    //
-    //       if (user.id === currentUser(getState)?.id && updatedUser) {
-    //         dispatch(setUser({ user: updatedUser.marshal() as User }))
-    //       }
-    //
-    //       return updatedUser
-    //     })
-    //   },
-    //   invalidatesTags: [{ type: 'User', id: 'all' }],
-    // }),
+    createAndInvitePatient: builder.mutation<User | undefined, Patient>({
+      async queryFn(patient, { getState, dispatch }) {
+        const userApi = (await ehrLiteApi(getState))?.userApi
+        return guard(
+          [userApi],
+          async (): Promise<User> => {
+            const createdUser = await userApi?.createAndInviteFor(Patient.toJSON(patient), 3600)
+            if (!createdUser) {
+              throw new Error('User does not exist')
+            }
+            return createdUser
+          },
+          User,
+        )
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: 'User', id: 'all' },
+        { type: 'User', id: arg.id },
+      ],
+    }),
   }),
 })
 
-export const { useGetUserQuery } = userApiRtk
+export const { useGetUserQuery, useCreateAndInvitePatientMutation } = userApiRtk

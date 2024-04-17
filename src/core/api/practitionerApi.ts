@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Practitioner } from '@icure/ehr-lite-sdk'
+import { Practitioner, PractitionerApi } from '@icure/ehr-lite-sdk'
 import { guard, ehrLiteApi } from '../services/auth.api'
 
 export const practitionerApiRtk = createApi({
@@ -15,6 +15,7 @@ export const practitionerApiRtk = createApi({
         return guard(
           [practitionerApi],
           async (): Promise<Practitioner> => {
+            console.log(id)
             const practitioner = await practitionerApi?.get(id)
             if (!practitioner) {
               throw new Error('Practitioner does not exist')
@@ -24,9 +25,35 @@ export const practitionerApiRtk = createApi({
           Practitioner,
         )
       },
-      providesTags: ['Practitioner'],
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'Practitioner', id: 'all' },
+              { type: 'Practitioner', id: res.id },
+            ]
+          : [],
+    }),
+    createOrUpdatePractitioner: builder.mutation<Practitioner | undefined, Practitioner>({
+      async queryFn(practitioner, { getState, dispatch }) {
+        const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
+        return guard(
+          [practitionerApi],
+          async (): Promise<Practitioner> => {
+            const updatedPractitioner = await practitionerApi?.createOrModify(Practitioner.fromJSON(practitioner))
+            if (!updatedPractitioner) {
+              throw new Error('Practitioner does not exist')
+            }
+            return updatedPractitioner
+          },
+          Practitioner,
+        )
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: 'Practitioner', id: 'all' },
+        { type: 'Practitioner', id: arg.id },
+      ],
     }),
   }),
 })
 
-export const { useGetPractitionerQuery } = practitionerApiRtk
+export const { useGetPractitionerQuery, useCreateOrUpdatePractitionerMutation } = practitionerApiRtk

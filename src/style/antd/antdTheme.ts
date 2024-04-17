@@ -1,6 +1,5 @@
 export const ANTD_NEW_THEME = {
   token: {
-    // Seed Token
     colorPrimary: '#084B83',
   },
   components: {
@@ -23,6 +22,14 @@ export const ANTD_NEW_THEME = {
       margin: 0,
     },
     Input: {
+      fontSizeLG: 13,
+      fontSize: 13,
+    },
+    DatePicker: {
+      fontSizeLG: 13,
+      fontSize: 13,
+    },
+    Select: {
       fontSizeLG: 13,
       fontSize: 13,
     },

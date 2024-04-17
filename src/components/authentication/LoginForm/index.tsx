@@ -5,15 +5,24 @@ import { Input, Button, Form } from 'antd'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { startAuthentication } from '../../../core/services/auth.api'
+import { EHRLiteApiState, startAuthentication } from '../../../core/services/auth.api'
 
 import '../index.css'
 import { SpinLoader } from '../../SpinLoader'
+import { createSelector } from '@reduxjs/toolkit'
 
 interface LoginFormProps {
   callback: (email: string) => void
   validationCallback: (email: string, validationCode: string) => void
 }
+
+const reduxSelector = createSelector(
+  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
+  (ehrLiteApi: EHRLiteApiState) => ({
+    waitingForToken: ehrLiteApi.waitingForToken,
+    loginProcessStarted: ehrLiteApi.loginProcessStarted,
+  }),
+)
 
 const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) => {
   const dispatch = useAppDispatch()
@@ -23,9 +32,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) =
     setCaptchaToken(solution)
   }
 
-  const { waitingForToken, loginProcessStarted } = useAppSelector((state) => ({
-    ...state.ehrLiteApi,
-  }))
+  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
 
   const handleSubmit = (values: { email: string; validationCode: string }) => {
     const { email, validationCode } = values

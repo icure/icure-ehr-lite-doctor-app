@@ -5,13 +5,22 @@ import { Input, Button, Form, Checkbox } from 'antd'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { startAuthentication } from '../../../core/services/auth.api'
+import { EHRLiteApiState, startAuthentication } from '../../../core/services/auth.api'
 import { SpinLoader } from '../../SpinLoader'
+import { createSelector } from '@reduxjs/toolkit'
 
 interface SignupFormProps {
   callback: (firstName: string, lastName: string, email: string) => void
   validationCallback: (email: string, validationCode: string) => void
 }
+
+const reduxSelector = createSelector(
+  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
+  (ehrLiteApi: EHRLiteApiState) => ({
+    waitingForToken: ehrLiteApi.waitingForToken,
+    loginProcessStarted: ehrLiteApi.loginProcessStarted,
+  }),
+)
 
 const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback }) => {
   const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined)
@@ -21,17 +30,21 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
     setCaptchaToken(solution)
   }
 
-  const { waitingForToken, loginProcessStarted } = useAppSelector((state) => ({
-    ...state.ehrLiteApi,
-  }))
+  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
 
   const handleSubmit = (values: { firstName: string; lastName: string; email: string; validationCode: string }) => {
     const { firstName, lastName, email, validationCode } = values
     if (waitingForToken) {
+      if (validationCode.length === 0) {
+        return
+      }
       validationCallback(email, validationCode)
     } else {
-      !!captchaToken && dispatch(startAuthentication({ captchaToken: captchaToken }))
       callback(firstName, lastName, email)
+
+      if (!!captchaToken) {
+        dispatch(startAuthentication({ captchaToken: captchaToken }))
+      }
     }
   }
 
