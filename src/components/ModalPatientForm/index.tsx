@@ -9,7 +9,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
-import { fileToArrayBuffer } from '../../helpers/fileToArrayBuffer'
+import { fileToArrayBuffer, getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 
 type PatientForm = {
@@ -25,8 +25,6 @@ type PatientForm = {
   houseNumber: string
   postalCode: string
 }
-
-type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
 interface ModalPatientFormProps {
   mode: 'edit' | 'create'
   isVisible: boolean
@@ -79,6 +77,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
     const picture = patientPictureAsArrayBuffer
+
     return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
   }
 
@@ -88,8 +87,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
 
     form.resetFields()
   }
-
-  const datePickerFormat = 'DD.MM.YYYY'
 
   const getPatientToEdit = (patient: Patient) => {
     const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } = getPatientDataFormated(patient)
@@ -112,7 +109,16 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     isPatientCreatedOrUpdateSuccessfully && onClose()
   }, [isPatientCreatedOrUpdateSuccessfully])
 
-  const props: UploadProps = {
+  const handleOnClose = () => {
+    setFileList([])
+    setPatientPictureAsArrayBuffer(undefined)
+    form.resetFields()
+    onClose()
+  }
+
+  const { Option } = Select
+
+  const fileUploaderProps: UploadProps = {
     listType: 'picture-card',
     multiple: false,
     showUploadList: {
@@ -123,44 +129,11 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     onChange: ({ fileList: newFileList }) => {
       setFileList(newFileList)
     },
-    onPreview: async (file: UploadFile) => {
-      let src = file.url as string
-      if (!src) {
-        src = await new Promise((resolve) => {
-          const reader = new FileReader()
-          reader.readAsDataURL(file.originFileObj as FileType)
-          reader.onload = () => resolve(reader.result as string)
-        })
-      }
-      const image = new Image()
-      image.src = src
-      const imgWindow = window.open(src)
-      imgWindow?.document.write(image.outerHTML)
-    },
     onRemove() {
       setFileList([])
       setPatientPictureAsArrayBuffer(undefined)
     },
-    beforeUpload: async (file) => {
-      try {
-        const arrayBuffer = await fileToArrayBuffer(file)
-        setPatientPictureAsArrayBuffer(arrayBuffer)
-      } catch (error) {
-        console.error('Error converting file to ArrayBuffer:', error)
-      }
-      // Prevent upload
-      return false
-    },
   }
-
-  const handleOnClose = () => {
-    setFileList([])
-    setPatientPictureAsArrayBuffer(undefined)
-    form.resetFields()
-    onClose()
-  }
-
-  const { Option } = Select
 
   return (
     <CustomModal
@@ -191,7 +164,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                 <Input placeholder="Last name" size="large" />
               </Form.Item>
               <Form.Item name="dateOfBirth" label="Date of birth" rules={[{ required: true, message: 'Date of birth is required' }]}>
-                <DatePicker format={datePickerFormat} placeholder="Date of birth" size="large" style={{ width: '100%' }} />
+                <DatePicker format="DD.MM.YYYY" placeholder="Date of birth" size="large" style={{ width: '100%' }} />
               </Form.Item>
               <Form.Item name="gender" label="Gender" rules={[{ required: true, message: 'Gender is required' }]}>
                 <Select placeholder="Gender" size="large">
@@ -206,7 +179,9 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">
                 <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                  <Upload {...props}>{fileList.length === 0 ? '+ Upload' : '+ Replace'}</Upload>
+                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: ArrayBuffer | undefined) => setPatientPictureAsArrayBuffer(data))}>
+                    {fileList.length === 0 ? '+ Upload' : '+ Replace'}
+                  </Upload>
                 </ImgCrop>
               </Form.Item>
             </div>

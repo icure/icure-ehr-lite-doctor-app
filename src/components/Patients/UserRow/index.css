@@ -127,7 +127,7 @@ body * {
 }
 @media screen and (max-width: calc(768px - 1px)) {
   .userRow {
-    align-items: flex-start;
+    align-items: center;
     gap: 12px;
   }
 }

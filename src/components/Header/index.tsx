@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import Icon from '@ant-design/icons'
@@ -6,13 +6,15 @@ import Icon from '@ant-design/icons'
 import './index.css'
 import logo_horizontal from '../../assets/logo_horizontal.svg'
 import userPicture from '../../assets/userPicture.png'
-import { arrowDownIcn, logOutIcn, manageUserIcn } from '../../assets/CustomIcons'
+import { arrowDownIcn, logOutIcn, manageUserIcn, userIcn } from '../../assets/CustomIcons'
 import { useAppDispatch, useAppSelector } from '../../core/hooks'
 import { EHRLiteApiState, logout } from '../../core/services/auth.api'
 import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
 import { ModalManageAccountForm } from '../ModalManageAccountForm'
 import { createPortal } from 'react-dom'
 import { createSelector } from '@reduxjs/toolkit'
+import { PaginatedList, Patient, Practitioner } from '@icure/ehr-lite-sdk'
+import { getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
 
 const reduxSelector = createSelector(
   (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
@@ -29,6 +31,15 @@ export const Header = () => {
   const { user, healthcarePartyId } = useAppSelector(reduxSelector)
 
   const { data: practitioner, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
+
+  const practitionerFromJSON = useMemo(() => {
+    if (!!practitioner) {
+      return Practitioner.fromJSON(practitioner)
+    }
+    return undefined
+  }, [practitioner])
+
+  const userAvatarSrc = getImgSRCFromArrayBuffer(practitionerFromJSON?.picture)
 
   const handleLogout = () => {
     dispatch(logout())
@@ -78,12 +89,18 @@ export const Header = () => {
           <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={(open: boolean) => setUserDropdownOpen(open)}>
             <div className={`header__userDrowdown ${isUserDropdownOpen && 'header__userDrowdown--active'}`}>
               <div className="header__userDrowdown__heading">
-                <p className="header__userDrowdown__heading__name">{practitioner?.firstName + ' ' + practitioner?.lastName}</p>
-                <p className="header__userDrowdown__heading__speciality">{practitioner?.speciality}</p>
+                <p className="header__userDrowdown__heading__name">{practitionerFromJSON?.firstName + ' ' + practitionerFromJSON?.lastName}</p>
+                <p className="header__userDrowdown__heading__speciality">{practitionerFromJSON?.speciality}</p>
               </div>
-              <div className="header__userDrowdown__picture">
-                <img src={userPicture} alt={user?.name ?? 'Dear User!'} />
-              </div>
+              {userAvatarSrc ? (
+                <div className="header__userDrowdown__picture">
+                  <img src={userAvatarSrc} alt={user?.name ?? 'Dear User!'} />
+                </div>
+              ) : (
+                <div className="header__userDrowdown__userAvatarPlaceholder">
+                  <Icon component={userIcn} />
+                </div>
+              )}
               <div className="header__userDrowdown__arrow">
                 <Icon component={arrowDownIcn} />
               </div>
@@ -91,10 +108,11 @@ export const Header = () => {
           </Dropdown>
         )}
       </div>
-      {createPortal(
-        <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitioner} />,
-        document.body,
-      )}
+      {isModalManageAccountFormOpen &&
+        createPortal(
+          <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitionerFromJSON} />,
+          document.body,
+        )}
     </>
   )
 }

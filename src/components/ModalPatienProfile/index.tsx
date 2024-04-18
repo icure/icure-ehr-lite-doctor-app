@@ -1,30 +1,77 @@
-import React from 'react'
+import React, { useMemo, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { Button } from 'antd'
+import { Button, Popconfirm } from 'antd'
+import { PaginatedList, Patient } from '@icure/ehr-lite-sdk'
+import { Typography } from 'antd'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
 import patientPicture from '../../assets/patientPicture.jpg'
-import { phoneIcn, emailIcn, locationIcn } from '../../assets/CustomIcons'
+import { phoneIcn, emailIcn, locationIcn, userAvatarPlaceholderIcn } from '../../assets/CustomIcons'
+import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
+import dayjs from 'dayjs'
+import { useGetPatientQuery } from '../../core/api/patientApi'
+import { util } from 'prettier'
+import skip = util.skip
+import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
 
 interface ModalPatienProfileProps {
   isVisible: boolean
+  patient: Patient
   onClose: () => void
-  patientId?: string
+  onEdit: () => void
+  onDelete: () => void
+  onAddConsultation: () => void
 }
+const { Title, Text } = Typography
 
-export const ModalPatienProfile = ({ isVisible, onClose }: ModalPatienProfileProps): JSX.Element => {
-  const handleSubmit = () => {
-    onClose()
+export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatienProfileProps): JSX.Element => {
+  const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
+  const { data: patientFromDB, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPatientQuery(id, { skip: !id })
+
+  const patientFromJSON = useMemo(() => {
+    if (!!patientFromDB) {
+      return Patient.fromJSON(patientFromDB)
+    }
+    return undefined
+  }, [patientFromDB])
+
+  console.log('patientFromJSON')
+  console.log(patientFromJSON)
+
+  const getAge = (date: number | undefined) => {
+    if (!date) {
+      return undefined
+    }
+    const years = dayjs(new Date()).diff(dayjs.unix(date), 'year')
+    if (years !== 0) {
+      return `${years} years`
+    }
+
+    const months = dayjs(new Date()).diff(dayjs.unix(date), 'month')
+    if (months !== 0) {
+      return `${months} months`
+    }
+    const days = dayjs(new Date()).diff(dayjs.unix(date), 'day')
+    if (days !== 0) {
+      return `${days} days`
+    }
+    return 'error'
   }
+
   const customModalFooter = () => (
     <div className="customFooter">
-      <Button type="link" danger>
-        Delete patient
-      </Button>
+      <Popconfirm title="Delete the patient" description="Are you sure to delete this patient?" onConfirm={onDelete} okText="Yes" cancelText="No">
+        <Button type="link" danger>
+          Delete patient
+        </Button>
+      </Popconfirm>
+
       <div className="customFooter__btnGroup">
-        <Button>Edit patient profile</Button>
-        <Button type="primary">Add consultation</Button>
+        <Button onClick={onEdit}>Edit patient profile</Button>
+        <Button onClick={onAddConsultation} type="primary">
+          Add consultation
+        </Button>
       </div>
     </div>
   )
@@ -35,25 +82,31 @@ export const ModalPatienProfile = ({ isVisible, onClose }: ModalPatienProfilePro
           <div className="modalPatienProfile__shortInfo">
             <div className="modalPatienProfile__shortInfo__leftBlock">
               <div className="modalPatienProfile__shortInfo__intro">
-                <div className="modalPatienProfile__shortInfo__intro__photo">
-                  <img src={patientPicture} alt="patientPicture" />
-                </div>
-                <h3 className="modalPatienProfile__shortInfo__name">Erin Lindford</h3>
+                {picture ? (
+                  <div className="modalPatienProfile__shortInfo__intro__photo">
+                    <img src={picture} alt="patientPicture" />
+                  </div>
+                ) : (
+                  <div className="modalPatienProfile__shortInfo__intro__userAvatarPlaceholder">
+                    <Icon component={userAvatarPlaceholderIcn} />
+                  </div>
+                )}
+                <h3 className="modalPatienProfile__shortInfo__name">{userNameOneString}</h3>
               </div>
               <div className="modalPatienProfile__shortInfo__contactDetails">
                 <h4>Contact Details:</h4>
                 <div className="modalPatienProfile__shortInfo__contactDetails__itemsContainer">
                   <div className="modalPatienProfile__shortInfo__contactDetails__item">
                     <Icon component={phoneIcn} />
-                    <p>+3289090909</p>
+                    <p>{phoneNumber}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__contactDetails__item">
                     <Icon component={emailIcn} />
-                    <p>erin.lindford@gmail.com</p>
+                    <p>{emailAddress}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__contactDetails__item">
                     <Icon component={locationIcn} />
-                    <p>Avenue Jacob-Daniel Maillard 31217 Meyrin, Suisse</p>
+                    <p>{userHomeAddressOneString}</p>
                   </div>
                 </div>
               </div>
@@ -64,19 +117,22 @@ export const ModalPatienProfile = ({ isVisible, onClose }: ModalPatienProfilePro
                 <div className="modalPatienProfile__shortInfo__overview__itemsWrap">
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Patient ID:</h5>
-                    <p>HR78879975436G</p>
+                    <div className="modalPatienProfile__shortInfo__overview__item__withChildren">
+                      <p>{id}</p>
+                      <Text copyable={{ text: id }} />
+                    </div>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Date of birth:</h5>
-                    <p>21/12/1989</p>
+                    <p>{userDateOfBirthOneString}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Age:</h5>
-                    <p>Female</p>
+                    <p>{getAge(dateOfBirth)}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Gender:</h5>
-                    <p>35</p>
+                    <p>{gender}</p>
                   </div>
                 </div>
               </div>

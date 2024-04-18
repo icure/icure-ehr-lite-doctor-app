@@ -33,5 +33,9 @@ export const ANTD_NEW_THEME = {
       fontSizeLG: 13,
       fontSize: 13,
     },
+    Popconfirm: {
+      colorWarning: '#EB3437',
+      colorTextHeading: '#EB3437',
+    },
   },
 }

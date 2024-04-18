@@ -15,7 +15,6 @@ export const practitionerApiRtk = createApi({
         return guard(
           [practitionerApi],
           async (): Promise<Practitioner> => {
-            console.log(id)
             const practitioner = await practitionerApi?.get(id)
             if (!practitioner) {
               throw new Error('Practitioner does not exist')
@@ -39,7 +38,7 @@ export const practitionerApiRtk = createApi({
         return guard(
           [practitionerApi],
           async (): Promise<Practitioner> => {
-            const updatedPractitioner = await practitionerApi?.createOrModify(Practitioner.fromJSON(practitioner))
+            const updatedPractitioner = await practitionerApi?.createOrModify(practitioner)
             if (!updatedPractitioner) {
               throw new Error('Practitioner does not exist')
             }

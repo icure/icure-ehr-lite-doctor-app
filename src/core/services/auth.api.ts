@@ -58,18 +58,6 @@ export const guard = async <T>(
   try {
     const res = await lambda()
     const curate = (result: T): T => {
-      // return (
-      //   result === null || result === undefined
-      //     ? null
-      //     : res instanceof ArrayBuffer
-      //     ? ua2b64(res)
-      //     : Array.isArray(result)
-      //     ? result.map(curate)
-      //     : typeof result === 'object'
-      //     ? result
-      //     : result
-      // ) as T
-
       if (result === null || result === undefined) {
         return null as T
       } else if (res instanceof ArrayBuffer) {

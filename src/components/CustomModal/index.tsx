@@ -13,16 +13,17 @@ interface PatientFormModalProps {
   width?: number
   title: string
   customFooter?: ReactElement
+  mode?: 'danger' | undefined
 }
 
-export const CustomModal = ({ isVisible, handleClose, handleOk, children, width, title, closeBtnTitle, okBtnTitle, customFooter }: PatientFormModalProps): JSX.Element => {
+export const CustomModal = ({ isVisible, handleClose, handleOk, children, width, title, closeBtnTitle, okBtnTitle, customFooter, mode }: PatientFormModalProps): JSX.Element => {
   const { innerWidth } = getWindowSize()
 
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
-      borderBottom: `1px solid #DCE7F2`,
+      borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
       padding: innerWidth < breakpoints.md ? '16px' : '20px 24px',
-      background: '#EEF6FE',
+      background: mode === 'danger' ? '#FDF3F3' : '#EEF6FE',
       borderRadius: '8px 8px 0px 0px',
       margin: 0,
     },
@@ -30,7 +31,7 @@ export const CustomModal = ({ isVisible, handleClose, handleOk, children, width,
       background: 'rgba(8, 75, 131, 0.25)',
     },
     footer: {
-      borderTop: '1px solid  #DCE7F2',
+      borderTop: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
       padding: innerWidth < breakpoints.md ? '16px' : '20px 24px',
       margin: 0,
       background: 'white',
@@ -83,7 +84,7 @@ export const CustomModal = ({ isVisible, handleClose, handleOk, children, width,
         </Button>
       ),
       okBtnTitle && handleOk && (
-        <Button key="submit" type="primary" onClick={handleOk}>
+        <Button key="submit" type="primary" danger={mode === 'danger'} onClick={handleOk}>
           {okBtnTitle}
         </Button>
       ),

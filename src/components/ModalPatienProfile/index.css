@@ -189,7 +189,8 @@ body * {
     border-bottom: 1px solid #dce7f2;
   }
 }
-.modalPatienProfile__shortInfo__intro__photo {
+.modalPatienProfile__shortInfo__intro__photo,
+.modalPatienProfile__shortInfo__intro__userAvatarPlaceholder {
   display: flex;
   width: 45px;
   height: 45px;
@@ -198,8 +199,26 @@ body * {
   border-radius: 50%;
   overflow: hidden;
 }
-.modalPatienProfile__shortInfo__intro__photo img {
+.modalPatienProfile__shortInfo__intro__photo img,
+.modalPatienProfile__shortInfo__intro__userAvatarPlaceholder img {
   width: 100%;
+}
+.modalPatienProfile__shortInfo__intro__userAvatarPlaceholder {
+  background-color: #8da6bf;
+  border-radius: 50%;
+}
+.modalPatienProfile__shortInfo__intro__userAvatarPlaceholder svg {
+  width: 24px;
+  height: 24px;
+}
+.modalPatienProfile__shortInfo__intro__userAvatarPlaceholder svg path {
+  fill: #fcfcfd;
+}
+@media screen and (max-width: calc(768px - 1px)) {
+  .modalPatienProfile__shortInfo__intro__userAvatarPlaceholder svg {
+    width: 20px;
+    height: 20px;
+  }
 }
 .modalPatienProfile__shortInfo__intro h3 {
   color: #303443;
@@ -275,7 +294,7 @@ body * {
 .modalPatienProfile__shortInfo__overview__itemsWrap {
   display: flex;
   align-items: flex-start;
-  gap: 32px;
+  gap: 24px;
   align-self: stretch;
   flex-wrap: wrap;
 }
@@ -288,16 +307,21 @@ body * {
 .modalPatienProfile__shortInfo__overview__item h5 {
   color: #9ca8b2;
   text-align: justify;
-  font-size: 14px;
+  font-size: 13px;
   font-style: normal;
   line-height: normal;
 }
 .modalPatienProfile__shortInfo__overview__item p {
   color: #303443;
   text-align: justify;
-  font-size: 15px;
+  font-size: 14px;
   font-style: normal;
   line-height: normal;
+}
+.modalPatienProfile__shortInfo__overview__item__withChildren {
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
 }
 .modalPatienProfile__expandedInfo {
   display: flex;

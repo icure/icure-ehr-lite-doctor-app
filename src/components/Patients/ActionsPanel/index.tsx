@@ -20,7 +20,7 @@ export const ActionsPanel = () => {
           <span>Create patient</span>
         </Button>
       </div>
-      {createPortal(<ModalPatientForm mode="create" isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} />, document.body)}
+      {isPatientFormModalOpen && createPortal(<ModalPatientForm mode="create" isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} />, document.body)}
     </>
   )
 }

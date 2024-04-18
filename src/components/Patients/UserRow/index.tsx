@@ -1,6 +1,6 @@
 import React, { ReactElement, useState } from 'react'
 import Icon from '@ant-design/icons'
-import type { MenuProps } from 'antd'
+import { MenuProps, Popconfirm } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 import { Patient, User } from '@icure/ehr-lite-sdk'
@@ -11,6 +11,7 @@ import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalPatienProfile } from '../../ModalPatienProfile'
 import './index.css'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
+import { ModalConfirmAction } from '../../ModalConfirmAction'
 
 interface UserRowProps {
   patient: Patient
@@ -23,6 +24,7 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
   const [isAddConsultationModalOpen, setAddConsultationModalOpen] = useState(false)
   const [isPatientProfileModalOpen, setPatientProfileModalOpen] = useState(false)
+  const [isPatientToBeDeleted, setPatientToBeDeleted] = useState(false)
 
   const items: MenuProps['items'] = [
     {
@@ -101,7 +103,7 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
         break
       }
       case 'delete_patient': {
-        deletePatient()
+        setPatientToBeDeleted(true)
         break
       }
     }
@@ -111,7 +113,7 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
 
   return (
     <>
-      <div className="userRow">
+      <div className="userRow" onClick={() => setPatientProfileModalOpen(true)}>
         {picture ? (
           <div className="userRow__picture">{picture}</div>
         ) : (
@@ -145,7 +147,7 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
           <span className="userRow__contentMobile__name">{userNameOneString}</span>
           <span className="userRow__contentMobile__value">{userDateOfBirthOneString + ', ' + phoneNumber + ', ' + emailAddress + ', ' + userHomeAddressOneString}</span>
         </div>
-        <div className="userRow__btnGroup">
+        <div className="userRow__btnGroup" onClick={(e) => e.stopPropagation()}>
           <Tooltip title="Add consultation">
             <div className="userRow__btnGroup__item userRow__btnGroup__item--addConsultation" onClick={() => setAddConsultationModalOpen(true)}>
               <Icon component={stethoscopeIcn} />
@@ -165,7 +167,35 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
           <ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} onSubmit={() => console.log('hi')} />,
           document.body,
         )}
-      {isPatientProfileModalOpen && createPortal(<ModalPatienProfile isVisible={isPatientProfileModalOpen} onClose={() => setPatientProfileModalOpen(false)} />, document.body)}
+      {isPatientProfileModalOpen &&
+        createPortal(
+          <ModalPatienProfile
+            patient={patient}
+            isVisible={isPatientProfileModalOpen}
+            onClose={() => setPatientProfileModalOpen(false)}
+            onEdit={() => setPatientFormModalOpen(true)}
+            onDelete={() => deletePatient()}
+            onAddConsultation={() => setAddConsultationModalOpen(true)}
+          />,
+          document.body,
+        )}
+      {isPatientToBeDeleted &&
+        createPortal(
+          <ModalConfirmAction
+            title="Delete the patient"
+            description="Are you sure you want to delete this patient? Once deleted, their information can't be recovered, so it's a permanent action."
+            yesBtnTitle="Delete"
+            noBtnTitle="Close"
+            onYesClick={() => {
+              deletePatient()
+              setPatientToBeDeleted(false)
+            }}
+            onNoClick={() => setPatientToBeDeleted(false)}
+            isVisible={isPatientToBeDeleted}
+            mode="danger"
+          />,
+          document.body,
+        )}
     </>
   )
 }

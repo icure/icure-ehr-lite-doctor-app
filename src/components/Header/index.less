@@ -56,6 +56,11 @@
     justify-content: center;
     align-items: flex-end;
 
+    .media-breakpoint-down(@sm,
+    {
+      display: none;
+    });
+
     &__name{
       color: @grey-800;
       font-family: Lato700, sans-serif;
@@ -67,7 +72,7 @@
     }
   }
 
-  &__picture{
+  &__picture, &__userAvatarPlaceholder{
     display: flex;
     width: 40px;
     height: 40px;
@@ -78,6 +83,25 @@
 
     img {
       width: 100%;
+    }
+  }
+  &__userAvatarPlaceholder{
+    background-color: @blue-800;
+    border-radius: 50%;
+
+    svg {
+      width: 24px;
+      height: 24px;
+
+      path {
+        fill: @grey-100;
+      }
+
+      .media-breakpoint-down(@md,
+      {
+        width: 20px;
+        height: 20px;
+      });
     }
   }
 }

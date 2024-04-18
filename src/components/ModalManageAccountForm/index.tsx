@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react'
-import { Form, Input } from 'antd'
+import React, { useEffect, useState } from 'react'
+import { Form, Input, Upload, UploadFile, UploadProps } from 'antd'
 import { Practitioner, Location, LocationAddressTypeEnum, ContactPoint } from '@icure/ehr-lite-sdk'
 
 import { CustomModal } from '../CustomModal'
 import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practitionerApi'
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
+import ImgCrop from 'antd-img-crop'
+import { getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
@@ -13,6 +15,8 @@ interface ModalManageAccountFormProps {
   practitionerToBeUpdated?: Practitioner
 }
 export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): JSX.Element => {
+  const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
+  const [fileList, setFileList] = useState<UploadFile[]>([])
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
   const handleSubmit = (value: any) => {
@@ -26,8 +30,9 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
         }),
       ],
     })
+    const picture = patientPictureAsArrayBuffer
 
-    updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address] }))
+    updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
     form.resetFields()
   }
 
@@ -39,8 +44,25 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
 
   const practitionerEmail = practitionerToBeUpdated?.addresses[0].telecoms.find((item) => item.system === 'email')?.value
 
+  const fileUploaderProps: UploadProps = {
+    listType: 'picture-card',
+    multiple: false,
+    showUploadList: {
+      showRemoveIcon: true,
+    },
+    maxCount: 1,
+    fileList: fileList,
+    onChange: ({ fileList: newFileList }) => {
+      setFileList(newFileList)
+    },
+    onRemove() {
+      setFileList([])
+      setPatientPictureAsArrayBuffer(undefined)
+    },
+  }
+
   return (
-    <CustomModal isVisible={isVisible} handleClose={onClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Add consultation">
+    <CustomModal isVisible={isVisible} handleClose={onClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Manage Account">
       <div className="modalManageAccountForm">
         {isPractitionerUpdatingLoading && <SpinLoader />}
         <Form
@@ -49,7 +71,13 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
           onFinish={(values) => handleSubmit(values)}
           colon={false}
           form={form}
-          initialValues={{ emailAddress: practitionerEmail, ...practitionerToBeUpdated }}
+          initialValues={{
+            emailAddress: practitionerEmail,
+            firstName: practitionerToBeUpdated?.firstName,
+            lastName: practitionerToBeUpdated?.lastName,
+            speciality: practitionerToBeUpdated?.speciality,
+            file: practitionerToBeUpdated?.picture,
+          }}
         >
           <div className="modalManageAccountForm__form__inputs">
             <Form.Item name="firstName" label="First name" rules={[{ required: true, message: 'First name is required' }]}>
@@ -63,6 +91,13 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             </Form.Item>
             <Form.Item name="speciality" label="Speciality" rules={[{ required: true, message: 'Speciality is required' }]}>
               <Input placeholder="Speciality" size="large" style={{ fontSize: 13 }} />
+            </Form.Item>
+            <Form.Item label="Picture" valuePropName="file">
+              <ImgCrop rotationSlider modalClassName="PatientImgCrop">
+                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: ArrayBuffer | undefined) => setPatientPictureAsArrayBuffer(data))}>
+                  {fileList.length === 0 ? '+ Upload' : '+ Replace'}
+                </Upload>
+              </ImgCrop>
             </Form.Item>
           </div>
         </Form>
