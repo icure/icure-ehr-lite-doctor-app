@@ -9,7 +9,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
-import { fileToArrayBuffer, getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
+import { fileToArrayBuffer, getFileUploaderCommonProps, getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 
 type PatientForm = {
@@ -34,7 +34,30 @@ interface ModalPatientFormProps {
 
 export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): JSX.Element => {
   const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
-  const [fileList, setFileList] = useState<UploadFile[]>([])
+  function base64ToArrayBuffer(base64: string | undefined) {
+    if (base64 === undefined) {
+      return undefined
+    }
+    const binaryString = atob(base64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    return bytes.buffer
+  }
+  const patientAvatarSrc = base64ToArrayBuffer(patientToEdit?.picture as unknown as string)
+  const [fileList, setFileList] = useState<UploadFile[]>(
+    patientAvatarSrc
+      ? [
+          {
+            uid: '-1',
+            name: 'image.png',
+            status: 'done',
+            url: patientAvatarSrc ? getImgSRCFromArrayBuffer(patientAvatarSrc) : undefined,
+          },
+        ]
+      : [],
+  )
   const [form] = Form.useForm()
 
   const [
@@ -76,7 +99,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       postalCode,
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
-    const picture = patientPictureAsArrayBuffer
+    const picture = patientPictureAsArrayBuffer ?? patientAvatarSrc
 
     return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
   }
@@ -89,7 +112,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
   }
 
   const getPatientToEdit = (patient: Patient) => {
-    const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } = getPatientDataFormated(patient)
+    const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, picture } = getPatientDataFormated(patient)
     return {
       firstName,
       lastName,
@@ -102,6 +125,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       street,
       houseNumber,
       postalCode,
+      picture,
     }
   }
 

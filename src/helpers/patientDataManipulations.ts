@@ -25,7 +25,7 @@ export interface PatientFormated {
 }
 
 export const getPatientDataFormated = (patient: Patient): PatientFormated => {
-  const { id, names, firstName, lastName, dateOfBirth, addresses, gender } = patient
+  const { id, names, firstName, lastName, dateOfBirth, addresses, gender, picture } = patient
   const getTelecomBySystem = (telecomSystem: ContactPointTelecomTypeEnum) => {
     const expectedAddress = addresses?.find(({ telecoms }) => telecoms.some(({ system }) => system === telecomSystem))
     const expectedTelecom = expectedAddress?.telecoms.find(({ system }) => system === telecomSystem)
@@ -60,6 +60,6 @@ export const getPatientDataFormated = (patient: Patient): PatientFormated => {
     userNameOneString: userName,
     userHomeAddressOneString: homeAddressString.length !== 0 ? homeAddressString : '-',
     userDateOfBirthOneString: userDateOfBirth,
-    picture: undefined,
+    picture: picture,
   }
 }

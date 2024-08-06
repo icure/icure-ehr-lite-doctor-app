@@ -25,7 +25,7 @@ export const patientApiRtk = createApi({
           Patient,
         )
       },
-      providesTags: (res) => (res ? [{ type: 'Patient', id: 'all' }] : []),
+      providesTags: (res) => (res ? [{ type: 'Patient', id: res.id }] : []),
     }),
     createOrUpdatePatient: builder.mutation<Patient | undefined, Patient>({
       async queryFn(patient, { getState, dispatch }) {
@@ -42,10 +42,8 @@ export const patientApiRtk = createApi({
           Patient,
         )
       },
-      invalidatesTags: (result, error, arg) => [
-        { type: 'Patient', id: 'all' },
-        { type: 'Patient', id: arg.id },
-      ],
+
+      invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
     }),
     filterPatientsByDataOwner: builder.query<PaginatedList<Patient> | undefined, string>({
       async queryFn(practitionerId, { getState, dispatch }) {
@@ -63,11 +61,21 @@ export const patientApiRtk = createApi({
           if (!patientsList) {
             throw new Error('Patients do not found')
           }
-
-          return PaginatedList.toJSON(patientsList, (patientFromTheList: Patient) => Patient.toJSON(patientFromTheList))
+          return PaginatedList.toJSON(patientsList, (patientFromTheList: Patient) => patientFromTheList)
         })
       },
-      providesTags: (res) => (res ? [{ type: 'Patient', id: 'all' }] : []),
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'Patient', id: 'all' },
+              ...res.rows.map((patient) => {
+                return {
+                  type: 'Patient',
+                  id: patient.id,
+                } as { type: 'Patient'; id: string }
+              }),
+            ]
+          : [],
     }),
     deletePatient: builder.mutation<string | undefined, string>({
       async queryFn(id, { getState }) {

@@ -1,6 +1,6 @@
-import React, { ReactElement, useState } from 'react'
+import React, { ReactElement, useEffect, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { MenuProps, Popconfirm } from 'antd'
+import { MenuProps, message, notification, Popconfirm } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 import { Patient, User } from '@icure/ehr-lite-sdk'
@@ -12,19 +12,44 @@ import { ModalPatienProfile } from '../../ModalPatienProfile'
 import './index.css'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalConfirmAction } from '../../ModalConfirmAction'
+import { getImgSRCFromArrayBuffer } from '../../../helpers/fileToArrayBuffer'
+import { useCreateAndInvitePatientMutation } from '../../../core/api/userApi'
+import { useDeletePatientMutation } from '../../../core/api/patientApi'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
 interface UserRowProps {
   patient: Patient
-  invitePatient: () => void
-  deletePatient: () => void
-  editPatient?: (editedPatient: Patient) => void
 }
-export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: UserRowProps): JSX.Element => {
+export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
   const [isOverFlowMenuOpen, setOverFlowMenuOpen] = useState(false)
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
   const [isAddConsultationModalOpen, setAddConsultationModalOpen] = useState(false)
   const [isPatientProfileModalOpen, setPatientProfileModalOpen] = useState(false)
   const [isPatientToBeDeleted, setPatientToBeDeleted] = useState(false)
+
+  const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
+    useCreateAndInvitePatientMutation()
+  const [deletePatient, { error: deletePatientError, isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletinggLoading }] =
+    useDeletePatientMutation()
+
+  const [api, contextHolder] = notification.useNotification()
+
+  const openNotification = (type: 'error', message: string, description: string) => {
+    api.open({
+      type,
+      message,
+      description,
+      duration: 0,
+    })
+  }
+
+  console.log(invitePatientError)
+
+  useEffect(() => {
+    // isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
+    // isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
+    // isInvitePatientError && openNotification('error', 'Cannot invite the patient!', `An error occurred while sending the invitation letter. ${invitePatientError?.error}`)
+  }, [isPatientInvitingLoading, isPatientInvitedSuccessfully, isInvitePatientError])
 
   const items: MenuProps['items'] = [
     {
@@ -99,7 +124,7 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
         break
       }
       case 'invite_patient': {
-        invitePatient()
+        invitePatient(new Patient(patient))
         break
       }
       case 'delete_patient': {
@@ -110,12 +135,16 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
   }
 
   const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
+  const patientAvatarSrc = !picture ? undefined : `data:image/png;base64,${picture}`
 
   return (
     <>
+      {contextHolder}
       <div className="userRow" onClick={() => setPatientProfileModalOpen(true)}>
-        {picture ? (
-          <div className="userRow__picture">{picture}</div>
+        {patientAvatarSrc ? (
+          <div className="userRow__picture">
+            <img src={patientAvatarSrc} alt={`${userNameOneString} picture`} />
+          </div>
         ) : (
           <div className="userRow__userAvatarPlaceholder">
             <Icon component={userAvatarPlaceholderIcn} />
@@ -174,7 +203,12 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
             isVisible={isPatientProfileModalOpen}
             onClose={() => setPatientProfileModalOpen(false)}
             onEdit={() => setPatientFormModalOpen(true)}
-            onDelete={() => deletePatient()}
+            onDelete={() => {
+              // deletePatient(patient.id)
+              // isPatientDeletinggLoading && showMessageFeedback('loading', 'The patient is deleting...')
+              // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
+              // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
+            }}
             onAddConsultation={() => setAddConsultationModalOpen(true)}
           />,
           document.body,
@@ -187,7 +221,10 @@ export const UserRow = ({ patient, invitePatient, deletePatient, editPatient }: 
             yesBtnTitle="Delete"
             noBtnTitle="Close"
             onYesClick={() => {
-              deletePatient()
+              deletePatient(patient.id)
+              // isPatientDeletinggLoading && showMessageFeedback('loading', 'The patient is deleting...')
+              // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
+              // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
               setPatientToBeDeleted(false)
             }}
             onNoClick={() => setPatientToBeDeleted(false)}

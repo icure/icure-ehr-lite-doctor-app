@@ -27,18 +27,8 @@ const { Title, Text } = Typography
 
 export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatienProfileProps): JSX.Element => {
   const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
-  const { data: patientFromDB, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPatientQuery(id, { skip: !id })
 
-  const patientFromJSON = useMemo(() => {
-    if (!!patientFromDB) {
-      return Patient.fromJSON(patientFromDB)
-    }
-    return undefined
-  }, [patientFromDB])
-
-  console.log('patientFromJSON')
-  console.log(patientFromJSON)
-
+  const patientAvatarSrc = !picture ? undefined : `data:image/png;base64,${picture}`
   const getAge = (date: number | undefined) => {
     if (!date) {
       return undefined
@@ -82,9 +72,9 @@ export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDele
           <div className="modalPatienProfile__shortInfo">
             <div className="modalPatienProfile__shortInfo__leftBlock">
               <div className="modalPatienProfile__shortInfo__intro">
-                {picture ? (
+                {patientAvatarSrc ? (
                   <div className="modalPatienProfile__shortInfo__intro__photo">
-                    <img src={picture} alt="patientPicture" />
+                    <img src={patientAvatarSrc} alt="patientPicture" />
                   </div>
                 ) : (
                   <div className="modalPatienProfile__shortInfo__intro__userAvatarPlaceholder">

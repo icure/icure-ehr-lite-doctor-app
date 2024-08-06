@@ -1,4 +1,4 @@
-import { GetProp, UploadFile, UploadProps } from 'antd'
+import { GetProp, Upload, UploadFile, UploadProps } from 'antd'
 
 export const fileToArrayBuffer = (file: File): Promise<ArrayBuffer> => {
   return new Promise((resolve, reject) => {

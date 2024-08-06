@@ -7,7 +7,7 @@ import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practition
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
 import ImgCrop from 'antd-img-crop'
-import { getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
+import { getFileUploaderCommonProps, getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
@@ -15,10 +15,22 @@ interface ModalManageAccountFormProps {
   practitionerToBeUpdated?: Practitioner
 }
 export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): JSX.Element => {
-  const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
-  const [fileList, setFileList] = useState<UploadFile[]>([])
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
+  const userAvatarSrc = getImgSRCFromArrayBuffer(practitionerToBeUpdated?.picture)
+  const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
+  const [fileList, setFileList] = useState<UploadFile[]>(
+    !userAvatarSrc
+      ? []
+      : [
+          {
+            uid: '-1',
+            name: 'image.png',
+            status: 'done',
+            url: userAvatarSrc,
+          },
+        ],
+  )
   const handleSubmit = (value: any) => {
     const { firstName, lastName, emailAddress, speciality } = value
     const address = new Location({
@@ -30,7 +42,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
         }),
       ],
     })
-    const picture = patientPictureAsArrayBuffer
+    const picture = patientPictureAsArrayBuffer ?? practitionerToBeUpdated?.picture
 
     updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
     form.resetFields()

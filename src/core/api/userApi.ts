@@ -32,7 +32,7 @@ export const userApiRtk = createApi({
         return guard(
           [userApi],
           async (): Promise<User> => {
-            const createdUser = await userApi?.createAndInviteFor(Patient.toJSON(patient), 3600)
+            const createdUser = await userApi?.createAndInviteFor(patient, 3600)
             if (!createdUser) {
               throw new Error('User does not exist')
             }

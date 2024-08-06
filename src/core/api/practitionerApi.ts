@@ -24,14 +24,9 @@ export const practitionerApiRtk = createApi({
           Practitioner,
         )
       },
-      providesTags: (res) =>
-        res
-          ? [
-              { type: 'Practitioner', id: 'all' },
-              { type: 'Practitioner', id: res.id },
-            ]
-          : [],
+      providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
     }),
+
     createOrUpdatePractitioner: builder.mutation<Practitioner | undefined, Practitioner>({
       async queryFn(practitioner, { getState, dispatch }) {
         const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
