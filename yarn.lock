@@ -2005,23 +2005,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/api@npm:^8.0.0-RC.6":
-  version: 8.0.0-RC.6
-  resolution: "@icure/api@npm:8.0.0-RC.6"
-  dependencies:
-    browser-or-node: "npm:^2.1.1"
-    date-fns: "npm:^2.23.0"
-    libphonenumber-js: "npm:^1.7.18"
-    lodash: "npm:^4.17.21"
-    moment: "npm:^2.22.1"
-    text-encoding: "npm:^0.7.0"
-    uuid: "npm:^8.3.2"
-    uuid-encoder: "npm:^1.1.0"
-  checksum: 943b490c8a303d7b0371f6a2c4c766e5d56e01563be886c179b7b994037ec59eceb0433361b4bc04dc0f2e88542182bf86fb90c0d0d55d6f2be22d38d8ccf9b9
-  languageName: node
-  linkType: hard
-
-"@icure/api@npm:^8.0.37":
+"@icure/api@npm:^8.0.46":
   version: 8.0.46
   resolution: "@icure/api@npm:8.0.46"
   dependencies:
@@ -2037,14 +2021,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/ehr-lite-sdk@npm:^3.3.7":
-  version: 3.3.7
-  resolution: "@icure/ehr-lite-sdk@npm:3.3.7"
+"@icure/ehr-lite-sdk@npm:^3.3.9":
+  version: 3.3.9
+  resolution: "@icure/ehr-lite-sdk@npm:3.3.9"
   dependencies:
-    "@icure/typescript-common": "npm:3.3.7"
+    "@icure/typescript-common": "npm:3.3.9"
     reflect-metadata: "npm:^0.2.2"
     uuid: "npm:^9.0.1"
-  checksum: f9128e7dfef810da3b2b42eca62a7d6bf0e6c30a5566dc105418294c2d9e119ec9377e3625d66757b179e1e8656b2985582ed047a38492ba61c20e6767327b93
+  checksum: 1d3bb0ce61d66c6fc411ead7dd8347d002aedca431ae011aa4fdc90d7d7935786e73ff9e4668a0411459ea2fdf223392f2587c1d54e3398c48ce8c0cea31310e
   languageName: node
   linkType: hard
 
@@ -2074,14 +2058,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/typescript-common@npm:3.3.7":
-  version: 3.3.7
-  resolution: "@icure/typescript-common@npm:3.3.7"
+"@icure/typescript-common@npm:3.3.9":
+  version: 3.3.9
+  resolution: "@icure/typescript-common@npm:3.3.9"
   dependencies:
-    "@icure/api": "npm:^8.0.37"
+    "@icure/api": "npm:^8.0.46"
     reflect-metadata: "npm:^0.2.2"
     uuid: "npm:^9.0.1"
-  checksum: c222efb249b11968ec65c1f9422f4b333f8d4e6cf569300140cbeda0c75169f063eb61e74196a7afc71407f0867a779b1ab3632607e95531c9258223293c5659
+  checksum: 99760eedd5b307722c1d4e8b866f798916f98505cc0c6e03556579a0dffdda72de3dd5afa34317ee6a2b85d7e96a5d0e9c10412884da5d03fa5a11a8e599a015
   languageName: node
   linkType: hard
 
@@ -5335,13 +5319,6 @@ __metadata:
   dependencies:
     fill-range: "npm:^7.0.1"
   checksum: 321b4d675791479293264019156ca322163f02dc06e3c4cab33bb15cd43d80b51efef69b0930cfde3acd63d126ebca24cd0544fa6f261e093a0fb41ab9dda381
-  languageName: node
-  linkType: hard
-
-"browser-or-node@npm:^2.1.1":
-  version: 2.1.1
-  resolution: "browser-or-node@npm:2.1.1"
-  checksum: f727639581182f831b5bf4686b401dcad5cc29b5a6b70059c0aa90990844b8f15f3a1d328cc8e83dd3b4bfa69175f9bdf2f4383faec14d47205bfea532b9964d
   languageName: node
   linkType: hard
 
@@ -8638,8 +8615,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "icure-ehr-lite-doctor-app@workspace:."
   dependencies:
-    "@icure/api": "npm:^8.0.0-RC.6"
-    "@icure/ehr-lite-sdk": "npm:^3.3.7"
+    "@icure/api": "npm:^8.0.46"
+    "@icure/ehr-lite-sdk": "npm:^3.3.9"
     "@icure/form": "npm:^1.1.15"
     "@reduxjs/toolkit": "npm:^1.8.1"
     "@testing-library/jest-dom": "npm:^5.17.0"

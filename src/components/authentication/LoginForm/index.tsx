@@ -2,62 +2,57 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input, Button, Form } from 'antd'
 
-import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { EHRLiteApiState, startAuthentication } from '../../../core/services/auth.api'
 
 import '../index.css'
 import { SpinLoader } from '../../SpinLoader'
-import { createSelector } from '@reduxjs/toolkit'
 
 interface LoginFormProps {
-  callback: (email: string) => void
-  validationCallback: (email: string, validationCode: string) => void
+  state: 'initialised' | 'loading' | 'waitingForToken'
+  submitEmailForTokenRequest: (email: string, captchaToken: string) => void
+  submitEmailAndValidationTokenForAuthentication: (email: string, validationCode: string) => void
 }
 
-const reduxSelector = createSelector(
-  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
-  (ehrLiteApi: EHRLiteApiState) => ({
-    waitingForToken: ehrLiteApi.waitingForToken,
-    loginProcessStarted: ehrLiteApi.loginProcessStarted,
-  }),
-)
-
-const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) => {
-  const dispatch = useAppDispatch()
+const LoginForm: React.FC<LoginFormProps> = ({ state, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
   const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined)
 
   const doneCallback = (solution: string) => {
     setCaptchaToken(solution)
   }
 
-  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
-
+  /**
+   * This function is called each time we press on the submit button of the login form
+   * Depending on the state of the api, it will either set the email to let redux start
+   * the authentication ot try to log you in using the email and token
+   *
+   * @param values
+   */
   const handleSubmit = (values: { email: string; validationCode: string }) => {
     const { email, validationCode } = values
 
+    /** Some error management should be done here ? */
     if (email.length === 0) {
       return
     }
 
-    if (waitingForToken) {
+    if (state === 'waitingForToken') {
+      /** Some error management should be done here ? */
       if (validationCode.length === 0) {
         return
       }
-      validationCallback(email, validationCode)
+      submitEmailAndValidationTokenForAuthentication(email, validationCode)
     } else {
-      callback(email)
-    }
-
-    if (!!captchaToken) {
-      dispatch(startAuthentication({ captchaToken: captchaToken }))
+      if (!captchaToken) {
+        return
+      }
+      submitEmailForTokenRequest(email, captchaToken)
     }
   }
 
   return (
     <>
-      {loginProcessStarted && <SpinLoader />}
+      {state === 'loading' && <SpinLoader />}
       <Form onFinish={(values) => handleSubmit(values)} className="auth-form" layout="vertical">
         <div className="auth-form__title">
           <h2>Login</h2>
@@ -67,7 +62,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) =
             <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
 
-          {waitingForToken && (
+          {state === 'waitingForToken' && (
             <Form.Item name="validationCode" label="Validation Code" rules={[{ required: true, message: 'Validation code is required' }]}>
               <Input placeholder="Validation Code" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
@@ -85,8 +80,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ callback, validationCallback }) =
             </Link>
           </p>
         </div>
-        <Button type="primary" size="large" htmlType="submit">
-          {waitingForToken ? 'Log in' : 'Receive a one time code'}
+        <Button type="primary" size="large" htmlType="submit" disabled={(state === 'initialised' && !captchaToken) || state === 'loading'}>
+          {state === 'waitingForToken' ? 'Log in' : 'Receive a one time code'}
         </Button>
         <div className="auth-form__textHelper">
           <p>

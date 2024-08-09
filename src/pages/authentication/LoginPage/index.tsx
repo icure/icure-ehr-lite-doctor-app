@@ -1,19 +1,30 @@
 import React, { useEffect } from 'react'
-import { useAppDispatch } from '../../../core/hooks'
+import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import LoginForm from '../../../components/authentication/LoginForm'
-import { completeAuthentication, setEmail, setToken, setWaitingForToken } from '../../../core/services/auth.api'
+import { completeAuthentication, EHRLiteApiState, setEmail, setToken, setWaitingForToken, startAuthentication } from '../../../core/services/auth.api'
 
 import logo from '../../../assets/logo_vertical.svg'
 import '../index.css'
+import { createSelector } from '@reduxjs/toolkit'
+
+const reduxSelector = createSelector(
+  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
+  (ehrLiteApi: EHRLiteApiState) => ({
+    waitingForToken: ehrLiteApi.waitingForToken,
+    loginProcessStarted: ehrLiteApi.loginProcessStarted,
+  }),
+)
 
 export default function LoginPage() {
   const dispatch = useAppDispatch()
+  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
 
-  const handleSubmitLogin = (email: string) => {
+  const startAuthenticationProcessWithEmailAndCaptchaToken = (email: string, captchaToken: string) => {
     dispatch(setEmail({ email: email }))
+    dispatch(startAuthentication({ captchaToken: captchaToken }))
   }
 
-  const handleSubmitValidation = (_email: string, validationCode: string) => {
+  const completeAuthenticationProcessWithEmailAndValidationCode = (email: string, validationCode: string) => {
     dispatch(setToken({ token: validationCode }))
     dispatch(completeAuthentication())
   }
@@ -31,8 +42,9 @@ export default function LoginPage() {
       </div>
 
       <LoginForm
-        callback={(email: string) => handleSubmitLogin(email)}
-        validationCallback={(_email: string, validationCode: string) => handleSubmitValidation(_email, validationCode)}
+        state={loginProcessStarted ? 'loading' : waitingForToken ? 'waitingForToken' : 'initialised'}
+        submitEmailForTokenRequest={(email: string, captchaToken: string) => startAuthenticationProcessWithEmailAndCaptchaToken(email, captchaToken)}
+        submitEmailAndValidationTokenForAuthentication={(email: string, validationCode: string) => completeAuthenticationProcessWithEmailAndValidationCode(email, validationCode)}
       />
     </div>
   )
