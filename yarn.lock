@@ -2005,22 +2005,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/api@npm:8.0.23":
-  version: 8.0.23
-  resolution: "@icure/api@npm:8.0.23"
-  dependencies:
-    browser-or-node: "npm:^2.1.1"
-    date-fns: "npm:^2.23.0"
-    libphonenumber-js: "npm:^1.7.18"
-    lodash: "npm:^4.17.21"
-    moment: "npm:^2.22.1"
-    text-encoding: "npm:^0.7.0"
-    uuid: "npm:^8.3.2"
-    uuid-encoder: "npm:^1.1.0"
-  checksum: 0a88dcb76453e516cb9ff825c49766b48d76740f2c9c6837d59da2e9ea15ac7a7bb899876c56c3cb3d8a4a4d61768d0ae49c023dfaf7d4b24275b233d3cde94e
-  languageName: node
-  linkType: hard
-
 "@icure/api@npm:^8.0.0-RC.6":
   version: 8.0.0-RC.6
   resolution: "@icure/api@npm:8.0.0-RC.6"
@@ -2037,14 +2021,30 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/ehr-lite-sdk@npm:^3.1.1":
-  version: 3.1.1
-  resolution: "@icure/ehr-lite-sdk@npm:3.1.1"
+"@icure/api@npm:^8.0.37":
+  version: 8.0.46
+  resolution: "@icure/api@npm:8.0.46"
   dependencies:
-    "@icure/typescript-common": "npm:3.1.1"
-    reflect-metadata: "npm:^0.1.13"
-    uuid: "npm:^9.0.0"
-  checksum: 10ecd6c946cf6f8a42fb8319f3dfd4352d8a9d3691db1602ca825d56e6f0dd1ce3daee3386cebb791f957d4bd653e948316d542a3035385bf30f039a98f378f7
+    browser-or-node: "npm:^3.0.0"
+    date-fns: "npm:^2.23.0"
+    libphonenumber-js: "npm:^1.7.18"
+    lodash: "npm:^4.17.21"
+    moment: "npm:^2.22.1"
+    text-encoding: "npm:^0.7.0"
+    uuid: "npm:^8.3.2"
+    uuid-encoder: "npm:^1.1.0"
+  checksum: d972cbdbbbf0c96c5ef43afe655986e695d5ec66e42e3e5481a2ff8ace6256ccc0a3091562d28ced2a139b4a37948f3e002d6adcf337b369564c7d6eddd7cfae
+  languageName: node
+  linkType: hard
+
+"@icure/ehr-lite-sdk@npm:^3.3.7":
+  version: 3.3.7
+  resolution: "@icure/ehr-lite-sdk@npm:3.3.7"
+  dependencies:
+    "@icure/typescript-common": "npm:3.3.7"
+    reflect-metadata: "npm:^0.2.2"
+    uuid: "npm:^9.0.1"
+  checksum: f9128e7dfef810da3b2b42eca62a7d6bf0e6c30a5566dc105418294c2d9e119ec9377e3625d66757b179e1e8656b2985582ed047a38492ba61c20e6767327b93
   languageName: node
   linkType: hard
 
@@ -2074,14 +2074,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/typescript-common@npm:3.1.1":
-  version: 3.1.1
-  resolution: "@icure/typescript-common@npm:3.1.1"
+"@icure/typescript-common@npm:3.3.7":
+  version: 3.3.7
+  resolution: "@icure/typescript-common@npm:3.3.7"
   dependencies:
-    "@icure/api": "npm:8.0.23"
-    reflect-metadata: "npm:^0.1.13"
-    uuid: "npm:^9.0.0"
-  checksum: e6fc81583adb806cc9249d71ead286bca060a833b192ead95809e677c7a47d52e82f2b5823605f1077431cebc73b70714f78938289a194645a848c1d02ce2383
+    "@icure/api": "npm:^8.0.37"
+    reflect-metadata: "npm:^0.2.2"
+    uuid: "npm:^9.0.1"
+  checksum: c222efb249b11968ec65c1f9422f4b333f8d4e6cf569300140cbeda0c75169f063eb61e74196a7afc71407f0867a779b1ab3632607e95531c9258223293c5659
   languageName: node
   linkType: hard
 
@@ -5342,6 +5342,13 @@ __metadata:
   version: 2.1.1
   resolution: "browser-or-node@npm:2.1.1"
   checksum: f727639581182f831b5bf4686b401dcad5cc29b5a6b70059c0aa90990844b8f15f3a1d328cc8e83dd3b4bfa69175f9bdf2f4383faec14d47205bfea532b9964d
+  languageName: node
+  linkType: hard
+
+"browser-or-node@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "browser-or-node@npm:3.0.0"
+  checksum: 05db930e0a21bfffef74dbc4a27eaa12113e7f43a95f3b80a925f624212d701b86034cdfb5c422bdee061c4ae8442d294feee8996e6ae2555a8e46ea0b830b52
   languageName: node
   linkType: hard
 
@@ -8632,7 +8639,7 @@ __metadata:
   resolution: "icure-ehr-lite-doctor-app@workspace:."
   dependencies:
     "@icure/api": "npm:^8.0.0-RC.6"
-    "@icure/ehr-lite-sdk": "npm:^3.1.1"
+    "@icure/ehr-lite-sdk": "npm:^3.3.7"
     "@icure/form": "npm:^1.1.15"
     "@reduxjs/toolkit": "npm:^1.8.1"
     "@testing-library/jest-dom": "npm:^5.17.0"
@@ -13923,10 +13930,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"reflect-metadata@npm:^0.1.13":
-  version: 0.1.13
-  resolution: "reflect-metadata@npm:0.1.13"
-  checksum: 728bff0b376b05639fd11ed80c648b61f7fe653c5b506d7ca118e58b6752b9b00810fe0c86227ecf02bd88da6251ab3eb19fd403aaf2e9ff5ef36a2fda643026
+"reflect-metadata@npm:^0.2.2":
+  version: 0.2.2
+  resolution: "reflect-metadata@npm:0.2.2"
+  checksum: 1cd93a15ea291e420204955544637c264c216e7aac527470e393d54b4bb075f10a17e60d8168ec96600c7e0b9fcc0cb0bb6e91c3fbf5b0d8c9056f04e6ac1ec2
   languageName: node
   linkType: hard
 
@@ -15997,7 +16004,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^9.0.0, uuid@npm:^9.0.1":
+"uuid@npm:^9.0.1":
   version: 9.0.1
   resolution: "uuid@npm:9.0.1"
   bin:

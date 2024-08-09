@@ -9,7 +9,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
-import { fileToArrayBuffer, getFileUploaderCommonProps, getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
+import { getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 
 type PatientForm = {
@@ -17,7 +17,7 @@ type PatientForm = {
   lastName: string
   dateOfBirth: number
   gender: GenderEnum
-  phoneNumber: number
+  phoneNumber: string
   emailAddress: string
   country: string
   city: string
@@ -33,7 +33,7 @@ interface ModalPatientFormProps {
 }
 
 export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): JSX.Element => {
-  const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
+  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
   function base64ToArrayBuffer(base64: string | undefined) {
     if (base64 === undefined) {
       return undefined
@@ -45,7 +45,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     }
     return bytes.buffer
   }
-  const patientAvatarSrc = base64ToArrayBuffer(patientToEdit?.picture as unknown as string)
+  const patientAvatarSrc = patientToEdit?.picture as unknown as string
   const [fileList, setFileList] = useState<UploadFile[]>(
     patientAvatarSrc
       ? [
@@ -53,7 +53,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
             uid: '-1',
             name: 'image.png',
             status: 'done',
-            url: patientAvatarSrc ? getImgSRCFromArrayBuffer(patientAvatarSrc) : undefined,
+            url: patientAvatarSrc ? patientAvatarSrc : undefined,
           },
         ]
       : [],
@@ -99,7 +99,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       postalCode,
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
-    const picture = patientPictureAsArrayBuffer ?? patientAvatarSrc
+    const picture = patientPictureAsBase64 ?? patientAvatarSrc
 
     return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
   }
@@ -135,7 +135,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
 
   const handleOnClose = () => {
     setFileList([])
-    setPatientPictureAsArrayBuffer(undefined)
+    setPatientPictureAsBase64(undefined)
     form.resetFields()
     onClose()
   }
@@ -155,7 +155,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     },
     onRemove() {
       setFileList([])
-      setPatientPictureAsArrayBuffer(undefined)
+      setPatientPictureAsBase64(undefined)
     },
   }
 
@@ -203,7 +203,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">
                 <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: ArrayBuffer | undefined) => setPatientPictureAsArrayBuffer(data))}>
+                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: string | undefined) => setPatientPictureAsBase64(data))}>
                     {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                   </Upload>
                 </ImgCrop>

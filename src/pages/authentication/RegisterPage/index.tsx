@@ -27,7 +27,10 @@ export default function RegisterPage() {
       <div className="auth-page__logo">
         <img src={logo} alt="petra-care logo" />
       </div>
-      <SignupForm callback={handleSubmitSignup} validationCallback={handleSubmitValidation} />
+      <SignupForm
+        callback={(firstName: string, lastName: string, email: string) => handleSubmitSignup(firstName, lastName, email)}
+        validationCallback={(_email: string, validationCode: string) => handleSubmitValidation(_email, validationCode)}
+      />
     </div>
   )
 }

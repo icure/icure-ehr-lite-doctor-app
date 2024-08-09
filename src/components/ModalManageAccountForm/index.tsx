@@ -7,7 +7,8 @@ import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practition
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
 import ImgCrop from 'antd-img-crop'
-import { getFileUploaderCommonProps, getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
+import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToArrayBuffer'
+import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
@@ -17,8 +18,8 @@ interface ModalManageAccountFormProps {
 export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): JSX.Element => {
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
-  const userAvatarSrc = getImgSRCFromArrayBuffer(practitionerToBeUpdated?.picture)
-  const [patientPictureAsArrayBuffer, setPatientPictureAsArrayBuffer] = useState<ArrayBuffer | undefined>(undefined)
+  const userAvatarSrc = getImgSRC(practitionerToBeUpdated?.picture)
+  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>(
     !userAvatarSrc
       ? []
@@ -37,12 +38,12 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
       addressType: LocationAddressTypeEnum.HOME,
       telecoms: [
         new ContactPoint({
-          system: 'email',
+          system: ContactPointTelecomTypeEnum.EMAIL,
           value: emailAddress,
         }),
       ],
     })
-    const picture = patientPictureAsArrayBuffer ?? practitionerToBeUpdated?.picture
+    const picture = patientPictureAsBase64 ?? practitionerToBeUpdated?.picture
 
     updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
     form.resetFields()
@@ -69,7 +70,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
     },
     onRemove() {
       setFileList([])
-      setPatientPictureAsArrayBuffer(undefined)
+      setPatientPictureAsBase64(undefined)
     },
   }
 
@@ -106,7 +107,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             </Form.Item>
             <Form.Item label="Picture" valuePropName="file">
               <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: ArrayBuffer | undefined) => setPatientPictureAsArrayBuffer(data))}>
+                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: string | undefined) => setPatientPictureAsBase64(data))}>
                   {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                 </Upload>
               </ImgCrop>

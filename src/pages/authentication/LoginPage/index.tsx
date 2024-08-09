@@ -30,7 +30,10 @@ export default function LoginPage() {
         <img src={logo} alt="petra-care logo" />
       </div>
 
-      <LoginForm callback={handleSubmitLogin} validationCallback={handleSubmitValidation} />
+      <LoginForm
+        callback={(email: string) => handleSubmitLogin(email)}
+        validationCallback={(_email: string, validationCode: string) => handleSubmitValidation(_email, validationCode)}
+      />
     </div>
   )
 }

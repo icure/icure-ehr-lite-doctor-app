@@ -9,18 +9,27 @@ import { message } from 'antd'
 import { CommonPlaceholder } from '../../CommonPlaceholder'
 import { EHRLiteApiState } from '../../../core/services/auth.api'
 import { createSelector } from '@reduxjs/toolkit'
-import { Patient, PaginatedList } from '@icure/ehr-lite-sdk'
+import { Patient, PaginatedList, SharedDataType } from '@icure/ehr-lite-sdk'
 
 const reduxSelector = createSelector(
   (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
   (ehrLiteApi: EHRLiteApiState) => ({
     healthcarePartyId: ehrLiteApi.user?.healthcarePartyId,
+    sharingDataWith: ehrLiteApi.user?.sharingDataWith,
   }),
 )
 
 export const UserTable = () => {
-  const { healthcarePartyId } = useAppSelector(reduxSelector)
-  const { data: patients, error: patientsError, isLoading: patientsAreLoading } = useFilterPatientsByDataOwnerQuery(healthcarePartyId || '', { skip: !healthcarePartyId })
+  const { healthcarePartyId, sharingDataWith } = useAppSelector(reduxSelector)
+
+  const {
+    data: patients,
+    error: patientsError,
+    isLoading: patientsAreLoading,
+  } = useFilterPatientsByDataOwnerQuery({ practitionerId: healthcarePartyId ?? '', sharingDataWithIds: sharingDataWith?.all }, { skip: !healthcarePartyId })
+
+  console.log('patients')
+  console.log(patients)
 
   const patientsFromJSON = useMemo(() => {
     if (!!patients) {

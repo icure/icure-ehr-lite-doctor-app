@@ -23,6 +23,7 @@ function Layout() {
 
   useEffect(() => {
     if (!!lsUsername && !!lsToken && !!dispatch) {
+      console.log(lsUsername)
       dispatch(setEmail({ email: lsUsername }))
       dispatch(setToken({ token: lsToken }))
       dispatch(login())

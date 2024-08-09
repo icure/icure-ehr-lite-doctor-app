@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Patient, PatientFilter, PatientApi } from '@icure/ehr-lite-sdk'
+import { Patient, PatientFilter, PatientApi, IPaginatedList } from '@icure/ehr-lite-sdk'
 import { guard, ehrLiteApi } from '../services/auth.api'
 import { PaginatedList } from '@icure/typescript-common/models/PaginatedList.model'
 
@@ -45,18 +45,23 @@ export const patientApiRtk = createApi({
 
       invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
     }),
-    filterPatientsByDataOwner: builder.query<PaginatedList<Patient> | undefined, string>({
-      async queryFn(practitionerId, { getState, dispatch }) {
+    filterPatientsByDataOwner: builder.query<IPaginatedList<Patient> | undefined, { practitionerId: string; sharingDataWithIds?: string[] }>({
+      async queryFn({ practitionerId, sharingDataWithIds }, { getState, dispatch }) {
         const api = await ehrLiteApi(getState)
 
-        return guard([api], async (): Promise<PaginatedList<Patient>> => {
+        return guard([api], async (): Promise<IPaginatedList<Patient>> => {
           if (!api) {
             throw new Error('Something went wrong')
           }
 
           const patientApi = api?.patientApi
+          const filter2 = await Promise.all([practitionerId, ...(sharingDataWithIds ?? [])].map((id) => new PatientFilter(api).forDataOwner(id).build()))
           const filterForMatch = await new PatientFilter(api).forDataOwner(practitionerId).build()
           const patientsList = await patientApi?.filterBy(filterForMatch)
+
+          const biggerPatientsList = await Promise.all(filter2.map((filter) => patientApi?.filterBy(filter)))
+          console.log('biggerPatientsList')
+          console.log(biggerPatientsList)
 
           if (!patientsList) {
             throw new Error('Patients do not found')

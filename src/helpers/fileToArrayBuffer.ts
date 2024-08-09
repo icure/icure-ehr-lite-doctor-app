@@ -16,9 +16,25 @@ export const fileToArrayBuffer = (file: File): Promise<ArrayBuffer> => {
     reader.readAsArrayBuffer(file)
   })
 }
+export const fileToBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+
+    reader.onload = () => {
+      const base64String = reader.result as string
+      resolve(base64String)
+    }
+
+    reader.onerror = (error) => {
+      reject(error)
+    }
+
+    reader.readAsDataURL(file)
+  })
+}
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
-export const getFileUploaderCommonProps = (setPatientPictureAsArrayBuffer: (files: ArrayBuffer | undefined) => void): UploadProps => {
+export const getFileUploaderCommonProps = (setPatientPictureAsBase64: (files: string | undefined) => void): UploadProps => {
   return {
     onPreview: async (file: UploadFile) => {
       let src = file.url as string
@@ -36,8 +52,8 @@ export const getFileUploaderCommonProps = (setPatientPictureAsArrayBuffer: (file
     },
     beforeUpload: async (file) => {
       try {
-        const arrayBuffer = await fileToArrayBuffer(file)
-        setPatientPictureAsArrayBuffer(arrayBuffer)
+        const base64String = await fileToBase64(file)
+        setPatientPictureAsBase64(base64String)
       } catch (error) {
         console.error('Error converting file to ArrayBuffer:', error)
       }
@@ -47,7 +63,7 @@ export const getFileUploaderCommonProps = (setPatientPictureAsArrayBuffer: (file
   }
 }
 
-export const getImgSRCFromArrayBuffer = (picture: ArrayBuffer | undefined) => {
+export const getImgSRC = (picture: string | undefined) => {
   if (!picture) {
     return undefined
   }
@@ -62,5 +78,5 @@ export const getImgSRCFromArrayBuffer = (picture: ArrayBuffer | undefined) => {
     return window.btoa(binary)
   }
 
-  return `data:image/png;base64,${arrayBufferToBase64(picture)}`
+  return `data:image/png;base64,${picture}`
 }

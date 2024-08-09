@@ -14,7 +14,7 @@ import { ModalManageAccountForm } from '../ModalManageAccountForm'
 import { createPortal } from 'react-dom'
 import { createSelector } from '@reduxjs/toolkit'
 import { PaginatedList, Patient, Practitioner } from '@icure/ehr-lite-sdk'
-import { getImgSRCFromArrayBuffer } from '../../helpers/fileToArrayBuffer'
+import { getImgSRC } from '../../helpers/fileToArrayBuffer'
 
 const reduxSelector = createSelector(
   (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
@@ -34,12 +34,12 @@ export const Header = () => {
 
   const practitionerFromJSON = useMemo(() => {
     if (!!practitioner) {
-      return Practitioner.fromJSON(practitioner)
+      return new Practitioner(practitioner)
     }
     return undefined
   }, [practitioner])
 
-  const userAvatarSrc = getImgSRCFromArrayBuffer(practitionerFromJSON?.picture)
+  const userAvatarSrc = getImgSRC(practitionerFromJSON?.picture)
 
   const handleLogout = () => {
     dispatch(logout())

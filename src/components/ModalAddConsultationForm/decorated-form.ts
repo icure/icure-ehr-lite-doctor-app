@@ -58,7 +58,7 @@ const icpc2 = {
 const stopWords = new Set(['du', 'au', 'le', 'les', 'un', 'la', 'des', 'sur', 'de'])
 
 export class DecoratedForm extends LitElement {
-  @property() form: Form
+  @property() form!: Form
   @property() codesProvider: (codifications: string[], searchTerm: string) => Promise<Code[]> = () => Promise.resolve([])
 
   @property() displayedLanguage?: string = 'fr'

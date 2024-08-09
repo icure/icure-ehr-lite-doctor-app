@@ -118,32 +118,33 @@ export const startAuthentication = createAsyncThunk(
     } = getState() as { ehrLiteApi: EHRLiteApiState }
     dispatch(setLoginProcessStarted(true))
 
-    if (!email) {
+    try {
+      const anonymousApi = await new AnonymousEHRLiteApi.Builder()
+        .withICureBaseUrl('https://api.icure.cloud')
+        .withCrypto(crypto)
+        .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
+        .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
+        .withStorage(storage)
+        .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
+        .build()
+
+      const authProcess = await anonymousApi.authenticationApi.startAuthentication({
+        recaptcha: _payload.captchaToken,
+        email,
+        firstName,
+        lastName,
+        validationCodeLength: 6,
+        recaptchaType: 'friendly-captcha',
+      })
+
+      apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
       dispatch(setLoginProcessStarted(false))
-      throw new Error('No email provided')
+      return authProcess
+    } catch (e) {
+      console.error(`Couldn't start authentication: ${e}`)
+    } finally {
+      dispatch(setLoginProcessStarted(false))
     }
-
-    const anonymousApi = await new AnonymousEHRLiteApi.Builder()
-      .withICureBaseUrl('https://api.icure.cloud')
-      .withCrypto(crypto)
-      .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
-      .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
-      .withStorage(storage)
-      .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
-      .build()
-
-    const authProcess = await anonymousApi.authenticationApi.startAuthentication({
-      recaptcha: _payload.captchaToken,
-      email,
-      firstName,
-      lastName,
-      validationCodeLength: 6,
-      recaptchaType: 'friendly-captcha',
-    })
-
-    apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
-    dispatch(setLoginProcessStarted(false))
-    return authProcess
   },
 )
 
@@ -162,24 +163,28 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
     dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
+  try {
+    const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousEHRLiteApi
+    const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
+    const api = result.api
+    const user = await api.userApi.getLogged()
 
-  const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousEHRLiteApi
-  const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
-  const api = result.api
-  const user = await api.userApi.getLogged()
+    apiCache[`${result.groupId}/${result.userId}`] = api
+    delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
 
-  apiCache[`${result.groupId}/${result.userId}`] = api
-  delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
-
-  dispatch(
-    setSavedCredentials({
-      login: `${result.groupId}/${result.userId}`,
-      token: result.token,
-      tokenTimestamp: +Date.now(),
-    }),
-  )
-  dispatch(setLoginProcessStarted(false))
-  return User.toJSON(user)
+    dispatch(
+      setSavedCredentials({
+        login: `${result.groupId}/${result.userId}`,
+        token: result.token,
+        tokenTimestamp: +Date.now(),
+      }),
+    )
+    return new User(user)
+  } catch (e) {
+    console.error(`Couldn't complete authentication: ${e}`)
+  } finally {
+    dispatch(setLoginProcessStarted(false))
+  }
 })
 
 class InvitationMessageFactory implements EHRLiteMessageFactory {
@@ -227,26 +232,27 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, 
     dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
+  try {
+    const api = await new EHRLiteApi.Builder()
+      .withICureBaseUrl('https://api.icure.cloud')
+      .withCrypto(crypto)
+      .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
+      .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
+      .withStorage(storage)
+      .withUserName(email)
+      .withPassword(token)
+      .withMessageFactory(new InvitationMessageFactory())
+      .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
+      .build()
 
-  const api = await new EHRLiteApi.Builder()
-    .withICureBaseUrl('https://api.icure.cloud')
-
-    .withCrypto(crypto)
-    .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
-    .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
-    .withStorage(storage)
-    .withUserName(email)
-    .withPassword(token)
-    .withMessageFactory(new InvitationMessageFactory())
-    .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
-    .build()
-
-  const user = await api.userApi.getLogged()
-
-  apiCache[`${user.groupId}/${user.id}`] = api
-
-  dispatch(setLoginProcessStarted(false))
-  return User.toJSON(user)
+    const user = await api.userApi.getLogged()
+    apiCache[`${user.groupId}/${user.id}`] = api
+    return new User(user)
+  } catch (e) {
+    console.error(`Couldn't login: ${e}`)
+  } finally {
+    dispatch(setLoginProcessStarted(false))
+  }
 })
 
 export const logout = createAsyncThunk('ehrLiteApi/logout', async (_payload, { dispatch }) => {
