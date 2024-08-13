@@ -33,7 +33,7 @@ export const getPatientDataFormated = (patient: Patient): PatientFormated => {
   }
   // get username
   const officialUserNameObj = names.find((nameElement) => nameElement.use === HumanNameUseEnum.OFFICIAL)
-  const userFirstName = officialUserNameObj?.given?.length !== 0 ? officialUserNameObj?.given?.join(' ') : firstName
+  const userFirstName = officialUserNameObj && officialUserNameObj?.given?.length !== 0 ? officialUserNameObj?.given?.join(' ') : firstName
   const userLastName = officialUserNameObj?.family ?? lastName
   const userName = userFirstName && userLastName ? userFirstName.concat(' ', userLastName) : userFirstName ?? userLastName
   // get user home address
@@ -43,7 +43,6 @@ export const getPatientDataFormated = (patient: Patient): PatientFormated => {
     .join(', ')
   // get users birthday
   const userDateOfBirth = dateOfBirth ? dayjs.unix(dateOfBirth).format('DD.MM.YYYY') : '-'
-
   return {
     id,
     firstName: userFirstName,

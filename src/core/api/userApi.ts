@@ -12,34 +12,26 @@ export const userApiRtk = createApi({
     getUser: builder.query<User | undefined, string>({
       async queryFn(id, { getState }) {
         const userApi = (await ehrLiteApi(getState))?.userApi
-        return guard(
-          [userApi],
-          async (): Promise<User> => {
-            const user = await userApi?.get(id)
-            if (!user) {
-              throw new Error('User does not exist')
-            }
-            return user
-          },
-          User,
-        )
+        return guard([userApi], async (): Promise<User> => {
+          const user = await userApi?.get(id)
+          if (!user) {
+            throw new Error('User does not exist')
+          }
+          return new User(user)
+        })
       },
       providesTags: ['User'],
     }),
     createAndInvitePatient: builder.mutation<User | undefined, Patient>({
       async queryFn(patient, { getState, dispatch }) {
         const userApi = (await ehrLiteApi(getState))?.userApi
-        return guard(
-          [userApi],
-          async (): Promise<User> => {
-            const createdUser = await userApi?.createAndInviteFor(patient, 3600)
-            if (!createdUser) {
-              throw new Error('User does not exist')
-            }
-            return createdUser
-          },
-          User,
-        )
+        return guard([userApi], async (): Promise<User> => {
+          const createdUser = await userApi?.createAndInviteFor(patient, 3600)
+          if (!createdUser) {
+            throw new Error('User does not exist')
+          }
+          return new User(createdUser)
+        })
       },
       invalidatesTags: (result, error, arg) => [
         { type: 'User', id: 'all' },

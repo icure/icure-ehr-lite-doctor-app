@@ -12,17 +12,13 @@ export const practitionerApiRtk = createApi({
     getPractitioner: builder.query<Practitioner | undefined, string>({
       async queryFn(id, { getState }) {
         const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
-        return guard(
-          [practitionerApi],
-          async (): Promise<Practitioner> => {
-            const practitioner = await practitionerApi?.get(id)
-            if (!practitioner) {
-              throw new Error('Practitioner does not exist')
-            }
-            return practitioner
-          },
-          Practitioner,
-        )
+        return guard([practitionerApi], async (): Promise<Practitioner> => {
+          const practitioner = await practitionerApi?.get(id)
+          if (!practitioner) {
+            throw new Error('Practitioner does not exist')
+          }
+          return new Practitioner(practitioner)
+        })
       },
       providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
     }),
@@ -30,17 +26,13 @@ export const practitionerApiRtk = createApi({
     createOrUpdatePractitioner: builder.mutation<Practitioner | undefined, Practitioner>({
       async queryFn(practitioner, { getState, dispatch }) {
         const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
-        return guard(
-          [practitionerApi],
-          async (): Promise<Practitioner> => {
-            const updatedPractitioner = await practitionerApi?.createOrModify(practitioner)
-            if (!updatedPractitioner) {
-              throw new Error('Practitioner does not exist')
-            }
-            return updatedPractitioner
-          },
-          Practitioner,
-        )
+        return guard([practitionerApi], async (): Promise<Practitioner> => {
+          const updatedPractitioner = await practitionerApi?.createOrModify(practitioner)
+          if (!updatedPractitioner) {
+            throw new Error('Practitioner does not exist')
+          }
+          return new Practitioner(updatedPractitioner)
+        })
       },
       invalidatesTags: (result, error, arg) => [
         { type: 'Practitioner', id: 'all' },

@@ -7,7 +7,7 @@ import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practition
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
 import ImgCrop from 'antd-img-crop'
-import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToArrayBuffer'
+import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
 
 interface ModalManageAccountFormProps {

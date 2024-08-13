@@ -22,14 +22,7 @@ const reduxSelector = createSelector(
 export const UserTable = () => {
   const { healthcarePartyId, sharingDataWith } = useAppSelector(reduxSelector)
 
-  const {
-    data: patients,
-    error: patientsError,
-    isLoading: patientsAreLoading,
-  } = useFilterPatientsByDataOwnerQuery({ practitionerId: healthcarePartyId ?? '', sharingDataWithIds: sharingDataWith?.all }, { skip: !healthcarePartyId })
-
-  console.log('patients')
-  console.log(patients)
+  const { data: patients, error: patientsError, isLoading: patientsAreLoading } = useFilterPatientsByDataOwnerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
 
   const patientsFromJSON = useMemo(() => {
     if (!!patients) {

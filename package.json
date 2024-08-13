@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@icure/api": "^8.0.46",
-    "@icure/ehr-lite-sdk": "^3.3.9",
+    "@icure/ehr-lite-sdk": "^3.3.10",
     "@icure/form": "^1.1.15",
     "@reduxjs/toolkit": "^1.8.1",
     "@testing-library/jest-dom": "^5.14.1",
@@ -12,6 +12,7 @@
     "@testing-library/user-event": "^13.2.1",
     "antd": "^5.14.1",
     "antd-img-crop": "^4.21.0",
+    "base64-js": "^1.5.1",
     "date-fns": "^2.30.0",
     "dayjs": "^1.11.10",
     "friendly-challenge": "^0.9.8",

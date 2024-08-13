@@ -9,7 +9,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
-import { getFileUploaderCommonProps } from '../../helpers/fileToArrayBuffer'
+import { getFileUploaderCommonProps } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 
 type PatientForm = {
@@ -70,6 +70,9 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       isLoading: isPatientCreatingOrUpdatingLoading,
     },
   ] = useCreateOrUpdatePatientMutation()
+
+  console.log('updatedPatient')
+  console.log(updatedPatient)
 
   isCreateOrUpdatePatientError && console.log(createOrUpdatePatientError)
 

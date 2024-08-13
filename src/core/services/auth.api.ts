@@ -47,11 +47,7 @@ function getError(e: Error): FetchBaseQueryError {
   return { status: 'CUSTOM_ERROR', error: e.message, data: undefined }
 }
 
-export const guard = async <T>(
-  guardedInputs: unknown[],
-  lambda: () => Promise<T>,
-  ClassInstance?: { [key: string]: any },
-): Promise<{ error: FetchBaseQueryError } | { data: T | undefined }> => {
+export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{ error: FetchBaseQueryError } | { data: T | undefined }> => {
   if (guardedInputs.some((x) => !x)) {
     return { data: undefined }
   }
@@ -64,8 +60,6 @@ export const guard = async <T>(
         return ua2b64(res) as T
       } else if (Array.isArray(result)) {
         return result.map(curate) as T
-      } else if (typeof result === 'object' && ClassInstance) {
-        return ClassInstance.toJSON(result)
       } else {
         return result as T
       }

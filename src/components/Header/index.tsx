@@ -14,7 +14,7 @@ import { ModalManageAccountForm } from '../ModalManageAccountForm'
 import { createPortal } from 'react-dom'
 import { createSelector } from '@reduxjs/toolkit'
 import { PaginatedList, Patient, Practitioner } from '@icure/ehr-lite-sdk'
-import { getImgSRC } from '../../helpers/fileToArrayBuffer'
+import { getImgSRC } from '../../helpers/fileToBase64'
 
 const reduxSelector = createSelector(
   (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,

@@ -12,7 +12,7 @@ import { ModalPatienProfile } from '../../ModalPatienProfile'
 import './index.css'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalConfirmAction } from '../../ModalConfirmAction'
-import { getImgSRC } from '../../../helpers/fileToArrayBuffer'
+import { getImgSRC } from '../../../helpers/fileToBase64'
 import { useCreateAndInvitePatientMutation } from '../../../core/api/userApi'
 import { useDeletePatientMutation } from '../../../core/api/patientApi'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
@@ -42,8 +42,6 @@ export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
       duration: 0,
     })
   }
-
-  console.log(invitePatientError)
 
   useEffect(() => {
     // isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')

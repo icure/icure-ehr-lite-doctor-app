@@ -13,59 +13,46 @@ export const patientApiRtk = createApi({
     getPatient: builder.query<Patient | undefined, string>({
       async queryFn(id, { getState }) {
         const patientApi = (await ehrLiteApi(getState))?.patientApi
-        return guard(
-          [patientApi],
-          async (): Promise<Patient> => {
-            const patient = await patientApi?.get(id)
-            if (!patient) {
-              throw new Error('Patient does not exist')
-            }
-            return patient
-          },
-          Patient,
-        )
+        return guard([patientApi], async (): Promise<Patient> => {
+          const patient = await patientApi?.get(id)
+          if (!patient) {
+            throw new Error('Patient does not exist')
+          }
+          return new Patient(patient)
+        })
       },
       providesTags: (res) => (res ? [{ type: 'Patient', id: res.id }] : []),
     }),
     createOrUpdatePatient: builder.mutation<Patient | undefined, Patient>({
       async queryFn(patient, { getState, dispatch }) {
         const patientApi = (await ehrLiteApi(getState))?.patientApi
-        return guard(
-          [patientApi],
-          async (): Promise<Patient> => {
-            const updatedPatient = await patientApi?.createOrModify(patient)
-            if (!updatedPatient) {
-              throw new Error('Patient does not exist')
-            }
-            return updatedPatient
-          },
-          Patient,
-        )
+        return guard([patientApi], async (): Promise<Patient> => {
+          const updatedPatient = await patientApi?.createOrModify(patient)
+          if (!updatedPatient) {
+            throw new Error('Patient does not exist')
+          }
+          return new Patient(updatedPatient)
+        })
       },
 
       invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
     }),
-    filterPatientsByDataOwner: builder.query<IPaginatedList<Patient> | undefined, { practitionerId: string; sharingDataWithIds?: string[] }>({
-      async queryFn({ practitionerId, sharingDataWithIds }, { getState, dispatch }) {
+    filterPatientsByDataOwner: builder.query<IPaginatedList<Patient> | undefined, string>({
+      async queryFn(practitionerId, { getState, dispatch }) {
         const api = await ehrLiteApi(getState)
 
         return guard([api], async (): Promise<IPaginatedList<Patient>> => {
           if (!api) {
             throw new Error('Something went wrong')
           }
-
           const patientApi = api?.patientApi
-          const filter2 = await Promise.all([practitionerId, ...(sharingDataWithIds ?? [])].map((id) => new PatientFilter(api).forDataOwner(id).build()))
           const filterForMatch = await new PatientFilter(api).forDataOwner(practitionerId).build()
+
           const patientsList = await patientApi?.filterBy(filterForMatch)
-
-          const biggerPatientsList = await Promise.all(filter2.map((filter) => patientApi?.filterBy(filter)))
-          console.log('biggerPatientsList')
-          console.log(biggerPatientsList)
-
           if (!patientsList) {
             throw new Error('Patients do not found')
           }
+
           return PaginatedList.toJSON(patientsList, (patientFromTheList: Patient) => patientFromTheList)
         })
       },

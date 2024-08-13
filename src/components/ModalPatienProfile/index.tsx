@@ -118,7 +118,7 @@ export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDele
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Age:</h5>
-                    <p>{getAge(dateOfBirth)}</p>
+                    <p>{getAge(dateOfBirth) ?? '-'}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Gender:</h5>
@@ -145,11 +145,11 @@ export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDele
           <div className="modalPatienProfile__expandedInfo">
             <div className="modalPatienProfile__expandedInfo__item">
               <h5>Diagnosis:</h5>
-              <p>Paranoid schizophrenia, major depressive disorder, single episode, gastroesophageal reflux disease (GERD), osteoarthritis of the right knee.</p>
+              <p>-</p>
             </div>
             <div className="modalPatienProfile__expandedInfo__item">
               <h5>Complains:</h5>
-              <p>Headache, Acne, Breast tenderness, Сramps, Fatigue, Anxiety, Mood swings, Swelling of the body, Irritation, Changes in appetite.</p>
+              <p>-</p>
             </div>
           </div>
         </div>

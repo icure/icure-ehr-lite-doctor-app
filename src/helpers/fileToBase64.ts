@@ -1,36 +1,7 @@
-import { GetProp, Upload, UploadFile, UploadProps } from 'antd'
-
-export const fileToArrayBuffer = (file: File): Promise<ArrayBuffer> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = () => {
-      const arrayBuffer = reader.result as ArrayBuffer
-      resolve(arrayBuffer)
-    }
-
-    reader.onerror = (error) => {
-      reject(error)
-    }
-
-    reader.readAsArrayBuffer(file)
-  })
-}
-export const fileToBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = () => {
-      const base64String = reader.result as string
-      resolve(base64String)
-    }
-
-    reader.onerror = (error) => {
-      reject(error)
-    }
-
-    reader.readAsDataURL(file)
-  })
+import { GetProp, UploadFile, UploadProps } from 'antd'
+import { fromByteArray } from 'base64-js'
+export const fileToBase64 = async (file: File): Promise<string> => {
+  return file.arrayBuffer().then((bytes) => fromByteArray(new Uint8Array(bytes)))
 }
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
@@ -55,7 +26,7 @@ export const getFileUploaderCommonProps = (setPatientPictureAsBase64: (files: st
         const base64String = await fileToBase64(file)
         setPatientPictureAsBase64(base64String)
       } catch (error) {
-        console.error('Error converting file to ArrayBuffer:', error)
+        console.error('Error converting file to Base64:', error)
       }
       // Prevent upload
       return false
