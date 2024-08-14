@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { DatePicker, Form, Input, Select, Upload, message } from 'antd'
+import { DatePicker, Form, Input, Select, Upload } from 'antd'
 import type { GetProp, UploadFile, UploadProps } from 'antd'
 import { ContactPoint, GenderEnum, HumanName, HumanNameUseEnum, Location, LocationAddressTypeEnum, Patient, ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk'
 import ImgCrop from 'antd-img-crop'
@@ -9,7 +9,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
-import { getFileUploaderCommonProps } from '../../helpers/fileToBase64'
+import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 
 type PatientForm = {
@@ -34,18 +34,7 @@ interface ModalPatientFormProps {
 
 export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): JSX.Element => {
   const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
-  function base64ToArrayBuffer(base64: string | undefined) {
-    if (base64 === undefined) {
-      return undefined
-    }
-    const binaryString = atob(base64)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
-    return bytes.buffer
-  }
-  const patientAvatarSrc = patientToEdit?.picture as unknown as string
+  const patientAvatarSrc = getImgSRC(patientToEdit?.picture)
   const [fileList, setFileList] = useState<UploadFile[]>(
     patientAvatarSrc
       ? [
@@ -53,7 +42,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
             uid: '-1',
             name: 'image.png',
             status: 'done',
-            url: patientAvatarSrc ? patientAvatarSrc : undefined,
+            url: patientAvatarSrc ?? undefined,
           },
         ]
       : [],
@@ -70,9 +59,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       isLoading: isPatientCreatingOrUpdatingLoading,
     },
   ] = useCreateOrUpdatePatientMutation()
-
-  console.log('updatedPatient')
-  console.log(updatedPatient)
 
   isCreateOrUpdatePatientError && console.log(createOrUpdatePatientError)
 
