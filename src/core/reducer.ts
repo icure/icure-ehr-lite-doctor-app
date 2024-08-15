@@ -5,6 +5,7 @@ import { persistConfig, app } from './app'
 import { practitionerApiRtk } from './api/practitionerApi'
 import { userApiRtk } from './api/userApi'
 import { patientApiRtk } from './api/patientApi'
+import { agendaApiRtk } from './api/agendaApi'
 
 export const appReducer = combineReducers({
   app: app.reducer,
@@ -12,6 +13,7 @@ export const appReducer = combineReducers({
   practitionerApi: practitionerApiRtk.reducer,
   userApi: userApiRtk.reducer,
   patientApi: patientApiRtk.reducer,
+  agendaApi: agendaApiRtk.reducer,
 })
 
 export const persistedReducer = persistReducer(persistConfig, appReducer)

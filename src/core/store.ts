@@ -5,6 +5,7 @@ import thunk from 'redux-thunk'
 import { practitionerApiRtk } from './api/practitionerApi'
 import { userApiRtk } from './api/userApi'
 import { patientApiRtk } from './api/patientApi'
+import { agendaApiRtk } from './api/agendaApi'
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -13,6 +14,7 @@ export const store = configureStore({
       practitionerApiRtk.middleware,
       userApiRtk.middleware,
       patientApiRtk.middleware,
+      agendaApiRtk.middleware,
       thunk,
       // Add your own middleware here. For example, you can add a logger:
     ),

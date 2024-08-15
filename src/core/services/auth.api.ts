@@ -70,7 +70,7 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
     return { error: getError(e as Error) }
   }
 }
-
+// getApiFromState => getTOken => with token create rawApi
 export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLiteApi: EHRLiteApiState } | undefined): Promise<EHRLiteApi | undefined> => {
   const state = getState()
   if (!state) {
@@ -85,6 +85,7 @@ export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLit
   }
 
   const cachedApi = apiCache[`${user.groupId}/${user.id}`] as EHRLiteApi
+  cachedApi.baseApi.calendarItemApi
 
   return cachedApi
 }

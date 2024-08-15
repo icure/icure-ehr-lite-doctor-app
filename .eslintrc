@@ -27,6 +27,8 @@
     "react/display-name": [0],
     "react/jsx-indent-props": ["error", 2],
     "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx", ".tx", ".tsx"] }],
-    "react/jsx-closing-bracket-location": [2, "tag-aligned"]
+    "react/jsx-closing-bracket-location": [2, "tag-aligned"],
+    "react/react-in-jsx-scope": "off",
+    "react/jsx-uses-react": "off"
   }
 }
