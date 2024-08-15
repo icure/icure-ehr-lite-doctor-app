@@ -1,8 +1,9 @@
-import { Form, Input } from 'antd'
-import { CustomModal } from '../CustomModal'
-import { useEffect } from 'react'
-import { useCreateAgendaMutation } from '../../core/api/agendaApi'
 import { Agenda } from '@icure/api'
+import { Form, Input } from 'antd'
+import { useEffect } from 'react'
+import { v4 } from 'uuid'
+import { useCreateAgendaMutation } from '../../core/api/agendaApi'
+import { CustomModal } from '../CustomModal'
 
 interface ModalAddAgendaFormProps {
   isVisible: boolean
@@ -17,7 +18,7 @@ export const ModalAddAgendaForm = ({ isVisible, onClose }: ModalAddAgendaFormPro
 
   const handleSubmit = () => {
     console.log('Agenda creation attempt: ', form.getFieldsValue())
-    createAgenda(new Agenda({ ...form.getFieldsValue(), id: '332c0d3e-b311-4d31-b723-22df62811c92' }))
+    createAgenda(new Agenda({ ...form.getFieldsValue(), id: v4() }))
     form.submit()
   }
 
