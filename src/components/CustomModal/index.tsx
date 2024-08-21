@@ -8,15 +8,28 @@ interface PatientFormModalProps {
   handleClose: () => void
   closeBtnTitle?: string
   handleOk?: (value: any) => void
-  okBtnTitle?: string
+  okBtnTitle?: string | ReactElement
   children: ReactElement
   width?: number
   title: string
   customFooter?: ReactElement
   mode?: 'danger' | undefined
+  okBtnDisabled?: boolean
 }
 
-export const CustomModal = ({ isVisible, handleClose, handleOk, children, width, title, closeBtnTitle, okBtnTitle, customFooter, mode }: PatientFormModalProps): JSX.Element => {
+export const CustomModal = ({
+  isVisible,
+  handleClose,
+  handleOk,
+  children,
+  width,
+  title,
+  closeBtnTitle,
+  okBtnTitle,
+  customFooter,
+  mode,
+  okBtnDisabled,
+}: PatientFormModalProps): JSX.Element => {
   const { innerWidth } = getWindowSize()
 
   const modalStyles: { [key: string]: CSSProperties } = {
@@ -84,7 +97,7 @@ export const CustomModal = ({ isVisible, handleClose, handleOk, children, width,
         </Button>
       ),
       okBtnTitle && handleOk && (
-        <Button key="submit" type="primary" danger={mode === 'danger'} onClick={handleOk}>
+        <Button key="submit" type="primary" danger={mode === 'danger'} onClick={handleOk} disabled={okBtnDisabled}>
           {okBtnTitle}
         </Button>
       ),

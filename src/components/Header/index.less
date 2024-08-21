@@ -1,4 +1,41 @@
 @import '../../style/less/index';
+.headerBanner{
+  display: flex;
+  padding: 12px 24px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+
+  background-color: @red-500;
+
+  .media-breakpoint-down(@md,
+  {
+    padding: 12px;
+  });
+
+  p, a {
+    color: white;
+    font-size: 14px;
+    text-align: center;
+
+    .media-breakpoint-down(@md,
+    {
+      font-size: 12px;
+    });
+  }
+
+
+  a{
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 12px;
+  }
+
+}
 
 .header {
   height: 80px;

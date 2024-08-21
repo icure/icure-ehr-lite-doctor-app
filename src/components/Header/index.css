@@ -112,6 +112,40 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
+.headerBanner {
+  display: flex;
+  padding: 12px 24px;
+  justify-content: center;
+  align-items: center;
+  align-self: stretch;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+  background-color: #f05b5d;
+}
+@media screen and (max-width: calc(768px - 1px)) {
+  .headerBanner {
+    padding: 12px;
+  }
+}
+.headerBanner p,
+.headerBanner a {
+  color: white;
+  font-size: 14px;
+  text-align: center;
+}
+@media screen and (max-width: calc(768px - 1px)) {
+  .headerBanner p,
+  .headerBanner a {
+    font-size: 12px;
+  }
+}
+.headerBanner a {
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 12px;
+}
 .header {
   height: 80px;
   display: flex;

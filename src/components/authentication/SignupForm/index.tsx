@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input, Button, Form, Checkbox } from 'antd'
 
-import { useAppDispatch, useAppSelector } from '../../../core/hooks'
+import { useAppDispatch } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
 import { EHRLiteApiState, startAuthentication } from '../../../core/services/auth.api'
@@ -10,8 +10,9 @@ import { SpinLoader } from '../../SpinLoader'
 import { createSelector } from '@reduxjs/toolkit'
 
 interface SignupFormProps {
-  callback: (firstName: string, lastName: string, email: string) => void
-  validationCallback: (email: string, validationCode: string) => void
+  state: 'initialised' | 'loading' | 'waitingForToken'
+  submitEmailForTokenRequest: (firstName: string, lastName: string, email: string, captchaToken: string) => void
+  submitEmailAndValidationTokenForAuthentication: (email: string, validationCode: string) => void
 }
 
 const reduxSelector = createSelector(
@@ -22,7 +23,7 @@ const reduxSelector = createSelector(
   }),
 )
 
-const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback }) => {
+const SignupForm: React.FC<SignupFormProps> = ({ state, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
   const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined)
   const dispatch = useAppDispatch()
 
@@ -30,27 +31,25 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
     setCaptchaToken(solution)
   }
 
-  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
-
   const handleSubmit = (values: { firstName: string; lastName: string; email: string; validationCode: string }) => {
     const { firstName, lastName, email, validationCode } = values
-    if (waitingForToken) {
+    if (state === 'waitingForToken') {
       if (validationCode.length === 0) {
         return
       }
-      validationCallback(email, validationCode)
+      submitEmailAndValidationTokenForAuthentication(email, validationCode)
     } else {
-      callback(firstName, lastName, email)
-
-      if (!!captchaToken) {
-        dispatch(startAuthentication({ captchaToken: captchaToken }))
+      if (!captchaToken) {
+        return
       }
+
+      submitEmailForTokenRequest(firstName, lastName, email, captchaToken)
     }
   }
 
   return (
     <>
-      {loginProcessStarted && <SpinLoader />}
+      {state === 'loading' && <SpinLoader />}
       <Form onFinish={(values) => handleSubmit(values)} className="auth-form" layout="vertical">
         <div className="auth-form__title">
           <h2>Registration</h2>
@@ -65,7 +64,7 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }]}>
             <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
-          {waitingForToken && (
+          {state === 'waitingForToken' && (
             <Form.Item name="validationCode" label="Validation Code" rules={[{ required: true, message: 'Validation Code is required' }]}>
               <Input placeholder="Validation Code" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
@@ -98,8 +97,8 @@ const SignupForm: React.FC<SignupFormProps> = ({ callback, validationCallback })
             </div>
           </Checkbox>
         </Form.Item>
-        <Button type="primary" size="large" htmlType="submit">
-          {waitingForToken ? 'Register' : 'Receive a one time code'}
+        <Button type="primary" size="large" htmlType="submit" disabled={(state === 'initialised' && !captchaToken) || state === 'loading'}>
+          {state === 'waitingForToken' ? 'Register' : 'Receive a one time code'}
         </Button>
         <div className="auth-form__textHelper">
           <p>

@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { Form, Input, Upload, UploadFile, UploadProps } from 'antd'
 import { Practitioner, Location, LocationAddressTypeEnum, ContactPoint } from '@icure/ehr-lite-sdk'
+import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
+import ImgCrop from 'antd-img-crop'
 
 import { CustomModal } from '../CustomModal'
 import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practitionerApi'
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
-import ImgCrop from 'antd-img-crop'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
-import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
