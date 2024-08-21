@@ -1,20 +1,20 @@
-import React, { useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import Icon from '@ant-design/icons'
+import { createPortal } from 'react-dom'
+import { createSelector } from '@reduxjs/toolkit'
+import { Practitioner } from '@icure/ehr-lite-sdk'
 
 import './index.css'
 import logo_horizontal from '../../assets/logo_horizontal.svg'
-import userPicture from '../../assets/userPicture.png'
-import { arrowDownIcn, logOutIcn, manageUserIcn, userIcn } from '../../assets/CustomIcons'
+import { arrowDownIcn, logOutIcn, manageUserIcn, userIcn, keypairIcn } from '../../assets/CustomIcons'
 import { useAppDispatch, useAppSelector } from '../../core/hooks'
 import { EHRLiteApiState, logout } from '../../core/services/auth.api'
 import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
 import { ModalManageAccountForm } from '../ModalManageAccountForm'
-import { createPortal } from 'react-dom'
-import { createSelector } from '@reduxjs/toolkit'
-import { PaginatedList, Patient, Practitioner } from '@icure/ehr-lite-sdk'
 import { getImgSRC } from '../../helpers/fileToBase64'
+import { ModalCryptographicKeypair } from '../ModalCryptographicKeypair'
 
 const reduxSelector = createSelector(
   (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
@@ -26,6 +26,7 @@ const reduxSelector = createSelector(
 export const Header = () => {
   const [isUserDropdownOpen, setUserDropdownOpen] = useState(false)
   const [isModalManageAccountFormOpen, setModalManageAccountFormOpen] = useState(false)
+  const [isModalCryptographicKeypairOpen, setModalCryptographicKeypairOpen] = useState(false)
   const dispatch = useAppDispatch()
 
   const { user, healthcarePartyId } = useAppSelector(reduxSelector)
@@ -56,6 +57,15 @@ export const Header = () => {
       ),
     },
     {
+      key: 'keypair',
+      label: (
+        <div className="header__userDrowdown__item">
+          <Icon component={keypairIcn} />
+          <span>Cryptographic keypair</span>
+        </div>
+      ),
+    },
+    {
       key: 'logout',
       danger: true,
       label: (
@@ -76,11 +86,23 @@ export const Header = () => {
         handleLogout()
         break
       }
+      case 'keypair': {
+        setModalCryptographicKeypairOpen(true)
+        break
+      }
     }
   }
 
   return (
     <>
+      {!practitioner?.systemMetaData?.publicKey && (
+        <div className="headerBanner">
+          <p>
+            To continue using PetraCare, please generate a cryptographic keypair. Without it, you won`t be able to create patients or perform essential actions.
+            <a onClick={() => setModalCryptographicKeypairOpen(true)}>Generate a keypair now!</a>
+          </p>
+        </div>
+      )}
       <div className="header">
         <div className="header__logoHolder">
           <img src={logo_horizontal} alt="petraCare logo" />
@@ -111,6 +133,12 @@ export const Header = () => {
       {isModalManageAccountFormOpen &&
         createPortal(
           <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitionerFromJSON} />,
+          document.body,
+        )}
+      {isModalCryptographicKeypairOpen &&
+        healthcarePartyId &&
+        createPortal(
+          <ModalCryptographicKeypair practitionerId={healthcarePartyId} isVisible={isModalCryptographicKeypairOpen} onClose={() => setModalCryptographicKeypairOpen(false)} />,
           document.body,
         )}
     </>

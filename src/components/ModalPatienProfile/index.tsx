@@ -131,11 +131,11 @@ export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDele
                 <div className="modalPatienProfile__shortInfo__overview__itemsWrap">
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Previous visit:</h5>
-                    <p>10/10/2023</p>
+                    <p>-</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Next visit:</h5>
-                    <p>16/12/2023</p>
+                    <p>-</p>
                   </div>
                 </div>
               </div>
