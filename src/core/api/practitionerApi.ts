@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Practitioner, PractitionerApi } from '@icure/ehr-lite-sdk'
 import { guard, ehrLiteApi } from '../services/auth.api'
+import { HealthcareParty } from '@icure/cardinal-sdk'
 
 export const practitionerApiRtk = createApi({
   reducerPath: 'practitionerApi',
@@ -9,35 +9,38 @@ export const practitionerApiRtk = createApi({
     baseUrl: '',
   }),
   endpoints: (builder) => ({
-    getPractitioner: builder.query<Practitioner | undefined, string>({
+    getPractitioner: builder.query<HealthcareParty | undefined, string>({
       async queryFn(id, { getState }) {
-        const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
-        return guard([practitionerApi], async (): Promise<Practitioner> => {
-          const practitioner = await practitionerApi?.get(id)
+        const practitionerApi = (await ehrLiteApi(getState))?.healthcareParty
+        return guard([practitionerApi], async (): Promise<HealthcareParty> => {
+          const practitioner = await practitionerApi?.getHealthcareParty(id)
           if (!practitioner) {
             throw new Error('Practitioner does not exist')
           }
-          return new Practitioner(practitioner)
+          return practitioner
         })
       },
       providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
     }),
 
-    createOrUpdatePractitioner: builder.mutation<Practitioner | undefined, Practitioner>({
-      async queryFn(practitioner, { getState, dispatch }) {
-        const practitionerApi = (await ehrLiteApi(getState))?.practitionerApi
-        return guard([practitionerApi], async (): Promise<Practitioner> => {
-          const updatedPractitioner = await practitionerApi?.createOrModify(practitioner)
+    createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
+      async queryFn(practitioner, { getState }) {
+        const practitionerApi = (await ehrLiteApi(getState))?.healthcareParty
+        return guard([practitionerApi], async (): Promise<HealthcareParty> => {
+          const updatedPractitioner = !!practitioner.rev ? await practitionerApi?.modifyHealthcareParty(practitioner) : await practitionerApi?.createHealthcareParty(practitioner)
           if (!updatedPractitioner) {
             throw new Error('Practitioner does not exist')
           }
-          return new Practitioner(updatedPractitioner)
+          return updatedPractitioner
         })
       },
-      invalidatesTags: (result, error, arg) => [
-        { type: 'Practitioner', id: 'all' },
-        { type: 'Practitioner', id: arg.id },
-      ],
+      invalidatesTags: (result) =>
+        !!result
+          ? [
+              { type: 'Practitioner', id: 'all' },
+              { type: 'Practitioner', id: result.id },
+            ]
+          : [],
     }),
   }),
 })

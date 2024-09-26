@@ -1,10 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import Icon from '@ant-design/icons'
 import { createPortal } from 'react-dom'
 import { createSelector } from '@reduxjs/toolkit'
-import { Practitioner } from '@icure/ehr-lite-sdk'
 
 import './index.css'
 import logo_horizontal from '../../assets/logo_horizontal.svg'
@@ -31,17 +30,11 @@ export const Header = () => {
 
   const { user, healthcarePartyId } = useAppSelector(reduxSelector)
 
-  const { data: practitioner, error: getPractitionerError, isFetching: isPractitionarFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
+  const { data: practitioner, isFetching: isPractitionerFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
 
-  const practitionerFromJSON = useMemo(() => {
-    if (!!practitioner) {
-      return new Practitioner(practitioner)
-    }
-    return undefined
-  }, [practitioner])
-
-  const userAvatarSrc = getImgSRC(practitionerFromJSON?.picture)
-
+  //TODO: update when the cryptom is published
+  // const userAvatarSrc = getImgSRC(practitioner?.picture)
+  const userAvatarSrc = undefined
   const handleLogout = () => {
     dispatch(logout())
   }
@@ -50,7 +43,7 @@ export const Header = () => {
     {
       key: 'manageAccount',
       label: (
-        <div className="header__userDrowdown__item">
+        <div className="header__userDropdown__item">
           <Icon component={manageUserIcn} />
           <span>Manage account</span>
         </div>
@@ -59,7 +52,7 @@ export const Header = () => {
     {
       key: 'keypair',
       label: (
-        <div className="header__userDrowdown__item">
+        <div className="header__userDropdown__item">
           <Icon component={keypairIcn} />
           <span>Cryptographic keypair</span>
         </div>
@@ -69,7 +62,7 @@ export const Header = () => {
       key: 'logout',
       danger: true,
       label: (
-        <div className="header__userDrowdown__item">
+        <div className="header__userDropdown__item">
           <Icon component={logOutIcn} />
           <span>Log out</span>
         </div>
@@ -95,7 +88,7 @@ export const Header = () => {
 
   return (
     <>
-      {!practitioner?.systemMetaData?.publicKey && (
+      {!practitioner?.publicKey && (
         <div className="headerBanner">
           <p>
             To continue using PetraCare, please generate a cryptographic keypair. Without it, you won`t be able to create patients or perform essential actions.
@@ -107,23 +100,23 @@ export const Header = () => {
         <div className="header__logoHolder">
           <img src={logo_horizontal} alt="petraCare logo" />
         </div>
-        {!isPractitionarFetching && (
+        {!isPractitionerFetching && (
           <Dropdown menu={{ items, onClick }} placement="bottomRight" arrow onOpenChange={(open: boolean) => setUserDropdownOpen(open)}>
-            <div className={`header__userDrowdown ${isUserDropdownOpen && 'header__userDrowdown--active'}`}>
-              <div className="header__userDrowdown__heading">
-                <p className="header__userDrowdown__heading__name">{practitionerFromJSON?.firstName + ' ' + practitionerFromJSON?.lastName}</p>
-                <p className="header__userDrowdown__heading__speciality">{practitionerFromJSON?.speciality}</p>
+            <div className={`header__userDropdown ${isUserDropdownOpen && 'header__userDropdown--active'}`}>
+              <div className="header__userDropdown__heading">
+                <p className="header__userDropdown__heading__name">{practitioner?.firstName + ' ' + practitioner?.lastName}</p>
+                <p className="header__userDropdown__heading__speciality">{practitioner?.speciality}</p>
               </div>
               {userAvatarSrc ? (
-                <div className="header__userDrowdown__picture">
+                <div className="header__userDropdown__picture">
                   <img src={userAvatarSrc} alt={user?.name ?? 'Dear User!'} />
                 </div>
               ) : (
-                <div className="header__userDrowdown__userAvatarPlaceholder">
+                <div className="header__userDropdown__userAvatarPlaceholder">
                   <Icon component={userIcn} />
                 </div>
               )}
-              <div className="header__userDrowdown__arrow">
+              <div className="header__userDropdown__arrow">
                 <Icon component={arrowDownIcn} />
               </div>
             </div>
@@ -132,7 +125,7 @@ export const Header = () => {
       </div>
       {isModalManageAccountFormOpen &&
         createPortal(
-          <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitionerFromJSON} />,
+          <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitioner} />,
           document.body,
         )}
       {isModalCryptographicKeypairOpen &&

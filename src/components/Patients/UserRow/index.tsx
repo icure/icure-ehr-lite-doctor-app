@@ -1,35 +1,33 @@
 import React, { ReactElement, useEffect, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { MenuProps, message, notification, Popconfirm } from 'antd'
+import { MenuProps, notification } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
-import { Patient, User } from '@icure/ehr-lite-sdk'
 
 import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, sendIcn, userAvatarPlaceholderIcn } from '../../../assets/CustomIcons'
 import { ModalPatientForm } from '../../ModalPatientForm'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
-import { ModalPatienProfile } from '../../ModalPatienProfile'
+import { ModalPatientProfile } from '../../ModalPatientProfile'
 import './index.css'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalConfirmAction } from '../../ModalConfirmAction'
-import { getImgSRC } from '../../../helpers/fileToBase64'
-import { useCreateAndInvitePatientMutation } from '../../../core/api/userApi'
+// import { useCreateAndInvitePatientMutation } from '../../../core/api/userApi'
 import { useDeletePatientMutation } from '../../../core/api/patientApi'
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { DecryptedPatient } from '@icure/cardinal-sdk'
 
 interface UserRowProps {
-  patient: Patient
+  patient: DecryptedPatient
 }
-export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
+export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   const [isOverFlowMenuOpen, setOverFlowMenuOpen] = useState(false)
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
   const [isAddConsultationModalOpen, setAddConsultationModalOpen] = useState(false)
   const [isPatientProfileModalOpen, setPatientProfileModalOpen] = useState(false)
   const [isPatientToBeDeleted, setPatientToBeDeleted] = useState(false)
 
-  const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
-    useCreateAndInvitePatientMutation()
-  const [deletePatient, { error: deletePatientError, isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletinggLoading }] =
+  // const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
+  //   useCreateAndInvitePatientMutation()
+  const [deletePatient, { error: deletePatientError, isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletingLoading }] =
     useDeletePatientMutation()
 
   const [api, contextHolder] = notification.useNotification()
@@ -43,11 +41,11 @@ export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
     })
   }
 
-  useEffect(() => {
-    // isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
-    // isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
-    // isInvitePatientError && openNotification('error', 'Cannot invite the patient!', `An error occurred while sending the invitation letter. ${invitePatientError?.error}`)
-  }, [isPatientInvitingLoading, isPatientInvitedSuccessfully, isInvitePatientError])
+  // useEffect(() => {
+  //   // isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
+  //   // isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
+  //   // isInvitePatientError && openNotification('error', 'Cannot invite the patient!', `An error occurred while sending the invitation letter. ${invitePatientError?.error}`)
+  // }, [isPatientInvitingLoading, isPatientInvitedSuccessfully, isInvitePatientError])
 
   const items: MenuProps['items'] = [
     {
@@ -122,7 +120,8 @@ export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
         break
       }
       case 'invite_patient': {
-        invitePatient(new Patient(patient))
+        console.log('invite_patient')
+        // invitePatient(new Patient(patient))
         break
       }
       case 'delete_patient': {
@@ -196,14 +195,14 @@ export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
         )}
       {isPatientProfileModalOpen &&
         createPortal(
-          <ModalPatienProfile
+          <ModalPatientProfile
             patient={patient}
             isVisible={isPatientProfileModalOpen}
             onClose={() => setPatientProfileModalOpen(false)}
             onEdit={() => setPatientFormModalOpen(true)}
             onDelete={() => {
               // deletePatient(patient.id)
-              // isPatientDeletinggLoading && showMessageFeedback('loading', 'The patient is deleting...')
+              // isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
               // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
               // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
             }}
@@ -220,7 +219,7 @@ export const UserRow = ({ patient }: UserRowProps): JSX.Element => {
             noBtnTitle="Close"
             onYesClick={() => {
               deletePatient(patient.id)
-              // isPatientDeletinggLoading && showMessageFeedback('loading', 'The patient is deleting...')
+              // isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
               // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
               // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
               setPatientToBeDeleted(false)

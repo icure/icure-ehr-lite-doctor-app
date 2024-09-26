@@ -7,7 +7,7 @@ interface PatientFormModalProps {
   isVisible: boolean
   handleClose: () => void
   closeBtnTitle?: string
-  handleOk?: (value: any) => void
+  handleOk?: (value: unknown) => void
   okBtnTitle?: string | ReactElement
   children: ReactElement
   width?: number
@@ -29,7 +29,7 @@ export const CustomModal = ({
   customFooter,
   mode,
   okBtnDisabled,
-}: PatientFormModalProps): JSX.Element => {
+}: PatientFormModalProps): ReactElement => {
   const { innerWidth } = getWindowSize()
 
   const modalStyles: { [key: string]: CSSProperties } = {

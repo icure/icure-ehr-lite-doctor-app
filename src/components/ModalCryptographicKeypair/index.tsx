@@ -1,8 +1,5 @@
 import React, { useEffect, useState, ReactElement } from 'react'
 import { Alert, Button, Popconfirm, Typography } from 'antd'
-import { RSA, ShaVersion, ua2hex } from '@icure/api'
-import { Practitioner } from '@icure/ehr-lite-sdk'
-import { SystemMetaDataOwner } from '@icure/typescript-common/models/SystemMetaDataOwner.model'
 import { SerializedError } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
@@ -10,6 +7,7 @@ import { CustomModal } from '../CustomModal'
 import './index.css'
 import { useCreateOrUpdatePractitionerMutation, useGetPractitionerQuery } from '../../core/api/practitionerApi'
 import CopyJSONButton from '../CopyAsJsonButton'
+import { HealthcareParty } from '@icure/cardinal-sdk'
 
 interface ModalConfirmActionProps {
   onClose: () => void
@@ -25,64 +23,66 @@ type KeyPairJsonDataType = {
 export const ModalCryptographicKeypair = ({ onClose, isVisible, practitionerId }: ModalConfirmActionProps) => {
   const [componentState, setComponentState] = useState<'beforeGeneratingWarning' | 'error' | 'keypairHasBeenAlreadyGenerated' | 'keypairIsGenerated'>('beforeGeneratingWarning')
 
-  const [publicKey, setPublicKey] = useState<string | undefined>(undefined)
-  const [privateKey, setPrivateKey] = useState<string | undefined>(undefined)
+  const [publicKey, setPublicKey] = useState<string | undefined>('Placeholder')
+  const [privateKey, setPrivateKey] = useState<string | undefined>('Placeholder')
   const [generationKeypairError, setGenerationKeypairError] = useState<string | undefined>(undefined)
   const [keyPairJsonData, setKeyPairJsonData] = useState<KeyPairJsonDataType | undefined>(undefined)
 
   const [modifyPractitioner, { isLoading, error: modifyPractitionerError, reset: resetModifyingPractitioner }] = useCreateOrUpdatePractitionerMutation()
   const { currentData: practitioner, error: getPractitionerError } = useGetPractitionerQuery(practitionerId, { skip: !practitionerId })
-  const practitionerPublicKey = practitioner?.systemMetaData?.publicKey
+  const practitionerPublicKey = practitioner?.publicKey
 
-  const generateKeypair = async (): Promise<{ privateKey: string; publicKey: string }> => {
-    try {
-      const keypair = await RSA.generateKeyPair(ShaVersion.Sha256)
-      const exportPrivKey = await RSA.exportKey(keypair.privateKey, 'pkcs8')
-      const exportPubKey = await RSA.exportKey(keypair.publicKey, 'spki')
-      return {
-        privateKey: ua2hex(exportPrivKey),
-        publicKey: ua2hex(exportPubKey),
-      }
-    } catch (error) {
-      console.error('Error generating keypair:', error)
-      setComponentState('error')
-      throw error
-    }
-  }
+  // TODO: wait until the Cryptom is published
+  // const generateKeypair = async (): Promise<{ privateKey: string; publicKey: string }> => {
+  // try {
+  //   const keypair = await RSA.generateKeyPair(ShaVersion.Sha256)
+  //   const exportPrivKey = await RSA.exportKey(keypair.privateKey, 'pkcs8')
+  //   const exportPubKey = await RSA.exportKey(keypair.publicKey, 'spki')
+  //   return {
+  //     privateKey: ua2hex(exportPrivKey),
+  //     publicKey: ua2hex(exportPubKey),
+  //   }
+  // } catch (error) {
+  //   console.error('Error generating keypair:', error)
+  //   setComponentState('error')
+  //   throw error
+  // }
+  // }
 
-  useEffect(() => {
-    practitionerPublicKey && setComponentState('keypairHasBeenAlreadyGenerated')
-  }, [])
+  // useEffect(() => {
+  //   practitionerPublicKey && setComponentState('keypairHasBeenAlreadyGenerated')
+  // }, [])
+  //
+  // useEffect(() => {
+  //   ;(!!getPractitionerError || !!modifyPractitionerError || !!generationKeypairError) && setComponentState('error')
+  // }, [getPractitionerError, modifyPractitionerError, generationKeypairError])
 
-  useEffect(() => {
-    ;(!!getPractitionerError || !!modifyPractitionerError || !!generationKeypairError) && setComponentState('error')
-  }, [getPractitionerError, modifyPractitionerError, generationKeypairError])
-
-  useEffect(() => {
-    generateKeypair()
-      .then((keypair) => {
-        setPublicKey(keypair.publicKey)
-        setPrivateKey(keypair.privateKey)
-
-        setKeyPairJsonData({
-          practitionerId: practitioner?.id ?? '' + '',
-          practitionerName: practitioner?.name ?? `${practitioner?.firstName}_${practitioner?.lastName}`,
-          privateKey: keypair.privateKey,
-          publicKey: keypair.publicKey,
-        })
-        return
-      })
-      .catch((error: string) => {
-        setGenerationKeypairError(error)
-        console.error('Error:', error)
-      })
-  }, [practitioner?.id])
+  // useEffect(() => {
+  //   generateKeypair()
+  //     .then((keypair) => {
+  //       setPublicKey(keypair.publicKey)
+  //       setPrivateKey(keypair.privateKey)
+  //
+  //       setKeyPairJsonData({
+  //         practitionerId: practitioner?.id ?? '' + '',
+  //         practitionerName: practitioner?.name ?? `${practitioner?.firstName}_${practitioner?.lastName}`,
+  //         privateKey: keypair.privateKey,
+  //         publicKey: keypair.publicKey,
+  //       })
+  //       return
+  //     })
+  //     .catch((error: string) => {
+  //       setGenerationKeypairError(error)
+  //       console.error('Error:', error)
+  //     })
+  // }, [practitioner?.id])
 
   const defaultOnClose = () => {
     setPublicKey(undefined)
     setPrivateKey(undefined)
     setGenerationKeypairError(undefined)
     setKeyPairJsonData(undefined)
+    resetModifyingPractitioner()
     onClose()
   }
   const getOnCloseFunction = () => {
@@ -108,7 +108,7 @@ export const ModalCryptographicKeypair = ({ onClose, isVisible, practitionerId }
   const getOnOkFunction = () => {
     switch (componentState) {
       case 'beforeGeneratingWarning': {
-        practitioner && modifyPractitioner(new Practitioner({ ...practitioner, systemMetaData: new SystemMetaDataOwner({ ...practitioner.systemMetaData, publicKey }) }))
+        practitioner && modifyPractitioner(new HealthcareParty({ ...practitioner, publicKey: publicKey }))
         setComponentState('keypairIsGenerated')
       }
     }

@@ -1,7 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Patient, PatientFilter, PatientApi, IPaginatedList } from '@icure/ehr-lite-sdk'
 import { guard, ehrLiteApi } from '../services/auth.api'
-import { PaginatedList } from '@icure/typescript-common/models/PaginatedList.model'
+import { DecryptedPatient, PatientFilters } from '@icure/cardinal-sdk'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
@@ -10,57 +9,68 @@ export const patientApiRtk = createApi({
     baseUrl: '',
   }),
   endpoints: (builder) => ({
-    getPatient: builder.query<Patient | undefined, string>({
-      async queryFn(id, { getState }) {
-        const patientApi = (await ehrLiteApi(getState))?.patientApi
-        return guard([patientApi], async (): Promise<Patient> => {
-          const patient = await patientApi?.get(id)
-          if (!patient) {
-            throw new Error('Patient does not exist')
-          }
-          return new Patient(patient)
-        })
-      },
-      providesTags: (res) => (res ? [{ type: 'Patient', id: res.id }] : []),
-    }),
-    createOrUpdatePatient: builder.mutation<Patient | undefined, Patient>({
-      async queryFn(patient, { getState, dispatch }) {
-        const patientApi = (await ehrLiteApi(getState))?.patientApi
-        return guard([patientApi], async (): Promise<Patient> => {
-          const updatedPatient = await patientApi?.createOrModify(patient)
+    createOrUpdatePatient: builder.mutation<DecryptedPatient | undefined, DecryptedPatient>({
+      async queryFn(patient, { getState }) {
+        const patientApi = (await ehrLiteApi(getState))?.patient
+        return guard([patientApi], async (): Promise<DecryptedPatient> => {
+          const updatedPatient = !!patient.rev ? await patientApi?.modifyPatient(patient) : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient))
           if (!updatedPatient) {
             throw new Error('Patient does not exist')
           }
-          return new Patient(updatedPatient)
+          return new DecryptedPatient(updatedPatient)
         })
       },
 
       invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
     }),
-    filterPatientsByDataOwner: builder.query<IPaginatedList<Patient> | undefined, string>({
-      async queryFn(practitionerId, { getState, dispatch }) {
+    filterPatientsByDataOwner: builder.query<string[] | undefined, string>({
+      async queryFn(practitionerId, { getState }) {
         const api = await ehrLiteApi(getState)
 
-        return guard([api], async (): Promise<IPaginatedList<Patient>> => {
+        return guard([api], async (): Promise<string[]> => {
           if (!api) {
             throw new Error('Something went wrong')
           }
-          const patientApi = api?.patientApi
-          const filterForMatch = await new PatientFilter(api).forDataOwner(practitionerId).build()
+          const patientApi = api?.patient
+          const filterForMatch = PatientFilters.allPatientsForDataOwner(practitionerId)
 
-          const patientsList = await patientApi?.filterBy(filterForMatch)
+          const patientsList = await patientApi?.matchPatientsBy(filterForMatch)
           if (!patientsList) {
             throw new Error('Patients do not found')
           }
 
-          return PaginatedList.toJSON(patientsList, (patientFromTheList: Patient) => patientFromTheList)
+          return patientsList
         })
       },
       providesTags: (res) =>
         res
           ? [
               { type: 'Patient', id: 'all' },
-              ...res.rows.map((patient) => {
+              ...res.map((patient) => {
+                return {
+                  type: 'Patient',
+                  id: patient,
+                } as { type: 'Patient'; id: string }
+              }),
+            ]
+          : [],
+    }),
+    getPatientsByIds: builder.query<DecryptedPatient[] | undefined, string[]>({
+      async queryFn(patientsIds, { getState }) {
+        const patientApi = (await ehrLiteApi(getState))?.patient
+        return guard([patientApi], async (): Promise<DecryptedPatient[]> => {
+          const patientsList = await patientApi?.getPatients(patientsIds)
+          if (!patientsList) {
+            throw new Error('Patients do not found')
+          }
+          return patientsList
+        })
+      },
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'Patient', id: 'all' },
+              ...res.map((patient) => {
                 return {
                   type: 'Patient',
                   id: patient.id,
@@ -71,13 +81,13 @@ export const patientApiRtk = createApi({
     }),
     deletePatient: builder.mutation<string | undefined, string>({
       async queryFn(id, { getState }) {
-        const patientApi = (await ehrLiteApi(getState))?.patientApi
+        const patientApi = (await ehrLiteApi(getState))?.patient
         return guard([patientApi], async () => {
-          const result = await patientApi?.delete(id)
+          const result = await patientApi?.deletePatient(id)
           if (!result) {
             throw new Error('Patient can`t be deleted')
           }
-          return result
+          return result.id
         })
       },
       invalidatesTags: (id) => [
@@ -88,4 +98,4 @@ export const patientApiRtk = createApi({
   }),
 })
 
-export const { useGetPatientQuery, useCreateOrUpdatePatientMutation, useFilterPatientsByDataOwnerQuery, useDeletePatientMutation } = patientApiRtk
+export const { useCreateOrUpdatePatientMutation, useFilterPatientsByDataOwnerQuery, useGetPatientsByIdsQuery, useDeletePatientMutation } = patientApiRtk

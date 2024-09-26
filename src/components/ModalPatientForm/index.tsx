@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, ReactElement } from 'react'
 import { DatePicker, Form, Input, Select, Upload } from 'antd'
-import type { GetProp, UploadFile, UploadProps } from 'antd'
-import { ContactPoint, GenderEnum, HumanName, HumanNameUseEnum, Location, LocationAddressTypeEnum, Patient, ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk'
+import type { UploadFile, UploadProps, GetProps } from 'antd'
 import ImgCrop from 'antd-img-crop'
 import dayjs from 'dayjs'
+import customParseFormat from 'dayjs/plugin/customParseFormat'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
@@ -11,12 +11,15 @@ import { SpinLoader } from '../SpinLoader'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
+import { AddressType, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+
+type RangePickerProps = GetProps<typeof DatePicker.RangePicker>
 
 type PatientForm = {
   firstName: string
   lastName: string
   dateOfBirth: number
-  gender: GenderEnum
+  gender: Gender
   phoneNumber: string
   emailAddress: string
   country: string
@@ -29,12 +32,14 @@ interface ModalPatientFormProps {
   mode: 'edit' | 'create'
   isVisible: boolean
   onClose: () => void
-  patientToEdit?: Patient
+  patientToEdit?: DecryptedPatient
 }
 
-export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): JSX.Element => {
+export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): ReactElement => {
   const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
-  const patientAvatarSrc = getImgSRC(patientToEdit?.picture)
+  // TODO: Cryptom
+  // const patientAvatarSrc = getImgSRC(patientToEdit?.picture)
+  const patientAvatarSrc = undefined
   const [fileList, setFileList] = useState<UploadFile[]>(
     patientAvatarSrc
       ? [
@@ -51,34 +56,28 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
 
   const [
     createOrUpdatePatient,
-    {
-      data: updatedPatient,
-      error: createOrUpdatePatientError,
-      isError: isCreateOrUpdatePatientError,
-      isSuccess: isPatientCreatedOrUpdateSuccessfully,
-      isLoading: isPatientCreatingOrUpdatingLoading,
-    },
+    { error: createOrUpdatePatientError, isError: isCreateOrUpdatePatientError, isSuccess: isPatientCreatedOrUpdateSuccessfully, isLoading: isPatientCreatingOrUpdatingLoading },
   ] = useCreateOrUpdatePatientMutation()
 
   isCreateOrUpdatePatientError && console.log(createOrUpdatePatientError)
 
   const getPreparedUserData = (value: PatientForm) => {
     const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } = value
-    const name = new HumanName({
-      given: [firstName],
-      family: lastName,
-      use: HumanNameUseEnum.OFFICIAL,
+    const name = new PersonName({
+      firstNames: [firstName],
+      lastName: lastName,
+      use: PersonNameUse.Official,
     })
-    const address = new Location({
-      addressType: LocationAddressTypeEnum.HOME,
+    const address = new DecryptedAddress({
+      addressType: AddressType.Home,
       telecoms: [
-        new ContactPoint({
-          system: ContactPointTelecomTypeEnum.EMAIL,
-          value: emailAddress,
+        new DecryptedTelecom({
+          telecomType: TelecomType.Email,
+          telecomNumber: emailAddress,
         }),
-        new ContactPoint({
-          system: ContactPointTelecomTypeEnum.MOBILE,
-          value: phoneNumber,
+        new DecryptedTelecom({
+          telecomType: TelecomType.Mobile,
+          telecomNumber: phoneNumber,
         }),
       ],
       country,
@@ -88,19 +87,18 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       postalCode,
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
-    const picture = patientPictureAsBase64 ?? patientAvatarSrc
+    // TODO: no picture because of Cryptom
+    // const picture = patientPictureAsBase64 ?? patientAvatarSrc
 
-    return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
+    return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp }
   }
-
   const handleSubmit = (value: PatientForm) => {
-    if (mode === 'create') createOrUpdatePatient(new Patient(getPreparedUserData(value)))
-    if (mode === 'edit') createOrUpdatePatient(new Patient({ ...patientToEdit, ...getPreparedUserData(value) }))
+    if (mode === 'create') createOrUpdatePatient(new DecryptedPatient(getPreparedUserData(value)))
+    if (mode === 'edit') createOrUpdatePatient(new DecryptedPatient({ ...patientToEdit, ...getPreparedUserData(value) }))
 
     form.resetFields()
   }
-
-  const getPatientToEdit = (patient: Patient) => {
+  const getPatientToEdit = (patient: DecryptedPatient) => {
     const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, picture } = getPatientDataFormated(patient)
     return {
       firstName,
@@ -148,6 +146,12 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     },
   }
 
+  const disabledDate: RangePickerProps['disabledDate'] = (current) => {
+    // Can not select days before today and today
+    return current && current > dayjs().endOf('day')
+  }
+  const dateFormat = 'DD.MM.YYYY'
+
   return (
     <CustomModal
       isVisible={isVisible}
@@ -177,17 +181,17 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                 <Input placeholder="Last name" size="large" />
               </Form.Item>
               <Form.Item name="dateOfBirth" label="Date of birth" rules={[{ required: true, message: 'Date of birth is required' }]}>
-                <DatePicker format="DD.MM.YYYY" placeholder="Date of birth" size="large" style={{ width: '100%' }} />
+                <DatePicker format={dateFormat} placeholder="Date of birth" size="large" style={{ width: '100%' }} disabledDate={disabledDate} />
               </Form.Item>
               <Form.Item name="gender" label="Gender" rules={[{ required: true, message: 'Gender is required' }]}>
                 <Select placeholder="Gender" size="large">
-                  <Option value={GenderEnum.MALE}>{GenderEnum.MALE}</Option>
-                  <Option value={GenderEnum.FEMALE}>{GenderEnum.FEMALE}</Option>
-                  <Option value={GenderEnum.INDETERMINATE}>{GenderEnum.INDETERMINATE}</Option>
-                  <Option value={GenderEnum.CHANGED}>{GenderEnum.CHANGED}</Option>
-                  <Option value={GenderEnum.CHANGED_TO_MALE}>{GenderEnum.CHANGED_TO_MALE}</Option>
-                  <Option value={GenderEnum.CHANGED_TO_FEMALE}>{GenderEnum.CHANGED_TO_FEMALE}</Option>
-                  <Option value={GenderEnum.UNKNOWN}>{GenderEnum.UNKNOWN}</Option>
+                  <Option value={Gender.Male}>{Gender.Male}</Option>
+                  <Option value={Gender.Female}>{Gender.Female}</Option>
+                  <Option value={Gender.Indeterminate}>{Gender.Indeterminate}</Option>
+                  <Option value={Gender.Changed}>{Gender.Changed}</Option>
+                  <Option value={Gender.ChangedToMale}>{Gender.ChangedToMale}</Option>
+                  <Option value={Gender.ChangedToFemale}>{Gender.ChangedToFemale}</Option>
+                  <Option value={Gender.Unknown}>{Gender.Unknown}</Option>
                 </Select>
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">

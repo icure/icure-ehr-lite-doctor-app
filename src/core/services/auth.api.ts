@@ -1,20 +1,26 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { revertAll, setSavedCredentials } from '../app'
-import storage from '../storage'
-import { AnonymousEHRLiteApi, AuthenticationProcess, EHRLiteApi, EmailMessage, Organisation, Patient, Practitioner, SMSMessage, User } from '@icure/ehr-lite-sdk'
-import { ua2b64 } from '@icure/api'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-import { SimpleEHRLiteCryptoStrategies } from '@icure/ehr-lite-sdk/services/EHRLiteCryptoStrategies'
-import { EHRLiteMessageFactory } from '@icure/ehr-lite-sdk/services/EHRLiteMessageFactory'
 
-const apiCache: { [key: string]: EHRLiteApi | AnonymousEHRLiteApi } = {}
+import {
+  AuthenticationMethod,
+  AuthenticationProcessCaptchaType,
+  AuthenticationProcessTelecomType,
+  CardinalSdk,
+  StorageFacade,
+  User,
+  AuthenticationProcessTemplateParameters,
+} from '@icure/cardinal-sdk'
+
+import { revertAll, setSavedCredentials } from '../app'
+
+const apiCache: { [key: string]: CardinalSdk } = {}
 
 export interface EHRLiteApiState {
   email?: string
   token?: string
   user?: User
   keyPair?: { publicKey: string; privateKey: string }
-  authProcess?: AuthenticationProcess
+  authProcess?: CardinalSdk.AuthenticationWithProcessStep
   online: boolean
   invalidEmail: boolean
   invalidToken: boolean
@@ -57,7 +63,8 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
       if (result === null || result === undefined) {
         return null as T
       } else if (res instanceof ArrayBuffer) {
-        return ua2b64(res) as T
+        // return ua2b64(res) as T
+        throw new Error('The type of the result is ArrayBuffer but ua2b64 is not yet available')
       } else if (Array.isArray(result)) {
         return result.map(curate) as T
       } else {
@@ -71,7 +78,7 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
   }
 }
 
-export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLiteApi: EHRLiteApiState } | undefined): Promise<EHRLiteApi | undefined> => {
+export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLiteApi: EHRLiteApiState } | undefined): Promise<CardinalSdk | undefined> => {
   const state = getState()
   if (!state) {
     throw new Error('No state found')
@@ -84,7 +91,7 @@ export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLit
     return undefined
   }
 
-  const cachedApi = apiCache[`${user.groupId}/${user.id}`] as EHRLiteApi
+  const cachedApi = apiCache[`${user.groupId}/${user.id}`] as CardinalSdk
 
   return cachedApi
 }
@@ -92,11 +99,6 @@ export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLit
 export const ehrLiteApi = async (getState: () => unknown) => {
   const state = getState() as { ehrLiteApi: EHRLiteApiState }
   return await getApiFromState(() => state)
-}
-
-export const currentUser = (getState: () => unknown) => {
-  const state = getState() as { ehrLiteApi: EHRLiteApiState }
-  return state.ehrLiteApi.user
 }
 
 export const startAuthentication = createAsyncThunk(
@@ -112,28 +114,31 @@ export const startAuthentication = createAsyncThunk(
     } = getState() as { ehrLiteApi: EHRLiteApiState }
     dispatch(setLoginProcessStarted(true))
 
+    if (!email) {
+      throw new Error('The email was not found')
+    }
+
     try {
-      const anonymousApi = await new AnonymousEHRLiteApi.Builder()
-        .withICureBaseUrl('https://api.icure.cloud')
-        .withCrypto(crypto)
-        .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
-        .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
-        .withStorage(storage)
-        .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
-        .build()
-
-      const authProcess = await anonymousApi.authenticationApi.startAuthentication({
-        recaptcha: _payload.captchaToken,
+      const authenticationStep = await CardinalSdk.initializeWithProcess(
+        undefined,
+        'https://api.icure.cloud',
+        'https://msg-gw.icure.cloud',
+        process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!,
+        process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!,
+        AuthenticationProcessTelecomType.Email,
         email,
-        firstName,
-        lastName,
-        validationCodeLength: 6,
-        recaptchaType: 'friendly-captcha',
-      })
+        AuthenticationProcessCaptchaType.FriendlyCaptcha,
+        _payload.captchaToken,
+        StorageFacade.usingBrowserLocalStorage(),
+        // Process template parameters are additional parameters which
+        // may be used by the SMS/email template to the user.
+        // If you are not using them in your template you can omit them.
+        { firstName, lastName },
+        undefined,
+      )
 
-      apiCache[`${authProcess.login}/${authProcess.requestId}`] = anonymousApi
       dispatch(setLoginProcessStarted(false))
-      return authProcess
+      return authenticationStep
     } catch (e) {
       console.error(`Couldn't start authentication: ${e}`)
     } finally {
@@ -158,18 +163,16 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
     throw new Error('No token provided')
   }
   try {
-    const anonymousApi = apiCache[`${authProcess.login}/${authProcess.requestId}`] as AnonymousEHRLiteApi
-    const result = await anonymousApi.authenticationApi.completeAuthentication(authProcess, token)
-    const api = result.api
-    const user = await api.userApi.getLogged()
+    const api = await authProcess.completeAuthentication(token)
+    const user = await api.user.getCurrentUser()
+    const newToken = await api.user.getToken(user.id, 'rememberMe')
 
-    apiCache[`${result.groupId}/${result.userId}`] = api
-    delete apiCache[`${authProcess.login}/${authProcess.requestId}`]
+    apiCache[`${user.groupId}/${user.id}`] = api
 
     dispatch(
       setSavedCredentials({
-        login: `${result.groupId}/${result.userId}`,
-        token: result.token,
+        login: `${user.groupId}/${user.id}`,
+        token: newToken,
         tokenTimestamp: +Date.now(),
       }),
     )
@@ -180,36 +183,6 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
     dispatch(setLoginProcessStarted(false))
   }
 })
-
-class InvitationMessageFactory implements EHRLiteMessageFactory {
-  readonly preferredMessageType = 'email'
-
-  getPatientInvitationEmail(
-    recipientUser: User,
-    recipientPatient: Patient,
-    recipientPassword: string,
-    invitingUser: User,
-    invitingDataOwner: Organisation | Practitioner,
-  ): EmailMessage {
-    return {
-      from: 'nobody@nowhere.boh',
-      subject: `${recipientUser.login}|${recipientPassword}`,
-      html: `User: ${recipientUser.id}`,
-    }
-  }
-
-  getPatientInvitationSMS(
-    recipientUser: User,
-    recipientPatient: Patient,
-    recipientPassword: string,
-    invitingUser: User,
-    invitingDataOwner: Organisation | Practitioner,
-  ): SMSMessage {
-    return {
-      message: `${recipientUser.login}|${recipientPassword}`,
-    }
-  }
-}
 
 export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, dispatch }) => {
   const {
@@ -227,20 +200,17 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, 
     throw new Error('No token provided')
   }
   try {
-    const api = await new EHRLiteApi.Builder()
-      .withICureBaseUrl('https://api.icure.cloud')
-      .withCrypto(crypto)
-      .withMsgGwSpecId(process.env.REACT_APP_EXTERNAL_SERVICES_SPEC_ID!)
-      .withAuthProcessByEmailId(process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!)
-      .withStorage(storage)
-      .withUserName(email)
-      .withPassword(token)
-      .withMessageFactory(new InvitationMessageFactory())
-      .withCryptoStrategies(new SimpleEHRLiteCryptoStrategies([]))
-      .build()
+    const api = await CardinalSdk.initialize(
+      undefined,
+      'https://api.icure.cloud',
+      new AuthenticationMethod.UsingCredentials.UsernamePassword(email, token),
+      StorageFacade.usingBrowserLocalStorage(),
+    )
 
-    const user = await api.userApi.getLogged()
+    const user = await api.user.getCurrentUser()
+
     apiCache[`${user.groupId}/${user.id}`] = api
+
     return new User(user)
   } catch (e) {
     console.error(`Couldn't login: ${e}`)
@@ -320,4 +290,4 @@ export const api = createSlice({
   },
 })
 
-export const { setRegistrationInformation, setToken, setEmail, setUser, resetCredentials, setLoginProcessStarted, setWaitingForToken } = api.actions
+export const { setRegistrationInformation, setToken, setEmail, resetCredentials, setLoginProcessStarted, setWaitingForToken } = api.actions

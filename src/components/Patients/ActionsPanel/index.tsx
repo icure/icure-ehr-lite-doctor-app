@@ -25,8 +25,8 @@ export const ActionsPanel = () => {
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
   const [isModalCryptographicKeypairOpen, setModalCryptographicKeypairOpen] = useState(false)
 
-  const { currentData: practitioner, error: getPractitionerError } = useGetPractitionerQuery(practitionerId ?? '', { skip: !practitionerId })
-  const practitionerPublicKey = practitioner?.systemMetaData?.publicKey
+  const { currentData: practitioner } = useGetPractitionerQuery(practitionerId ?? '', { skip: !practitionerId })
+  const practitionerPublicKey = practitioner?.publicKey
   return (
     <>
       <div className="actionsPanel">

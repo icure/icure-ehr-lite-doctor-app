@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { Patient, User } from '@icure/ehr-lite-sdk'
-import { guard, ehrLiteApi, currentUser, setUser } from '../services/auth.api'
+import { guard, ehrLiteApi } from '../services/auth.api'
+import { DecryptedPatient } from '@icure/cardinal-sdk'
 
 export const userApiRtk = createApi({
   reducerPath: 'userApi',
@@ -9,36 +9,23 @@ export const userApiRtk = createApi({
     baseUrl: '',
   }),
   endpoints: (builder) => ({
-    getUser: builder.query<User | undefined, string>({
-      async queryFn(id, { getState }) {
-        const userApi = (await ehrLiteApi(getState))?.userApi
-        return guard([userApi], async (): Promise<User> => {
-          const user = await userApi?.get(id)
-          if (!user) {
-            throw new Error('User does not exist')
-          }
-          return new User(user)
-        })
-      },
-      providesTags: ['User'],
-    }),
-    createAndInvitePatient: builder.mutation<User | undefined, Patient>({
-      async queryFn(patient, { getState, dispatch }) {
-        const userApi = (await ehrLiteApi(getState))?.userApi
-        return guard([userApi], async (): Promise<User> => {
-          const createdUser = await userApi?.createAndInviteFor(patient, 3600)
-          if (!createdUser) {
-            throw new Error('User does not exist')
-          }
-          return new User(createdUser)
-        })
-      },
-      invalidatesTags: (result, error, arg) => [
-        { type: 'User', id: 'all' },
-        { type: 'User', id: arg.id },
-      ],
-    }),
+    // createAndInvitePatient: builder.mutation<User | undefined, DecryptedPatient>({
+    //   async queryFn(patient, { getState }) {
+    //     const userApi = (await ehrLiteApi(getState))?.userApi
+    //     return guard([userApi], async (): Promise<User> => {
+    //       const createdUser = await userApi?.createAndInviteFor(patient, 3600)
+    //       if (!createdUser) {
+    //         throw new Error('User does not exist')
+    //       }
+    //       return new User(createdUser)
+    //     })
+    //   },
+    //   invalidatesTags: (result, error, arg) => [
+    //     { type: 'User', id: 'all' },
+    //     { type: 'User', id: arg.id },
+    //   ],
+    // }),
   }),
 })
 
-export const { useGetUserQuery, useCreateAndInvitePatientMutation } = userApiRtk
+// export const { useCreateAndInvitePatientMutation } = userApiRtk

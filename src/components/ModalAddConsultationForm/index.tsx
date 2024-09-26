@@ -1,6 +1,5 @@
 import React from 'react'
 import { DatePicker, Form, Input } from 'antd'
-import { Form as IcureFormClass } from '@icure/form/components/model'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
