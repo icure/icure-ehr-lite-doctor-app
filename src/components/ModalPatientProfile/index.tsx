@@ -9,6 +9,7 @@ import { phoneIcn, emailIcn, locationIcn, userAvatarPlaceholderIcn } from '../..
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 import dayjs from 'dayjs'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { getImgSRC } from '../../helpers/fileToBase64'
 
 interface ModalPatientProfileProps {
   isVisible: boolean
@@ -23,7 +24,7 @@ const { Text } = Typography
 export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatientProfileProps): ReactElement => {
   const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
 
-  const patientAvatarSrc = !picture ? undefined : `data:image/png;base64,${picture}`
+  const patientAvatarSrc = getImgSRC(picture)
   const getAge = (date: number | undefined) => {
     if (!date) {
       return undefined

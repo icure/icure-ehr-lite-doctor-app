@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, ehrLiteApi } from '../services/auth.api'
+import { guard, cardinalApi } from '../services/auth.api'
 import { HealthcareParty } from '@icure/cardinal-sdk'
 
 export const practitionerApiRtk = createApi({
@@ -11,7 +11,7 @@ export const practitionerApiRtk = createApi({
   endpoints: (builder) => ({
     getPractitioner: builder.query<HealthcareParty | undefined, string>({
       async queryFn(id, { getState }) {
-        const practitionerApi = (await ehrLiteApi(getState))?.healthcareParty
+        const practitionerApi = (await cardinalApi(getState))?.healthcareParty
         return guard([practitionerApi], async (): Promise<HealthcareParty> => {
           const practitioner = await practitionerApi?.getHealthcareParty(id)
           if (!practitioner) {
@@ -25,7 +25,7 @@ export const practitionerApiRtk = createApi({
 
     createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
       async queryFn(practitioner, { getState }) {
-        const practitionerApi = (await ehrLiteApi(getState))?.healthcareParty
+        const practitionerApi = (await cardinalApi(getState))?.healthcareParty
         return guard([practitionerApi], async (): Promise<HealthcareParty> => {
           const updatedPractitioner = !!practitioner.rev ? await practitionerApi?.modifyHealthcareParty(practitioner) : await practitionerApi?.createHealthcareParty(practitioner)
           if (!updatedPractitioner) {

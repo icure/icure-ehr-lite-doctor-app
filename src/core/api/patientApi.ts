@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, ehrLiteApi } from '../services/auth.api'
+import { guard, cardinalApi } from '../services/auth.api'
 import { DecryptedPatient, PatientFilters } from '@icure/cardinal-sdk'
 
 export const patientApiRtk = createApi({
@@ -11,7 +11,7 @@ export const patientApiRtk = createApi({
   endpoints: (builder) => ({
     createOrUpdatePatient: builder.mutation<DecryptedPatient | undefined, DecryptedPatient>({
       async queryFn(patient, { getState }) {
-        const patientApi = (await ehrLiteApi(getState))?.patient
+        const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async (): Promise<DecryptedPatient> => {
           const updatedPatient = !!patient.rev ? await patientApi?.modifyPatient(patient) : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient))
           if (!updatedPatient) {
@@ -25,7 +25,7 @@ export const patientApiRtk = createApi({
     }),
     filterPatientsByDataOwner: builder.query<string[] | undefined, string>({
       async queryFn(practitionerId, { getState }) {
-        const api = await ehrLiteApi(getState)
+        const api = await cardinalApi(getState)
 
         return guard([api], async (): Promise<string[]> => {
           if (!api) {
@@ -57,7 +57,7 @@ export const patientApiRtk = createApi({
     }),
     getPatientsByIds: builder.query<DecryptedPatient[] | undefined, string[]>({
       async queryFn(patientsIds, { getState }) {
-        const patientApi = (await ehrLiteApi(getState))?.patient
+        const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async (): Promise<DecryptedPatient[]> => {
           const patientsList = await patientApi?.getPatients(patientsIds)
           if (!patientsList) {
@@ -81,7 +81,7 @@ export const patientApiRtk = createApi({
     }),
     deletePatient: builder.mutation<string | undefined, string>({
       async queryFn(id, { getState }) {
-        const patientApi = (await ehrLiteApi(getState))?.patient
+        const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async () => {
           const result = await patientApi?.deletePatient(id)
           if (!result) {

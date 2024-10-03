@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, ehrLiteApi } from '../services/auth.api'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { guard, cardinalApi } from '../services/auth.api'
+import { randomUuid, User } from '@icure/cardinal-sdk'
 
 export const userApiRtk = createApi({
   reducerPath: 'userApi',
@@ -9,23 +9,33 @@ export const userApiRtk = createApi({
     baseUrl: '',
   }),
   endpoints: (builder) => ({
-    // createAndInvitePatient: builder.mutation<User | undefined, DecryptedPatient>({
-    //   async queryFn(patient, { getState }) {
-    //     const userApi = (await ehrLiteApi(getState))?.userApi
-    //     return guard([userApi], async (): Promise<User> => {
-    //       const createdUser = await userApi?.createAndInviteFor(patient, 3600)
-    //       if (!createdUser) {
-    //         throw new Error('User does not exist')
-    //       }
-    //       return new User(createdUser)
-    //     })
-    //   },
-    //   invalidatesTags: (result, error, arg) => [
-    //     { type: 'User', id: 'all' },
-    //     { type: 'User', id: arg.id },
-    //   ],
-    // }),
+    createUser: builder.mutation<User | undefined, { email: string; id: string; name: string }>({
+      async queryFn({ email, id, name }, { getState }) {
+        const userApi = (await cardinalApi(getState))?.user
+        return guard([userApi], async (): Promise<User> => {
+          const createdUser = await userApi?.createUser(
+            new User({
+              id: randomUuid(),
+              name: name,
+              email: email,
+              patientId: id,
+            }),
+          )
+          if (!createdUser) {
+            throw new Error('User does not exist')
+          }
+          return new User(createdUser)
+        })
+      },
+      invalidatesTags: (result, error, arg) =>
+        !!result
+          ? [
+              { type: 'User', id: 'all' },
+              { type: 'User', id: result.id },
+            ]
+          : [],
+    }),
   }),
 })
 
-// export const { useCreateAndInvitePatientMutation } = userApiRtk
+export const { useCreateUserMutation } = userApiRtk

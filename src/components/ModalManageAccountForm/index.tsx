@@ -18,12 +18,9 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
 
-  //TODO: wait for Cryptom
-  // const userAvatarSrc = getImgSRC(practitionerToBeUpdated?.picture)
+  const userAvatarSrc = getImgSRC(practitionerToBeUpdated?.picture)
 
-  const userAvatarSrc = undefined
-
-  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
+  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<Int8Array | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>(
     !userAvatarSrc
       ? []
@@ -48,10 +45,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
       ],
     })
     const picture = patientPictureAsBase64 ?? practitionerToBeUpdated?.picture
-    // TODO: picture has a problem of Cryptom
-    // updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
-    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address] }))
-
+    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
     form.resetFields()
   }
 
@@ -113,7 +107,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             </Form.Item>
             <Form.Item label="Picture" valuePropName="file">
               <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: string | undefined) => setPatientPictureAsBase64(data))}>
+                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsBase64(data))}>
                   {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                 </Upload>
               </ImgCrop>

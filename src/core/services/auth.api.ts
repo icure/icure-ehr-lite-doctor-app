@@ -15,7 +15,7 @@ import { revertAll, setSavedCredentials } from '../app'
 
 const apiCache: { [key: string]: CardinalSdk } = {}
 
-export interface EHRLiteApiState {
+export interface CardinalApiState {
   email?: string
   token?: string
   user?: User
@@ -32,7 +32,7 @@ export interface EHRLiteApiState {
   loginProcessStarted: boolean
 }
 
-const initialState: EHRLiteApiState = {
+const initialState: CardinalApiState = {
   email: undefined,
   token: undefined,
   user: undefined,
@@ -62,9 +62,6 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
     const curate = (result: T): T => {
       if (result === null || result === undefined) {
         return null as T
-      } else if (res instanceof ArrayBuffer) {
-        // return ua2b64(res) as T
-        throw new Error('The type of the result is ArrayBuffer but ua2b64 is not yet available')
       } else if (Array.isArray(result)) {
         return result.map(curate) as T
       } else {
@@ -73,18 +70,17 @@ export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T
     }
     return { data: curate(res) }
   } catch (e) {
-    console.error(e)
     return { error: getError(e as Error) }
   }
 }
 
-export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLiteApi: EHRLiteApiState } | undefined): Promise<CardinalSdk | undefined> => {
+export const getApiFromState = async (getState: () => CardinalApiState | { cardinalApi: CardinalApiState } | undefined): Promise<CardinalSdk | undefined> => {
   const state = getState()
   if (!state) {
     throw new Error('No state found')
   }
 
-  const initialState = 'ehrLiteApi' in state ? state.ehrLiteApi : state
+  const initialState = 'cardinalApi' in state ? state.cardinalApi : state
   const { user } = initialState
 
   if (!user) {
@@ -96,13 +92,13 @@ export const getApiFromState = async (getState: () => EHRLiteApiState | { ehrLit
   return cachedApi
 }
 
-export const ehrLiteApi = async (getState: () => unknown) => {
-  const state = getState() as { ehrLiteApi: EHRLiteApiState }
+export const cardinalApi = async (getState: () => unknown) => {
+  const state = getState() as { cardinalApi: CardinalApiState }
   return await getApiFromState(() => state)
 }
 
 export const startAuthentication = createAsyncThunk(
-  'ehrLiteApi/startAuthentication',
+  'cardinalApi/startAuthentication',
   async (
     _payload: {
       captchaToken: string
@@ -110,8 +106,8 @@ export const startAuthentication = createAsyncThunk(
     { getState, dispatch },
   ) => {
     const {
-      ehrLiteApi: { email, firstName, lastName },
-    } = getState() as { ehrLiteApi: EHRLiteApiState }
+      cardinalApi: { email, firstName, lastName },
+    } = getState() as { cardinalApi: CardinalApiState }
     dispatch(setLoginProcessStarted(true))
 
     if (!email) {
@@ -130,11 +126,7 @@ export const startAuthentication = createAsyncThunk(
         AuthenticationProcessCaptchaType.FriendlyCaptcha,
         _payload.captchaToken,
         StorageFacade.usingBrowserLocalStorage(),
-        // Process template parameters are additional parameters which
-        // may be used by the SMS/email template to the user.
-        // If you are not using them in your template you can omit them.
         { firstName, lastName },
-        undefined,
       )
 
       dispatch(setLoginProcessStarted(false))
@@ -147,10 +139,10 @@ export const startAuthentication = createAsyncThunk(
   },
 )
 
-export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthentication', async (_payload, { getState, dispatch }) => {
+export const completeAuthentication = createAsyncThunk('cardinalApi/completeAuthentication', async (_payload, { getState, dispatch }) => {
   const {
-    ehrLiteApi: { authProcess, token },
-  } = getState() as { ehrLiteApi: EHRLiteApiState }
+    cardinalApi: { authProcess, token },
+  } = getState() as { cardinalApi: CardinalApiState }
   dispatch(setLoginProcessStarted(true))
 
   if (!authProcess) {
@@ -184,10 +176,10 @@ export const completeAuthentication = createAsyncThunk('ehrLiteApi/completeAuthe
   }
 })
 
-export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, dispatch }) => {
+export const login = createAsyncThunk('cardinalApi/login', async (_, { getState, dispatch }) => {
   const {
-    ehrLiteApi: { email, token },
-  } = getState() as { ehrLiteApi: EHRLiteApiState }
+    cardinalApi: { email, token },
+  } = getState() as { cardinalApi: CardinalApiState }
   dispatch(setLoginProcessStarted(true))
 
   if (!email) {
@@ -219,13 +211,13 @@ export const login = createAsyncThunk('ehrLiteApi/login', async (_, { getState, 
   }
 })
 
-export const logout = createAsyncThunk('ehrLiteApi/logout', async (_payload, { dispatch }) => {
+export const logout = createAsyncThunk('cardinalApi/logout', async (_payload, { dispatch }) => {
   dispatch(revertAll())
   dispatch(resetCredentials())
 })
 
 export const api = createSlice({
-  name: 'ehrLiteApi',
+  name: 'cardinalApi',
   initialState,
   reducers: {
     setRegistrationInformation: (

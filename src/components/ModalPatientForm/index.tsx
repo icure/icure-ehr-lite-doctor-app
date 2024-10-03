@@ -27,6 +27,7 @@ type PatientForm = {
   street: string
   houseNumber: string
   postalCode: string
+  picture: Int8Array | undefined
 }
 interface ModalPatientFormProps {
   mode: 'edit' | 'create'
@@ -36,10 +37,8 @@ interface ModalPatientFormProps {
 }
 
 export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): ReactElement => {
-  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
-  // TODO: Cryptom
-  // const patientAvatarSrc = getImgSRC(patientToEdit?.picture)
-  const patientAvatarSrc = undefined
+  const [patientPictureAsInt8Array, setPatientPictureAsInt8Array] = useState<Int8Array | undefined>(undefined)
+  const patientAvatarSrc = patientToEdit?.picture
   const [fileList, setFileList] = useState<UploadFile[]>(
     patientAvatarSrc
       ? [
@@ -47,7 +46,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
             uid: '-1',
             name: 'image.png',
             status: 'done',
-            url: patientAvatarSrc ?? undefined,
+            url: getImgSRC(patientAvatarSrc),
           },
         ]
       : [],
@@ -87,10 +86,9 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       postalCode,
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
-    // TODO: no picture because of Cryptom
-    // const picture = patientPictureAsBase64 ?? patientAvatarSrc
+    const picture = patientPictureAsInt8Array ?? patientAvatarSrc
 
-    return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp }
+    return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
   }
   const handleSubmit = (value: PatientForm) => {
     if (mode === 'create') createOrUpdatePatient(new DecryptedPatient(getPreparedUserData(value)))
@@ -122,7 +120,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
 
   const handleOnClose = () => {
     setFileList([])
-    setPatientPictureAsBase64(undefined)
+    setPatientPictureAsInt8Array(undefined)
     form.resetFields()
     onClose()
   }
@@ -142,7 +140,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     },
     onRemove() {
       setFileList([])
-      setPatientPictureAsBase64(undefined)
+      setPatientPictureAsInt8Array(undefined)
     },
   }
 
@@ -196,7 +194,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">
                 <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: string | undefined) => setPatientPictureAsBase64(data))}>
+                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsInt8Array(data))}>
                     {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                   </Upload>
                 </ImgCrop>

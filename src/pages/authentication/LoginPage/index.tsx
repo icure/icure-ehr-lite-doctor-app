@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import LoginForm from '../../../components/authentication/LoginForm'
-import { completeAuthentication, EHRLiteApiState, setEmail, setToken, setWaitingForToken, startAuthentication } from '../../../core/services/auth.api'
+import { completeAuthentication, CardinalApiState, setEmail, setToken, setWaitingForToken, startAuthentication } from '../../../core/services/auth.api'
 
 import logo from '../../../assets/logo_vertical.svg'
 import '../index.css'
 import { createSelector } from '@reduxjs/toolkit'
 
 const reduxSelector = createSelector(
-  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
-  (ehrLiteApi: EHRLiteApiState) => ({
-    waitingForToken: ehrLiteApi.waitingForToken,
-    loginProcessStarted: ehrLiteApi.loginProcessStarted,
+  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
+  (cardinalApi: CardinalApiState) => ({
+    waitingForToken: cardinalApi.waitingForToken,
+    loginProcessStarted: cardinalApi.loginProcessStarted,
   }),
 )
 

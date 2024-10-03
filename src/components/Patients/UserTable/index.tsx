@@ -6,13 +6,13 @@ import { useFilterPatientsByDataOwnerQuery, useGetPatientsByIdsQuery } from '../
 import { useAppSelector } from '../../../core/hooks'
 import { SpinLoader } from '../../SpinLoader'
 import { CommonPlaceholder } from '../../CommonPlaceholder'
-import { EHRLiteApiState } from '../../../core/services/auth.api'
+import { CardinalApiState } from '../../../core/services/auth.api'
 import { createSelector } from '@reduxjs/toolkit'
 
 const reduxSelector = createSelector(
-  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
-  (ehrLiteApi: EHRLiteApiState) => ({
-    healthcarePartyId: ehrLiteApi.user?.healthcarePartyId,
+  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
+  (cardinalApi: CardinalApiState) => ({
+    healthcarePartyId: cardinalApi.user?.healthcarePartyId,
   }),
 )
 

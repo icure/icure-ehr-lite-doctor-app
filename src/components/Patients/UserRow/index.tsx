@@ -1,6 +1,6 @@
 import React, { ReactElement, useEffect, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { MenuProps, notification } from 'antd'
+import { MenuProps, notification, message } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 
@@ -11,9 +11,11 @@ import { ModalPatientProfile } from '../../ModalPatientProfile'
 import './index.css'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalConfirmAction } from '../../ModalConfirmAction'
-// import { useCreateAndInvitePatientMutation } from '../../../core/api/userApi'
 import { useDeletePatientMutation } from '../../../core/api/patientApi'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { getImgSRC } from '../../../helpers/fileToBase64'
+import { useCreateUserMutation } from '../../../core/api/userApi'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
 interface UserRowProps {
   patient: DecryptedPatient
@@ -25,12 +27,12 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   const [isPatientProfileModalOpen, setPatientProfileModalOpen] = useState(false)
   const [isPatientToBeDeleted, setPatientToBeDeleted] = useState(false)
 
-  // const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
-  //   useCreateAndInvitePatientMutation()
+  const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
+    useCreateUserMutation()
   const [deletePatient, { error: deletePatientError, isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletingLoading }] =
     useDeletePatientMutation()
 
-  const [api, contextHolder] = notification.useNotification()
+  const [api, notificationContextHolder] = notification.useNotification()
 
   const openNotification = (type: 'error', message: string, description: string) => {
     api.open({
@@ -39,13 +41,40 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
       description,
       duration: 0,
     })
+    setTimeout(api.destroy, 2500)
   }
 
-  // useEffect(() => {
-  //   // isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
-  //   // isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
-  //   // isInvitePatientError && openNotification('error', 'Cannot invite the patient!', `An error occurred while sending the invitation letter. ${invitePatientError?.error}`)
-  // }, [isPatientInvitingLoading, isPatientInvitedSuccessfully, isInvitePatientError])
+  const [messageApi, messageContextHolder] = message.useMessage()
+
+  const showMessageFeedback = (type: 'loading' | 'success' | 'error', content: string) => {
+    messageApi.open({
+      type,
+      content,
+      duration: 0,
+    })
+    // Dismiss manually and asynchronously
+    setTimeout(messageApi.destroy, 2500)
+  }
+
+  useEffect(() => {
+    isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
+    isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
+    isInvitePatientError &&
+      openNotification(
+        'error',
+        'Cannot invite the patient!',
+        `An error occurred while sending the invitation letter. ${(invitePatientError as FetchBaseQueryError)?.data ?? invitePatientError}`,
+      )
+
+    isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
+    isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
+    isDeletePatientError &&
+      openNotification(
+        'error',
+        'We could not delete the patient!',
+        `An error occurred while deleting the patient. ${(invitePatientError as FetchBaseQueryError)?.data ?? invitePatientError}`,
+      )
+  }, [isPatientInvitingLoading, isPatientInvitedSuccessfully, isInvitePatientError, isDeletePatientError])
 
   const items: MenuProps['items'] = [
     {
@@ -120,8 +149,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
         break
       }
       case 'invite_patient': {
-        console.log('invite_patient')
-        // invitePatient(new Patient(patient))
+        emailAddress && userNameOneString && invitePatient({ email: emailAddress, id: patient.id, name: userNameOneString })
         break
       }
       case 'delete_patient': {
@@ -132,11 +160,12 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   }
 
   const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
-  const patientAvatarSrc = !picture ? undefined : `data:image/png;base64,${picture}`
+  const patientAvatarSrc = getImgSRC(picture)
 
   return (
     <>
-      {contextHolder}
+      {notificationContextHolder}
+      {messageContextHolder}
       <div className="userRow" onClick={() => setPatientProfileModalOpen(true)}>
         {patientAvatarSrc ? (
           <div className="userRow__picture">
@@ -201,10 +230,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             onClose={() => setPatientProfileModalOpen(false)}
             onEdit={() => setPatientFormModalOpen(true)}
             onDelete={() => {
-              // deletePatient(patient.id)
-              // isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
-              // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
-              // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
+              deletePatient(patient.id)
             }}
             onAddConsultation={() => setAddConsultationModalOpen(true)}
           />,
@@ -219,9 +245,6 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             noBtnTitle="Close"
             onYesClick={() => {
               deletePatient(patient.id)
-              // isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
-              // isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
-              // isDeletePatientError && showMessageFeedback('error', `An error occurred while deleting the patient. ${deletePatientError}`)
               setPatientToBeDeleted(false)
             }}
             onNoClick={() => setPatientToBeDeleted(false)}
