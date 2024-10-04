@@ -1,34 +1,30 @@
-import React, { useMemo, useState } from 'react'
+import React, { ReactElement } from 'react'
 import Icon from '@ant-design/icons'
 import { Button, Popconfirm } from 'antd'
-import { PaginatedList, Patient } from '@icure/ehr-lite-sdk'
 import { Typography } from 'antd'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
-import patientPicture from '../../assets/patientPicture.jpg'
 import { phoneIcn, emailIcn, locationIcn, userAvatarPlaceholderIcn } from '../../assets/CustomIcons'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 import dayjs from 'dayjs'
-import { useGetPatientQuery } from '../../core/api/patientApi'
-import { util } from 'prettier'
-import skip = util.skip
-import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
+import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { getImgSRC } from '../../helpers/fileToBase64'
 
-interface ModalPatienProfileProps {
+interface ModalPatientProfileProps {
   isVisible: boolean
-  patient: Patient
+  patient: DecryptedPatient
   onClose: () => void
   onEdit: () => void
   onDelete: () => void
   onAddConsultation: () => void
 }
-const { Title, Text } = Typography
+const { Text } = Typography
 
-export const ModalPatienProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatienProfileProps): JSX.Element => {
+export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatientProfileProps): ReactElement => {
   const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
 
-  const patientAvatarSrc = !picture ? undefined : `data:image/png;base64,${picture}`
+  const patientAvatarSrc = getImgSRC(picture)
   const getAge = (date: number | undefined) => {
     if (!date) {
       return undefined

@@ -1,15 +1,12 @@
-import { GenderEnum, Patient } from '@icure/ehr-lite-sdk'
-import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
-import { HumanNameUseEnum } from '@icure/ehr-lite-sdk/models/enums/HumanNameUse.enum'
-import { LocationAddressTypeEnum } from '@icure/ehr-lite-sdk/models/enums/LocationAddressType.enum'
 import dayjs from 'dayjs'
+import { AddressType, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
 
 export interface PatientFormated {
   id: string
   firstName?: string
   lastName?: string
   dateOfBirth?: number
-  gender?: GenderEnum
+  gender?: Gender
   phoneNumber?: string
   emailAddress?: string
   country?: string
@@ -24,20 +21,20 @@ export interface PatientFormated {
   picture?: any
 }
 
-export const getPatientDataFormated = (patient: Patient): PatientFormated => {
+export const getPatientDataFormated = (patient: DecryptedPatient): PatientFormated => {
   const { id, names, firstName, lastName, dateOfBirth, addresses, gender, picture } = patient
-  const getTelecomBySystem = (telecomSystem: ContactPointTelecomTypeEnum) => {
-    const expectedAddress = addresses?.find(({ telecoms }) => telecoms.some(({ system }) => system === telecomSystem))
-    const expectedTelecom = expectedAddress?.telecoms.find(({ system }) => system === telecomSystem)
-    return expectedTelecom?.value
+  const getTelecomBySystem = (telecomSystem: TelecomType) => {
+    const expectedAddress = addresses?.find(({ telecoms }) => telecoms.some(({ telecomType }) => telecomType === telecomSystem))
+    const expectedTelecom = expectedAddress?.telecoms.find(({ telecomType }) => telecomType === telecomSystem)
+    return expectedTelecom?.telecomNumber
   }
   // get username
-  const officialUserNameObj = names.find((nameElement) => nameElement.use === HumanNameUseEnum.OFFICIAL)
-  const userFirstName = officialUserNameObj && officialUserNameObj?.given?.length !== 0 ? officialUserNameObj?.given?.join(' ') : firstName
-  const userLastName = officialUserNameObj?.family ?? lastName
+  const officialUserNameObj = names.find((nameElement) => nameElement.use === PersonNameUse.Official)
+  const userFirstName = officialUserNameObj && officialUserNameObj?.firstNames?.length !== 0 ? officialUserNameObj?.firstNames?.join(' ') : firstName
+  const userLastName = officialUserNameObj?.lastName ?? lastName
   const userName = userFirstName && userLastName ? userFirstName.concat(' ', userLastName) : userFirstName ?? userLastName
   // get user home address
-  const homeAddressObj = addresses?.find(({ addressType }) => addressType === LocationAddressTypeEnum.HOME)
+  const homeAddressObj = addresses?.find(({ addressType }) => addressType === AddressType.Home)
   const homeAddressString = [homeAddressObj?.street, homeAddressObj?.houseNumber, homeAddressObj?.postalCode, homeAddressObj?.city, homeAddressObj?.country]
     .filter((el) => !!el)
     .join(', ')
@@ -49,8 +46,8 @@ export const getPatientDataFormated = (patient: Patient): PatientFormated => {
     lastName: userLastName,
     dateOfBirth,
     gender,
-    phoneNumber: getTelecomBySystem(ContactPointTelecomTypeEnum.MOBILE) ?? '-',
-    emailAddress: getTelecomBySystem(ContactPointTelecomTypeEnum.EMAIL) ?? '-',
+    phoneNumber: getTelecomBySystem(TelecomType.Mobile) ?? '-',
+    emailAddress: getTelecomBySystem(TelecomType.Email) ?? '-',
     country: homeAddressObj?.country,
     city: homeAddressObj?.city,
     street: homeAddressObj?.street,

@@ -1,11 +1,11 @@
 import { GetProp, UploadFile, UploadProps } from 'antd'
-import { fromByteArray } from 'base64-js'
-export const fileToBase64 = async (file: File): Promise<string> => {
-  return file.arrayBuffer().then((bytes) => fromByteArray(new Uint8Array(bytes)))
+
+export const fileToInt8Array = async (file: File): Promise<Int8Array> => {
+  return file.arrayBuffer().then((bytes) => new Int8Array(bytes))
 }
 
 type FileType = Parameters<GetProp<UploadProps, 'beforeUpload'>>[0]
-export const getFileUploaderCommonProps = (setPatientPictureAsBase64: (files: string | undefined) => void): UploadProps => {
+export const getFileUploaderCommonProps = (setPatientPictureAsInt8Array: (files: Int8Array | undefined) => void): UploadProps => {
   return {
     onPreview: async (file: UploadFile) => {
       let src = file.url as string
@@ -23,10 +23,10 @@ export const getFileUploaderCommonProps = (setPatientPictureAsBase64: (files: st
     },
     beforeUpload: async (file) => {
       try {
-        const base64String = await fileToBase64(file)
-        setPatientPictureAsBase64(base64String)
+        const int8Array = await fileToInt8Array(file)
+        setPatientPictureAsInt8Array(int8Array)
       } catch (error) {
-        console.error('Error converting file to Base64:', error)
+        console.error('Error converting file to Int8Array:', error)
       }
       // Prevent upload
       return false
@@ -34,10 +34,11 @@ export const getFileUploaderCommonProps = (setPatientPictureAsBase64: (files: st
   }
 }
 
-export const getImgSRC = (picture: string | undefined) => {
+export const getImgSRC = (picture: Int8Array | undefined) => {
   if (!picture) {
     return undefined
   }
 
-  return `data:image/png;base64,${picture}`
+  const blob = new Blob([picture], { type: 'image/png' }) // Adjust MIME type as necessary
+  return URL.createObjectURL(blob)
 }

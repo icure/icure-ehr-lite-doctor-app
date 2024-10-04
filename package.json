@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@icure/api": "^8.0.46",
-    "@icure/ehr-lite-sdk": "^3.3.10",
+    "@icure/cardinal-sdk": "^1.0.0-RC.1",
     "@icure/form": "^1.1.15",
     "@reduxjs/toolkit": "^1.8.1",
     "@testing-library/jest-dom": "^5.14.1",
@@ -65,7 +64,6 @@
     "eslint-config-react-app": "^7.0.1",
     "eslint-plugin-flowtype": "^3.13.0",
     "eslint-plugin-import": "^2.25.4",
-    "eslint-plugin-jsdoc": "^38.1.4",
     "eslint-plugin-jsx-a11y": "^6.5.1",
     "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.29.4",

@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from 'react'
+import React, { ReactElement, useEffect, useState } from 'react'
 import { Form, Input, Upload, UploadFile, UploadProps } from 'antd'
-import { Practitioner, Location, LocationAddressTypeEnum, ContactPoint } from '@icure/ehr-lite-sdk'
-import { ContactPointTelecomTypeEnum } from '@icure/ehr-lite-sdk/models/enums/ContactPointTelecomType.enum'
 import ImgCrop from 'antd-img-crop'
 
 import { CustomModal } from '../CustomModal'
@@ -9,17 +7,20 @@ import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practition
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
+import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, MedicalLocation, TelecomType } from '@icure/cardinal-sdk'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
   onClose: () => void
-  practitionerToBeUpdated?: Practitioner
+  practitionerToBeUpdated?: HealthcareParty
 }
-export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): JSX.Element => {
+export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): ReactElement => {
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
+
   const userAvatarSrc = getImgSRC(practitionerToBeUpdated?.picture)
-  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<string | undefined>(undefined)
+
+  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<Int8Array | undefined>(undefined)
   const [fileList, setFileList] = useState<UploadFile[]>(
     !userAvatarSrc
       ? []
@@ -34,18 +35,17 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
   )
   const handleSubmit = (value: any) => {
     const { firstName, lastName, emailAddress, speciality } = value
-    const address = new Location({
-      addressType: LocationAddressTypeEnum.HOME,
+    const address = new DecryptedAddress({
+      addressType: AddressType.Home,
       telecoms: [
-        new ContactPoint({
-          system: ContactPointTelecomTypeEnum.EMAIL,
-          value: emailAddress,
+        new DecryptedTelecom({
+          telecomType: TelecomType.Email,
+          telecomNumber: emailAddress,
         }),
       ],
     })
     const picture = patientPictureAsBase64 ?? practitionerToBeUpdated?.picture
-
-    updatePractitioner(new Practitioner({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
+    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
     form.resetFields()
   }
 
@@ -55,7 +55,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
     }
   }, [isPractitionerUpdatedSuccessfully])
 
-  const practitionerEmail = practitionerToBeUpdated?.addresses[0].telecoms.find((item) => item.system === 'email')?.value
+  const practitionerEmail = practitionerToBeUpdated?.addresses[0].telecoms.find((item) => item.telecomType === TelecomType.Email)?.telecomNumber
 
   const fileUploaderProps: UploadProps = {
     listType: 'picture-card',
@@ -107,7 +107,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             </Form.Item>
             <Form.Item label="Picture" valuePropName="file">
               <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: string | undefined) => setPatientPictureAsBase64(data))}>
+                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsBase64(data))}>
                   {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                 </Upload>
               </ImgCrop>

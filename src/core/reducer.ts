@@ -8,7 +8,7 @@ import { patientApiRtk } from './api/patientApi'
 
 export const appReducer = combineReducers({
   app: app.reducer,
-  ehrLiteApi: api.reducer,
+  cardinalApi: api.reducer,
   practitionerApi: practitionerApiRtk.reducer,
   userApi: userApiRtk.reducer,
   patientApi: patientApiRtk.reducer,

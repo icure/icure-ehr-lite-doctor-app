@@ -5,7 +5,7 @@ import { Input, Button, Form, Checkbox } from 'antd'
 import { useAppDispatch } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { EHRLiteApiState, startAuthentication } from '../../../core/services/auth.api'
+import { CardinalApiState, startAuthentication } from '../../../core/services/auth.api'
 import { SpinLoader } from '../../SpinLoader'
 import { createSelector } from '@reduxjs/toolkit'
 
@@ -16,10 +16,10 @@ interface SignupFormProps {
 }
 
 const reduxSelector = createSelector(
-  (state: { ehrLiteApi: EHRLiteApiState }) => state.ehrLiteApi,
-  (ehrLiteApi: EHRLiteApiState) => ({
-    waitingForToken: ehrLiteApi.waitingForToken,
-    loginProcessStarted: ehrLiteApi.loginProcessStarted,
+  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
+  (cardinalApi: CardinalApiState) => ({
+    waitingForToken: cardinalApi.waitingForToken,
+    loginProcessStarted: cardinalApi.loginProcessStarted,
   }),
 )
 
