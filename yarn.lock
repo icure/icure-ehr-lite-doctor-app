@@ -1994,16 +1994,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/cardinal-sdk@npm:^1.0.0-RC.1":
-  version: 1.0.0-RC.1
-  resolution: "@icure/cardinal-sdk@npm:1.0.0-RC.1"
+"@icure/cardinal-sdk@npm:^1.0.0-RC.7":
+  version: 1.0.0-RC.7
+  resolution: "@icure/cardinal-sdk@npm:1.0.0-RC.7"
   dependencies:
     "@js-joda/core": "npm:3.2.0"
     abort-controller: "npm:3.0.0"
     format-util: "npm:^1.0.5"
     node-fetch: "npm:2.6.7"
-    ws: "npm:8.17.0"
-  checksum: 3f8b4ec24ab2f4252673c58a590efa2321ed5c54043277c8b2e12fbc51fa87eba598d48d4220fc647d833a144631bc000f84d358085cb384184e3cd7f0c0557f
+    ws: "npm:8.17.1"
+  checksum: b5d49973bc8f244327dac62a686bd964c645ee6cf5d6361bb3a8f6d8b75e3e8e7110f0ad212dcadc4330c2914d37cfed126b535c6cb4c028ee0d09dbd171f8b4
   languageName: node
   linkType: hard
 
@@ -8577,7 +8577,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "icure-ehr-lite-doctor-app@workspace:."
   dependencies:
-    "@icure/cardinal-sdk": "npm:^1.0.0-RC.1"
+    "@icure/cardinal-sdk": "npm:^1.0.0-RC.7"
     "@icure/form": "npm:^1.1.15"
     "@reduxjs/toolkit": "npm:^1.8.1"
     "@testing-library/jest-dom": "npm:^5.17.0"
@@ -8605,6 +8605,7 @@ __metadata:
     eslint-plugin-jsx-a11y: "npm:^6.5.1"
     eslint-plugin-prettier: "npm:^4.0.0"
     eslint-plugin-react: "npm:^7.29.4"
+    exponential-backoff: "npm:^3.1.1"
     friendly-challenge: "npm:^0.9.8"
     less: "npm:^4.1.2"
     less-watch-compiler: "npm:^1.16.3"
@@ -16576,9 +16577,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.17.0":
-  version: 8.17.0
-  resolution: "ws@npm:8.17.0"
+"ws@npm:8.17.1":
+  version: 8.17.1
+  resolution: "ws@npm:8.17.1"
   peerDependencies:
     bufferutil: ^4.0.1
     utf-8-validate: ">=5.0.2"
@@ -16587,7 +16588,7 @@ __metadata:
       optional: true
     utf-8-validate:
       optional: true
-  checksum: 55241ec93a66fdfc4bf4f8bc66c8eb038fda2c7a4ee8f6f157f2ca7dc7aa76aea0c0da0bf3adb2af390074a70a0e45456a2eaf80e581e630b75df10a64b0a990
+  checksum: f4a49064afae4500be772abdc2211c8518f39e1c959640457dcee15d4488628620625c783902a52af2dd02f68558da2868fd06e6fd0e67ebcd09e6881b1b5bfe
   languageName: node
   linkType: hard
 

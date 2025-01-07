@@ -1,15 +1,7 @@
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 
-import {
-  AuthenticationMethod,
-  AuthenticationProcessCaptchaType,
-  AuthenticationProcessTelecomType,
-  CardinalSdk,
-  StorageFacade,
-  User,
-  AuthenticationProcessTemplateParameters,
-} from '@icure/cardinal-sdk'
+import { AuthenticationMethod, AuthenticationProcessTelecomType, CardinalSdk, StorageFacade, User, CaptchaOptions } from '@icure/cardinal-sdk'
 
 import { revertAll, setSavedCredentials } from '../app'
 
@@ -123,8 +115,7 @@ export const startAuthentication = createAsyncThunk(
         process.env.REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID!,
         AuthenticationProcessTelecomType.Email,
         email,
-        AuthenticationProcessCaptchaType.FriendlyCaptcha,
-        _payload.captchaToken,
+        new CaptchaOptions.FriendlyCaptcha({ solution: _payload.captchaToken }),
         StorageFacade.usingBrowserLocalStorage(),
         { firstName, lastName },
       )

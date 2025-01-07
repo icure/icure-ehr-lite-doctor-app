@@ -230,7 +230,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             onClose={() => setPatientProfileModalOpen(false)}
             onEdit={() => setPatientFormModalOpen(true)}
             onDelete={() => {
-              deletePatient(patient.id)
+              deletePatient(patient)
             }}
             onAddConsultation={() => setAddConsultationModalOpen(true)}
           />,
@@ -244,7 +244,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             yesBtnTitle="Delete"
             noBtnTitle="Close"
             onYesClick={() => {
-              deletePatient(patient.id)
+              deletePatient(patient)
               setPatientToBeDeleted(false)
             }}
             onNoClick={() => setPatientToBeDeleted(false)}
