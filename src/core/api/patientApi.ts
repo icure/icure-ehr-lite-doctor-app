@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { DecryptedPatient, PatientFilters } from '@icure/cardinal-sdk'
+import { DecryptedPatient, Patient, PatientFilters } from '@icure/cardinal-sdk'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
@@ -79,11 +79,11 @@ export const patientApiRtk = createApi({
             ]
           : [],
     }),
-    deletePatient: builder.mutation<string | undefined, string>({
-      async queryFn(id, { getState }) {
+    deletePatient: builder.mutation<string | undefined, Patient>({
+      async queryFn(patient, { getState }) {
         const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async () => {
-          const result = await patientApi?.deletePatient(id)
+          const result = await patientApi?.deletePatient(patient)
           if (!result) {
             throw new Error('Patient can`t be deleted')
           }
