@@ -47,7 +47,7 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDel
 
   const customModalFooter = () => (
     <div className="customFooter">
-      <Popconfirm title="Delete the patient" description="Are you sure to delete this patient?" onConfirm={onDelete} okText="Yes" cancelText="No">
+      <Popconfirm title="Delete patient" description="Are you sure to delete this patient?" onConfirm={onDelete} okText="Yes" cancelText="No">
         <Button type="link" danger>
           Delete patient
         </Button>

@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { HealthcareParty } from '@icure/cardinal-sdk'
+import { HealthcareParty, HealthcarePartyFilters, PaginatedListIterator } from '@icure/cardinal-sdk'
 
 export const practitionerApiRtk = createApi({
   reducerPath: 'practitionerApi',
@@ -22,7 +22,6 @@ export const practitionerApiRtk = createApi({
       },
       providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
     }),
-
     createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
       async queryFn(practitioner, { getState }) {
         const practitionerApi = (await cardinalApi(getState))?.healthcareParty
