@@ -6,25 +6,12 @@ import { addIcn } from '../../../assets/CustomIcons'
 import './index.css'
 import { createPortal } from 'react-dom'
 import { ModalPatientForm } from '../../ModalPatientForm'
-import { createSelector } from '@reduxjs/toolkit'
-import { CardinalApiState } from '../../../core/services/auth.api'
-import { useAppSelector } from '../../../core/hooks'
-import { useGetPractitionerQuery } from '../../../core/api/practitionerApi'
 
 const { Search } = Input
 
-const reduxSelector = createSelector(
-  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
-  (cardinalApi: CardinalApiState) => ({
-    practitionerId: cardinalApi.user?.healthcarePartyId,
-  }),
-)
 export const ActionsPanel = () => {
-  const { practitionerId } = useAppSelector(reduxSelector)
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
 
-  const { currentData: practitioner } = useGetPractitionerQuery(practitionerId ?? '', { skip: !practitionerId })
-  const practitionerPublicKey = practitioner?.publicKey
   return (
     <>
       <div className="actionsPanel">

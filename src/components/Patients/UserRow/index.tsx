@@ -4,7 +4,7 @@ import { MenuProps, notification, message } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 
-import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, sendIcn, userAvatarPlaceholderIcn } from '../../../assets/CustomIcons'
+import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, sendIcn, userAvatarPlaceholderIcn, shareIcn, emailIcn } from '../../../assets/CustomIcons'
 import { ModalPatientForm } from '../../ModalPatientForm'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalPatientProfile } from '../../ModalPatientProfile'
@@ -16,6 +16,7 @@ import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { getImgSRC } from '../../../helpers/fileToBase64'
 import { useCreateUserMutation } from '../../../core/api/userApi'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { ModalSharePatient } from '../../ModalSharePatient'
 
 interface UserRowProps {
   patient: DecryptedPatient
@@ -26,6 +27,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   const [isAddConsultationModalOpen, setAddConsultationModalOpen] = useState(false)
   const [isPatientProfileModalOpen, setPatientProfileModalOpen] = useState(false)
   const [isPatientToBeDeleted, setPatientToBeDeleted] = useState(false)
+  const [isSharePatientModalOpen, setSharePatientModalOpen] = useState(false)
 
   const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
     useCreateUserMutation()
@@ -78,6 +80,20 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
 
   const items: MenuProps['items'] = [
     {
+      key: 'invite_patient',
+      label: (
+        <div className="userRow__btnGroup__item__dropdownRow">
+          <div className="userRow__btnGroup__item__dropdownRow__icn">
+            <Icon component={emailIcn} />
+          </div>
+          <span>Send invitation email</span>
+        </div>
+      ),
+    },
+    {
+      type: 'divider',
+    },
+    {
       key: 'add_consultation',
       label: (
         <div className="userRow__btnGroup__item__dropdownRow">
@@ -95,9 +111,12 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
           <div className="userRow__btnGroup__item__dropdownRow__icn">
             <Icon component={userIcn} />
           </div>
-          <span>View Profile</span>
+          <span>View profile</span>
         </div>
       ),
+    },
+    {
+      type: 'divider',
     },
     {
       key: 'edit_patient',
@@ -106,18 +125,18 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
           <div className="userRow__btnGroup__item__dropdownRow__icn">
             <Icon component={manageUserIcn} />
           </div>
-          <span>Edit Patient</span>
+          <span>Edit patient</span>
         </div>
       ),
     },
     {
-      key: 'invite_patient',
+      key: 'share_patient',
       label: (
         <div className="userRow__btnGroup__item__dropdownRow">
           <div className="userRow__btnGroup__item__dropdownRow__icn">
-            <Icon component={sendIcn} />
+            <Icon component={shareIcn} />
           </div>
-          <span>Send Invitation Email</span>
+          <span>Share patient</span>
         </div>
       ),
     },
@@ -129,7 +148,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
           <div className="userRow__btnGroup__item__dropdownRow__icn">
             <Icon component={deleteIcn} />
           </div>
-          <span>Delete Patient</span>
+          <span>Delete patient</span>
         </div>
       ),
     },
@@ -138,6 +157,10 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
     switch (key) {
       case 'add_consultation': {
         setAddConsultationModalOpen(true)
+        break
+      }
+      case 'share_patient': {
+        setSharePatientModalOpen(true)
         break
       }
       case 'view_profile': {
@@ -239,7 +262,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
       {isPatientToBeDeleted &&
         createPortal(
           <ModalConfirmAction
-            title="Delete the patient"
+            title="Delete patient"
             description="Are you sure you want to delete this patient? Once deleted, their information can't be recovered, so it's a permanent action."
             yesBtnTitle="Delete"
             noBtnTitle="Close"
@@ -253,6 +276,8 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
           />,
           document.body,
         )}
+      {isSharePatientModalOpen &&
+        createPortal(<ModalSharePatient isVisible={isSharePatientModalOpen} onClose={() => setSharePatientModalOpen(false)} patientToEdit={patient} />, document.body)}
     </>
   )
 }

@@ -22,7 +22,6 @@ export const practitionerApiRtk = createApi({
       },
       providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
     }),
-
     createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
       async queryFn(practitioner, { getState }) {
         const practitionerApi = (await cardinalApi(getState))?.healthcareParty

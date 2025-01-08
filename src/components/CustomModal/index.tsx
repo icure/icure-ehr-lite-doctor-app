@@ -110,7 +110,7 @@ export const CustomModal = ({
         styles: modalStyles,
       }}
     >
-      <Modal open={isVisible} title={title} onCancel={handleClose} footer={getFooter()} style={getResponsiveStyles()} width={innerWidth < breakpoints.md ? '100vw' : width ?? 700}>
+      <Modal open={isVisible} title={title} onCancel={handleClose} footer={getFooter()} style={getResponsiveStyles()} width={innerWidth < breakpoints.md ? '100vw' : width ?? 1000}>
         {children}
       </Modal>
     </ConfigProvider>

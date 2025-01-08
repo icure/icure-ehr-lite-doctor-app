@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { DecryptedPatient, Patient, PatientFilters } from '@icure/cardinal-sdk'
+import { DecryptedPatient, Patient, PatientApi, PatientFilters } from '@icure/cardinal-sdk'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
@@ -95,7 +95,25 @@ export const patientApiRtk = createApi({
         { type: 'Patient', id: id },
       ],
     }),
+    sharePatientWith: builder.mutation<DecryptedPatient | undefined, { patient: DecryptedPatient; delegateId: string }>({
+      async queryFn({ patient, delegateId }, { getState }) {
+        console.log('hi')
+        const patientApi = (await cardinalApi(getState))?.patient
+        return guard([patientApi], async (): Promise<DecryptedPatient> => {
+          const updatedPatient = await patientApi?.shareWith(delegateId, patient)
+          if (!updatedPatient) {
+            throw new Error('Patient does not exist')
+          }
+          const res = new DecryptedPatient(updatedPatient)
+          console.log(res)
+          return res
+        })
+      },
+
+      invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.patient.id }]),
+    }),
   }),
 })
 
-export const { useCreateOrUpdatePatientMutation, useFilterPatientsByDataOwnerQuery, useGetPatientsByIdsQuery, useDeletePatientMutation } = patientApiRtk
+export const { useCreateOrUpdatePatientMutation, useFilterPatientsByDataOwnerQuery, useGetPatientsByIdsQuery, useDeletePatientMutation, useSharePatientWithMutation } =
+  patientApiRtk

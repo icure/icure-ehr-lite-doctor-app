@@ -157,7 +157,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       closeBtnTitle="Cancel"
       handleOk={() => form.submit()}
       okBtnTitle="Save"
-      title={mode === 'edit' ? 'Edit Patient' : 'Create Patient'}
+      title={mode === 'edit' ? 'Edit patient' : 'Create patient'}
     >
       <div className="modalPatientForm">
         {isPatientCreatingOrUpdatingLoading && <SpinLoader />}
