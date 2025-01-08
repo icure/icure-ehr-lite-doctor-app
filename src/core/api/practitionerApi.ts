@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { HealthcareParty, HealthcarePartyFilters, PaginatedListIterator } from '@icure/cardinal-sdk'
+import { HealthcareParty } from '@icure/cardinal-sdk'
 
 export const practitionerApiRtk = createApi({
   reducerPath: 'practitionerApi',
