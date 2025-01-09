@@ -5,6 +5,7 @@ import thunk from 'redux-thunk'
 import { practitionerApiRtk } from './api/practitionerApi'
 import { userApiRtk } from './api/userApi'
 import { patientApiRtk } from './api/patientApi'
+import { deviceApiRtk } from './api/deviceApi'
 
 export const store = configureStore({
   reducer: persistedReducer,
@@ -12,6 +13,7 @@ export const store = configureStore({
     getDefaultMiddleware({ serializableCheck: false, immutableCheck: false }).concat(
       practitionerApiRtk.middleware,
       userApiRtk.middleware,
+      deviceApiRtk.middleware,
       patientApiRtk.middleware,
       thunk,
       // Add your own middleware here. For example, you can add a logger:

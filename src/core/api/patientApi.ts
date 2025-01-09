@@ -103,9 +103,7 @@ export const patientApiRtk = createApi({
           if (!updatedPatient) {
             throw new Error('Patient does not exist')
           }
-          const res = new DecryptedPatient(updatedPatient)
-          console.log(res)
-          return res
+          return new DecryptedPatient(updatedPatient)
         })
       },
 

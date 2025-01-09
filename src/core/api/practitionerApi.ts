@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { HealthcareParty } from '@icure/cardinal-sdk'
+import { HealthcareParty, HealthcarePartyFilters } from '@icure/cardinal-sdk'
+import { loadFromIterator, tagsByIds } from './utils'
 
 export const practitionerApiRtk = createApi({
   reducerPath: 'practitionerApi',
@@ -21,6 +22,15 @@ export const practitionerApiRtk = createApi({
         })
       },
       providesTags: (res) => (res ? [{ type: 'Practitioner', id: res.id }] : []),
+    }),
+    filterPractitionersByName: builder.query<HealthcareParty[] | undefined, string>({
+      async queryFn(name, { getState }) {
+        const practitionerApi = (await cardinalApi(getState))?.healthcareParty
+        return guard([practitionerApi], async (): Promise<HealthcareParty[]> => {
+          return await loadFromIterator(await practitionerApi!.filterHealthPartiesBy(HealthcarePartyFilters.byName(name)), 1000)
+        })
+      },
+      providesTags: tagsByIds('Practitioner'),
     }),
     createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
       async queryFn(practitioner, { getState }) {
@@ -44,4 +54,4 @@ export const practitionerApiRtk = createApi({
   }),
 })
 
-export const { useGetPractitionerQuery, useCreateOrUpdatePractitionerMutation } = practitionerApiRtk
+export const { useGetPractitionerQuery, useFilterPractitionersByNameQuery, useCreateOrUpdatePractitionerMutation } = practitionerApiRtk
