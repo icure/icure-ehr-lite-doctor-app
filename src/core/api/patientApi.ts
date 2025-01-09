@@ -97,16 +97,13 @@ export const patientApiRtk = createApi({
     }),
     sharePatientWith: builder.mutation<DecryptedPatient | undefined, { patient: DecryptedPatient; delegateId: string }>({
       async queryFn({ patient, delegateId }, { getState }) {
-        console.log('hi')
         const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async (): Promise<DecryptedPatient> => {
           const updatedPatient = await patientApi?.shareWith(delegateId, patient)
           if (!updatedPatient) {
             throw new Error('Patient does not exist')
           }
-          const res = new DecryptedPatient(updatedPatient)
-          console.log(res)
-          return res
+          return new DecryptedPatient(updatedPatient)
         })
       },
 

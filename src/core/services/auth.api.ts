@@ -42,7 +42,7 @@ const initialState: CardinalApiState = {
 }
 
 function getError(e: Error): FetchBaseQueryError {
-  return { status: 'CUSTOM_ERROR', error: e.message, data: undefined }
+  return { status: 'CUSTOM_ERROR', error: e.message, data: e }
 }
 
 export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{ error: FetchBaseQueryError } | { data: T | undefined }> => {

@@ -7,13 +7,14 @@ import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practition
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
-import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, MedicalLocation, TelecomType } from '@icure/cardinal-sdk'
+import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, TelecomType } from '@icure/cardinal-sdk'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
   onClose: () => void
   practitionerToBeUpdated?: HealthcareParty
 }
+
 export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpdated }: ModalManageAccountFormProps): ReactElement => {
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()

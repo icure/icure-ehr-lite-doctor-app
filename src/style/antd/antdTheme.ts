@@ -32,6 +32,8 @@ export const ANTD_NEW_THEME = {
     Select: {
       fontSizeLG: 13,
       fontSize: 13,
+      optionSelectedBg: '#DCE7F2',
+      optionSelectedColor: '#084B83',
     },
     Popconfirm: {
       colorWarning: '#EB3437',
