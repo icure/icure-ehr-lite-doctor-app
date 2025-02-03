@@ -1,0 +1,16 @@
+steps:
+  -   name: 'gcr.io/cloud-builders/git'
+      entrypoint: 'bash'
+      args: [ '-c', 'git fetch --unshallow --tags && git checkout ${BRANCH_NAME} && git submodule init && git submodule update' ]
+
+  -   name: 'docker'
+      args: [ 'build', '-t', 'docker.taktik.be/icure-ehr-lite-doctor-app', '.' ]
+
+  -   name: 'docker.taktik.be/icure-ehr-lite-doctor-app'
+      entrypoint: sh
+      args: [ '-c', 'cp -af /app/build /workspace' ]
+
+  -   name: 'gcr.io/cloud-builders/gsutil'
+      args: ["-m", "rsync", "-r", "-c", "-d", "./build", "${_DEPLOY}"]
+
+timeout: 1800s
