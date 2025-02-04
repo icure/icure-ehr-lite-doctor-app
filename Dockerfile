@@ -1,5 +1,5 @@
 # build environment
-FROM node:16-alpine
+FROM node:22-alpine
 RUN apk add --update \
     git \
     python3 \
