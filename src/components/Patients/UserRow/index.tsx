@@ -4,7 +4,7 @@ import { MenuProps, notification, message } from 'antd'
 import { Dropdown, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 
-import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, sendIcn, userAvatarPlaceholderIcn, shareIcn, emailIcn } from '../../../assets/CustomIcons'
+import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, userAvatarPlaceholderIcn, shareIcn, emailIcn } from '../../../assets/CustomIcons'
 import { ModalPatientForm } from '../../ModalPatientForm'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalPatientProfile } from '../../ModalPatientProfile'
@@ -21,6 +21,7 @@ import { ModalSharePatient } from '../../ModalSharePatient'
 interface UserRowProps {
   patient: DecryptedPatient
 }
+
 export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   const [isOverFlowMenuOpen, setOverFlowMenuOpen] = useState(false)
   const [isPatientFormModalOpen, setPatientFormModalOpen] = useState(false)
@@ -31,8 +32,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
 
   const [invitePatient, { error: invitePatientError, isError: isInvitePatientError, isSuccess: isPatientInvitedSuccessfully, isLoading: isPatientInvitingLoading }] =
     useCreateUserMutation()
-  const [deletePatient, { error: deletePatientError, isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletingLoading }] =
-    useDeletePatientMutation()
+  const [deletePatient, { isError: isDeletePatientError, isSuccess: isPatientDeletedSuccessfully, isLoading: isPatientDeletingLoading }] = useDeletePatientMutation()
 
   const [api, notificationContextHolder] = notification.useNotification()
 
@@ -59,18 +59,18 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
   }
 
   useEffect(() => {
-    isPatientInvitingLoading && showMessageFeedback('loading', 'The invite mail is sending...')
-    isPatientInvitedSuccessfully && showMessageFeedback('success', 'The invite mail was sent!')
-    isInvitePatientError &&
+    if (isPatientInvitingLoading) showMessageFeedback('loading', 'The invite mail is sending...')
+    if (isPatientInvitedSuccessfully) showMessageFeedback('success', 'The invite mail was sent!')
+    if (isInvitePatientError)
       openNotification(
         'error',
         'Cannot invite the patient!',
         `An error occurred while sending the invitation letter. ${(invitePatientError as FetchBaseQueryError)?.data ?? invitePatientError}`,
       )
 
-    isPatientDeletingLoading && showMessageFeedback('loading', 'The patient is deleting...')
-    isPatientDeletedSuccessfully && showMessageFeedback('success', 'The patient was deleted!')
-    isDeletePatientError &&
+    if (isPatientDeletingLoading) showMessageFeedback('loading', 'The patient is deleting...')
+    if (isPatientDeletedSuccessfully) showMessageFeedback('success', 'The patient was deleted!')
+    if (isDeletePatientError)
       openNotification(
         'error',
         'We could not delete the patient!',
@@ -172,7 +172,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
         break
       }
       case 'invite_patient': {
-        emailAddress && userNameOneString && invitePatient({ email: emailAddress, id: patient.id, name: userNameOneString })
+        if (emailAddress && userNameOneString) invitePatient({ email: emailAddress, id: patient.id, name: userNameOneString })
         break
       }
       case 'delete_patient': {

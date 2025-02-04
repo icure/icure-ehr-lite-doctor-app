@@ -15,7 +15,7 @@ const FriendlyCaptcha = ({ successCallback }: FriendlyCaptchaProps) => {
     successCallback(solution)
   }
 
-  const errorCallback = (err: any) => {
+  const errorCallback = (err: Error) => {
     console.log('There was an error when trying to solve the Captcha.')
     console.log(err)
   }

@@ -3,7 +3,6 @@ import { DatePicker, Form, Input, Select, Upload } from 'antd'
 import type { UploadFile, UploadProps, GetProps } from 'antd'
 import ImgCrop from 'antd-img-crop'
 import dayjs from 'dayjs'
-import customParseFormat from 'dayjs/plugin/customParseFormat'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
@@ -58,7 +57,9 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     { error: createOrUpdatePatientError, isError: isCreateOrUpdatePatientError, isSuccess: isPatientCreatedOrUpdateSuccessfully, isLoading: isPatientCreatingOrUpdatingLoading },
   ] = useCreateOrUpdatePatientMutation()
 
-  isCreateOrUpdatePatientError && console.log(createOrUpdatePatientError)
+  if (isCreateOrUpdatePatientError) {
+    console.log(createOrUpdatePatientError)
+  }
 
   const getPreparedUserData = (value: PatientForm) => {
     const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } = value
@@ -115,7 +116,9 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
   }
 
   useEffect(() => {
-    isPatientCreatedOrUpdateSuccessfully && onClose()
+    if (isPatientCreatedOrUpdateSuccessfully) {
+      onClose()
+    }
   }, [isPatientCreatedOrUpdateSuccessfully])
 
   const handleOnClose = () => {

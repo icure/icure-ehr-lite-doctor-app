@@ -1,5 +1,5 @@
 import dayjs from 'dayjs'
-import { AddressType, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+import { AddressType, DecryptedPatient, Gender, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
 
 export interface PatientFormated {
   id: string
@@ -18,7 +18,7 @@ export interface PatientFormated {
   userNameOneString?: string
   userHomeAddressOneString?: string
   userDateOfBirthOneString?: string
-  picture?: any
+  picture?: Int8Array
 }
 
 export const getPatientDataFormated = (patient: DecryptedPatient): PatientFormated => {
@@ -32,7 +32,7 @@ export const getPatientDataFormated = (patient: DecryptedPatient): PatientFormat
   const officialUserNameObj = names.find((nameElement) => nameElement.use === PersonNameUse.Official)
   const userFirstName = officialUserNameObj && officialUserNameObj?.firstNames?.length !== 0 ? officialUserNameObj?.firstNames?.join(' ') : firstName
   const userLastName = officialUserNameObj?.lastName ?? lastName
-  const userName = userFirstName && userLastName ? userFirstName.concat(' ', userLastName) : userFirstName ?? userLastName
+  const userName = userFirstName && userLastName ? userFirstName.concat(' ', userLastName) : (userFirstName ?? userLastName)
   // get user home address
   const homeAddressObj = addresses?.find(({ addressType }) => addressType === AddressType.Home)
   const homeAddressString = [homeAddressObj?.street, homeAddressObj?.houseNumber, homeAddressObj?.postalCode, homeAddressObj?.city, homeAddressObj?.country]

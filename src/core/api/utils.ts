@@ -15,7 +15,7 @@ export async function loadFromIterator<T>(paginatedListIterator: PaginatedListIt
   return loadFromIterator<T>(paginatedListIterator, min, items)
 }
 
-const tagById =
+export const tagById =
   <TagType extends string>(tagType: TagType) =>
   (result: { id?: string }) =>
     result?.id ? [{ type: tagType, id: result.id }] : []

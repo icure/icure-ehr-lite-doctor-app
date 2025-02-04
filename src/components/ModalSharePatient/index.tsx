@@ -3,9 +3,6 @@ import { Form } from 'antd'
 import { CustomModal } from '../CustomModal'
 import './index.css'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
-import { createSelector } from '@reduxjs/toolkit'
-import { CardinalApiState, getApiFromState } from '../../core/services/auth.api'
-import { useAppSelector } from '../../core/hooks'
 import { useSharePatientWithMutation } from '../../core/api/patientApi'
 import { SpinLoader } from '../SpinLoader'
 import { DevicesSelect } from '../DevicesSelect'
@@ -17,21 +14,12 @@ interface ModalPatientFormProps {
   patientToEdit: DecryptedPatient
 }
 
-const reduxSelector = createSelector(
-  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
-  (cardinalApi: CardinalApiState) => ({
-    cardinalApi: getApiFromState(() => cardinalApi),
-  }),
-)
-
 export const ModalSharePatient = ({ isVisible, onClose, patientToEdit }: ModalPatientFormProps): ReactElement => {
   const [form] = Form.useForm()
-  const { cardinalApi } = useAppSelector(reduxSelector)
 
-  const [sharePatient, { error: sharePatientError, isError: isSharePatientError, isSuccess: isSharePatientSuccessfully, isLoading: isSharePatientLoading }] =
-    useSharePatientWithMutation()
+  const [sharePatient, { error: sharePatientError, isError: isSharePatientError, isLoading: isSharePatientLoading }] = useSharePatientWithMutation()
 
-  isSharePatientError && console.error(sharePatientError)
+  if (isSharePatientError) console.error(sharePatientError)
 
   const handleOnClose = () => {
     form.resetFields()

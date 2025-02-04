@@ -2,12 +2,9 @@ import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Input, Button, Form, Checkbox } from 'antd'
 
-import { useAppDispatch } from '../../../core/hooks'
 import { routes } from '../../../navigation/Router'
 import FriendlyCaptcha from '../FriendlyCaptcha'
-import { CardinalApiState, startAuthentication } from '../../../core/services/auth.api'
 import { SpinLoader } from '../../SpinLoader'
-import { createSelector } from '@reduxjs/toolkit'
 
 interface SignupFormProps {
   state: 'initialised' | 'loading' | 'waitingForToken'
@@ -15,17 +12,8 @@ interface SignupFormProps {
   submitEmailAndValidationTokenForAuthentication: (email: string, validationCode: string) => void
 }
 
-const reduxSelector = createSelector(
-  (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
-  (cardinalApi: CardinalApiState) => ({
-    waitingForToken: cardinalApi.waitingForToken,
-    loginProcessStarted: cardinalApi.loginProcessStarted,
-  }),
-)
-
 const SignupForm: React.FC<SignupFormProps> = ({ state, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
   const [captchaToken, setCaptchaToken] = useState<string | undefined>(undefined)
-  const dispatch = useAppDispatch()
 
   const doneCallback = (solution: string) => {
     setCaptchaToken(solution)

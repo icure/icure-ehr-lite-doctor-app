@@ -27,7 +27,7 @@ export const userApiRtk = createApi({
           return new User(createdUser)
         })
       },
-      invalidatesTags: (result, error, arg) =>
+      invalidatesTags: (result) =>
         !!result
           ? [
               { type: 'User', id: 'all' },

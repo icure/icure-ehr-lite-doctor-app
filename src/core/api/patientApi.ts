@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { guard, cardinalApi } from '../services/auth.api'
-import { DecryptedPatient, Patient, PatientApi, PatientFilters } from '@icure/cardinal-sdk'
+import { DecryptedPatient, Patient, PatientFilters } from '@icure/cardinal-sdk'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',

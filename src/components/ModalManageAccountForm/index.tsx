@@ -34,7 +34,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
           },
         ],
   )
-  const handleSubmit = (value: any) => {
+  const handleSubmit = (value: { firstName: string; lastName: string; emailAddress: string; speciality: string }) => {
     const { firstName, lastName, emailAddress, speciality } = value
     const address = new DecryptedAddress({
       addressType: AddressType.Home,

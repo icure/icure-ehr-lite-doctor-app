@@ -8,12 +8,12 @@ import dayjs from 'dayjs'
 interface modalAddConsultationFormFormProps {
   isVisible: boolean
   onClose: () => void
-  onSubmit: (value: any) => void
+  onSubmit: (value: unknown) => void
 }
 export const ModalAddConsultationForm = ({ isVisible, onClose, onSubmit }: modalAddConsultationFormFormProps) => {
   const [form] = Form.useForm()
 
-  const handleSubmit = (value: any) => {
+  const handleSubmit = (value: unknown) => {
     onSubmit(value)
     form.submit()
   }
