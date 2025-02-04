@@ -3459,7 +3459,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@testing-library/dom@npm:^8.5.0":
+"@testing-library/dom@npm:^8.20.1, @testing-library/dom@npm:^8.5.0":
   version: 8.20.1
   resolution: "@testing-library/dom@npm:8.20.1"
   dependencies:
@@ -8580,6 +8580,7 @@ __metadata:
     "@icure/cardinal-sdk": "npm:^1.0.0-RC.7"
     "@icure/form": "npm:^1.1.15"
     "@reduxjs/toolkit": "npm:^1.8.1"
+    "@testing-library/dom": "npm:^8.20.1"
     "@testing-library/jest-dom": "npm:^5.17.0"
     "@testing-library/react": "npm:^13.4.0"
     "@testing-library/user-event": "npm:^13.5.0"
@@ -8619,6 +8620,7 @@ __metadata:
     react-redux: "npm:^8.0.1"
     react-router-dom: "npm:^6.10.0"
     react-scripts: "npm:5.0.1"
+    redux: "npm:^4.1.2"
     redux-persist: "npm:^6.0.0"
     typescript: "npm:^4.9.5"
     web-vitals: "npm:^2.1.0"
@@ -13853,7 +13855,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"redux@npm:^4.2.1":
+"redux@npm:^4.1.2, redux@npm:^4.2.1":
   version: 4.2.1
   resolution: "redux@npm:4.2.1"
   dependencies:
