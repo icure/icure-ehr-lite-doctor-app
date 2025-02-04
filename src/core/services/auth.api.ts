@@ -162,6 +162,7 @@ export const completeAuthentication = createAsyncThunk('cardinalApi/completeAuth
     return new User(user)
   } catch (e) {
     console.error(`Couldn't complete authentication: ${e}`)
+    throw e
   } finally {
     dispatch(setLoginProcessStarted(false))
   }
