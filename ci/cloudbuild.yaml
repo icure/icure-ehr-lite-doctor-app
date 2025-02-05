@@ -4,9 +4,9 @@ steps:
       args: [ '-c', 'git fetch --unshallow --tags && git checkout ${BRANCH_NAME} && git submodule init && git submodule update' ]
 
   -   name: 'docker'
-      args: [ 'build', '-t', 'docker.taktik.be/icure-ehr-lite-doctor-app', '.' ]
+      args: [ "build", "-e", "REACT_APP_EXTERNAL_SERVICES_SPEC_ID=${_REACT_APP_EXTERNAL_SERVICES_SPEC_ID}", "-e", "REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID=${_REACT_APP_EMAIL_AUTHENTICATION_PROCESS_ID}","-e", "REACT_APP_PARENT_ORGANISATION_ID=${_REACT_APP_PARENT_ORGANISATION_ID}","-e", "REACT_APP_FRIENDLY_CAPTCHA_SITE_KEY=${_REACT_APP_FRIENDLY_CAPTCHA_SITE_KEY}", "-t", "docker.taktik.be/icure-ehr-lite-doctor-app", "." ]
 
-  -   name: 'docker.taktik.be/icure-ehr-lite-doctor-app'
+  -   name: 'docker.taktik.be/ic-eure-ehr-lite-doctor-app'
       entrypoint: sh
       args: [ '-c', 'cp -af /app/build /workspace' ]
 
