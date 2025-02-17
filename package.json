@@ -21,7 +21,8 @@
     "react-router-dom": "^7.1.5",
     "react-scripts": "^5.0.1",
     "redux": "^4.1.2",
-    "redux-persist": "^6.0.0"
+    "redux-persist": "^6.0.0",
+    "uuid": "^11.0.5"
   },
   "scripts": {
     "start": "concurrently --kill-others \"less-watch-compiler --config less-watcher.config.json\" \"react-scripts start\"",

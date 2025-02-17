@@ -1,7 +1,7 @@
-import React, { ReactElement, CSSProperties } from 'react'
-import { Modal, Button, ConfigProvider } from 'antd'
+import React, { CSSProperties, ReactElement } from 'react'
+import { Button, ConfigProvider, Modal } from 'antd'
 
-import { getWindowSize, breakpoints } from '../../helpers/windowSize'
+import { breakpoints, getWindowSize } from '../../helpers/windowSize'
 
 interface PatientFormModalProps {
   isVisible: boolean

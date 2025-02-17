@@ -25,6 +25,10 @@ export const ANTD_NEW_THEME = {
       fontSizeLG: 13,
       fontSize: 13,
     },
+    InputNumber: {
+      fontSizeLG: 13,
+      fontSize: 13,
+    },
     DatePicker: {
       fontSizeLG: 13,
       fontSize: 13,

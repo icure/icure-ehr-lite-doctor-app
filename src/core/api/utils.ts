@@ -19,6 +19,7 @@ export const tagById =
   <TagType extends string>(tagType: TagType) =>
   (result: { id?: string }) =>
     result?.id ? [{ type: tagType, id: result.id }] : []
+
 export const tagsByIds =
   <TagType extends string>(tagType: TagType, listMarker?: string) =>
   (result: { id?: string }[] | undefined) => {

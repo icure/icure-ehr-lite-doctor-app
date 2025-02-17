@@ -1,10 +1,9 @@
 import React, { ReactElement, useEffect, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { MenuProps, notification, message } from 'antd'
-import { Dropdown, Tooltip } from 'antd'
+import { Dropdown, MenuProps, message, notification, Tooltip } from 'antd'
 import { createPortal } from 'react-dom'
 
-import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, userAvatarPlaceholderIcn, shareIcn, emailIcn } from '../../../assets/CustomIcons'
+import { deleteIcn, emailIcn, manageUserIcn, moreVerticalIcn, shareIcn, stethoscopeIcn, userAvatarPlaceholderIcn, userIcn } from '../../../assets/CustomIcons'
 import { ModalPatientForm } from '../../ModalPatientForm'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalPatientProfile } from '../../ModalPatientProfile'
@@ -241,10 +240,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
       {isPatientFormModalOpen &&
         createPortal(<ModalPatientForm mode="edit" patientToEdit={patient} isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} />, document.body)}
       {isAddConsultationModalOpen &&
-        createPortal(
-          <ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} onSubmit={() => console.log('hi')} />,
-          document.body,
-        )}
+        createPortal(<ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} patient={patient} />, document.body)}
       {isPatientProfileModalOpen &&
         createPortal(
           <ModalPatientProfile
