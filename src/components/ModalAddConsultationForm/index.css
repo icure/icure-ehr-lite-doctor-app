@@ -116,7 +116,6 @@ body * {
   width: 100%;
   display: flex;
   align-self: stretch;
-  max-height: 700px;
 }
 @media screen and (max-width: calc(768px - 1px)) {
   .modalAddConsultationForm {
@@ -135,14 +134,29 @@ body * {
   }
 }
 .modalAddConsultationForm__form__inputs {
+  width: 100%;
   display: flex;
   flex-direction: column;
   flex: 1 0 0;
   gap: 12px;
+  padding-bottom: 12px;
 }
-@media screen and (max-width: calc(768px - 1px)) {
-  .modalAddConsultationForm__form__inputs {
-    padding-bottom: 12px;
-  }
+.modalAddConsultationForm__form__infoBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 0;
+}
+.modalAddConsultationForm__form__infoBlock__title {
+  color: #303443;
+  font-family: Lato700, sans-serif;
+  font-size: 13px;
+  font-style: normal;
+  line-height: normal;
+}
+.modalAddConsultationForm__form__infoBlock__inputs {
+  display: flex;
+  padding-left: 12px;
+  gap: 12px;
 }
 /*# sourceMappingURL=index.css.map */

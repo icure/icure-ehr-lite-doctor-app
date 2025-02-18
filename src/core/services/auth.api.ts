@@ -1,7 +1,6 @@
+import { AuthenticationMethod, AuthenticationProcessTelecomType, CaptchaOptions, CardinalSdk, StorageFacade, User } from '@icure/cardinal-sdk'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-
-import { AuthenticationMethod, AuthenticationProcessTelecomType, CardinalSdk, StorageFacade, User, CaptchaOptions } from '@icure/cardinal-sdk'
 
 import { revertAll, setSavedCredentials } from '../app'
 
@@ -79,9 +78,7 @@ export const getApiFromState = async (getState: () => CardinalApiState | { cardi
     return undefined
   }
 
-  const cachedApi = apiCache[`${user.groupId}/${user.id}`] as CardinalSdk
-
-  return cachedApi
+  return apiCache[`${user.groupId}/${user.id}`] as CardinalSdk
 }
 
 export const cardinalApi = async (getState: () => unknown) => {
@@ -173,7 +170,9 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
     cardinalApi: { email, token },
   } = getState() as { cardinalApi: CardinalApiState }
   dispatch(setLoginProcessStarted(true))
-
+  console.log('1.1')
+  console.log('email: ' + email)
+  console.log('token: ' + token)
   if (!email) {
     dispatch(setLoginProcessStarted(false))
     throw new Error('No email provided')
@@ -183,6 +182,7 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
     dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
+  console.log('1.2')
   try {
     const api = await CardinalSdk.initialize(
       undefined,
@@ -198,6 +198,8 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
     return new User(user)
   } catch (e) {
     console.error(`Couldn't login: ${e}`)
+    dispatch(revertAll())
+    dispatch(resetCredentials())
   } finally {
     dispatch(setLoginProcessStarted(false))
   }
@@ -257,7 +259,7 @@ export const api = createSlice({
     })
     builder.addCase(completeAuthentication.fulfilled, (state, { payload: user }) => {
       state.user = user as User
-      state.online = true
+      // state.online = true
       state.waitingForToken = false
     })
     builder.addCase(completeAuthentication.rejected, (state, {}) => {

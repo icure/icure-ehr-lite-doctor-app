@@ -112,16 +112,8 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
-.customFooter {
-  display: flex;
-  justify-content: space-between;
-  width: 100%;
-}
-.customFooter__btnGroup {
-  display: flex;
-  gap: 12px;
-}
 .modalPatienProfile {
+  width: 100%;
   display: flex;
   padding: 24px 24px 0 24px;
   flex-direction: column;
@@ -147,6 +139,7 @@ body * {
   }
 }
 .modalPatienProfile__shortInfo {
+  width: 100%;
   display: flex;
   align-items: flex-start;
   align-self: stretch;
@@ -236,13 +229,6 @@ body * {
   gap: 12px;
   align-self: stretch;
 }
-.modalPatienProfile__shortInfo__contactDetails h4 {
-  color: #303443;
-  font-family: Lato700, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  line-height: normal;
-}
 .modalPatienProfile__shortInfo__contactDetails__itemsContainer {
   display: flex;
   flex-direction: column;
@@ -284,14 +270,6 @@ body * {
   gap: 12px;
   align-self: stretch;
 }
-.modalPatienProfile__shortInfo__overview h4 {
-  color: #303443;
-  text-align: justify;
-  font-family: Lato700, sans-serif;
-  font-size: 16px;
-  font-style: normal;
-  line-height: normal;
-}
 .modalPatienProfile__shortInfo__overview__itemsWrap {
   display: flex;
   align-items: flex-start;
@@ -324,35 +302,16 @@ body * {
   align-items: flex-start;
   gap: 4px;
 }
-.modalPatienProfile__expandedInfo {
-  display: flex;
-  padding: 12px 18px;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 24px;
-  align-self: stretch;
-  border-radius: 8px;
-  border: 1px solid #dce7f2;
-}
-.modalPatienProfile__expandedInfo__item {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  align-self: stretch;
-}
-.modalPatienProfile__expandedInfo__item h5 {
-  color: #9ca8b2;
-  text-align: justify;
-  font-size: 14px;
-  font-style: normal;
-  line-height: normal;
-}
-.modalPatienProfile__expandedInfo__item p {
+.modalPatienProfile h4 {
   color: #303443;
-  text-align: justify;
-  font-size: 15px;
+  font-family: Lato700, sans-serif;
+  font-size: 16px;
   font-style: normal;
   line-height: normal;
+}
+.modalPatienProfile h4.consultationsHeading {
+  width: 100%;
+  background-color: #eef6fe;
+  padding: 4px;
 }
 /*# sourceMappingURL=index.css.map */

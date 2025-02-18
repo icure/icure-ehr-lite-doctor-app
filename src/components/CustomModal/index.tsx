@@ -1,37 +1,63 @@
-import React, { ReactElement, CSSProperties } from 'react'
-import { Modal, Button, ConfigProvider } from 'antd'
+import { Button, ConfigProvider, Modal } from 'antd'
+import React, { CSSProperties, ReactElement } from 'react'
 
-import { getWindowSize, breakpoints } from '../../helpers/windowSize'
+import { DEFAULT_MODAL_CONTENT_HEIGHT, DEFAULT_MODAL_WIDTH } from '../../constants'
+import { breakpoints, getWindowSize } from '../../helpers/windowSize'
 
 interface PatientFormModalProps {
   isVisible: boolean
   handleClose: () => void
-  closeBtnTitle?: string
-  handleOk?: (value: unknown) => void
-  okBtnTitle?: string | ReactElement
+  secondaryBtnTitle?: string
+  handleClickSecondaryBtn?: () => void
+  handleClickPrimaryBtn?: (value: unknown) => void
+  primaryBtnTitle?: string | ReactElement
   children: ReactElement
   width?: number
+  contentHeight?: number
   title: string
   customFooter?: ReactElement
   mode?: 'danger' | undefined
-  okBtnDisabled?: boolean
+  primaryBtnDisabled?: boolean
+}
+
+export const getCustomModalResponsiveStyles = (mobileViewCondition: boolean) => {
+  if (mobileViewCondition) {
+    return {
+      margin: 0,
+      top: 0,
+      height: '100vh',
+      paddingTop: 20,
+      paddingBottom: 0,
+    }
+  } else {
+    return {
+      top: '5%',
+      height: 'calc(100vh - 5%)',
+      display: 'flex',
+      overflow: 'hidden',
+      maxWidth: '100vw',
+      width: '100vw',
+    }
+  }
 }
 
 export const CustomModal = ({
   isVisible,
   handleClose,
-  handleOk,
+  handleClickPrimaryBtn,
+  handleClickSecondaryBtn,
   children,
   width,
+  contentHeight,
   title,
-  closeBtnTitle,
-  okBtnTitle,
+  secondaryBtnTitle,
+  primaryBtnTitle,
   customFooter,
   mode,
-  okBtnDisabled,
+  primaryBtnDisabled,
 }: PatientFormModalProps): ReactElement => {
   const { innerWidth } = getWindowSize()
-
+  console.log(contentHeight)
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
       borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
@@ -41,7 +67,7 @@ export const CustomModal = ({
       margin: 0,
     },
     mask: {
-      background: 'rgba(8, 75, 131, 0.25)',
+      background: 'rgba(8, 75, 131, 0.5)',
     },
     footer: {
       borderTop: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
@@ -52,37 +78,21 @@ export const CustomModal = ({
     content: {
       padding: 0,
       background: 'white',
-      height: innerWidth < breakpoints.md ? '100%' : 'auto',
-      width: '100%',
+      maxHeight: innerWidth < breakpoints.md ? '100%' : (contentHeight ?? DEFAULT_MODAL_CONTENT_HEIGHT),
+      height: '100%',
+
+      width: '100vw',
+      maxWidth: innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH),
       display: 'flex',
       flexDirection: 'column',
       paddingBottom: 0,
+      overflow: 'hidden',
     },
     body: {
-      flexGrow: 1,
+      flex: 1,
       display: 'flex',
       overflowY: 'scroll',
     },
-  }
-
-  const getResponsiveStyles = () => {
-    if (innerWidth < breakpoints.md) {
-      return {
-        margin: 0,
-        top: 0,
-        height: '100%',
-        paddingTop: 20,
-        paddingBottom: 0,
-        display: 'flex',
-        background: 'rgba(8, 75, 131, 0.25)',
-        overflow: 'hidden',
-        maxWidth: '100vw',
-      }
-    } else {
-      return {
-        top: 100,
-      }
-    }
   }
 
   const getFooter = () => {
@@ -91,14 +101,14 @@ export const CustomModal = ({
     }
 
     return [
-      closeBtnTitle && handleClose && (
-        <Button key="back" onClick={handleClose}>
-          {closeBtnTitle}
+      secondaryBtnTitle && handleClose && (
+        <Button key="back" onClick={handleClickSecondaryBtn ?? handleClose}>
+          {secondaryBtnTitle}
         </Button>
       ),
-      okBtnTitle && handleOk && (
-        <Button key="submit" type="primary" danger={mode === 'danger'} onClick={handleOk} disabled={okBtnDisabled}>
-          {okBtnTitle}
+      primaryBtnTitle && handleClickPrimaryBtn && (
+        <Button key="submit" type="primary" danger={mode === 'danger'} onClick={handleClickPrimaryBtn} disabled={primaryBtnDisabled}>
+          {primaryBtnTitle}
         </Button>
       ),
     ]
@@ -115,8 +125,8 @@ export const CustomModal = ({
         title={title}
         onCancel={handleClose}
         footer={getFooter()}
-        style={getResponsiveStyles()}
-        width={innerWidth < breakpoints.md ? '100vw' : (width ?? 1000)}
+        style={getCustomModalResponsiveStyles(innerWidth < breakpoints.md)}
+        width={innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH)}
       >
         {children}
       </Modal>

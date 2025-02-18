@@ -1,13 +1,13 @@
-import React, { ReactElement, useEffect, useState } from 'react'
+import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, TelecomType } from '@icure/cardinal-sdk'
 import { Form, Input, Upload, UploadFile, UploadProps } from 'antd'
 import ImgCrop from 'antd-img-crop'
+import React, { ReactElement, useEffect, useState } from 'react'
+import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practitionerApi'
+import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 
 import { CustomModal } from '../CustomModal'
-import { useCreateOrUpdatePractitionerMutation } from '../../core/api/practitionerApi'
 import { SpinLoader } from '../SpinLoader'
 import './index.css'
-import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
-import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, TelecomType } from '@icure/cardinal-sdk'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
@@ -76,7 +76,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
   }
 
   return (
-    <CustomModal isVisible={isVisible} handleClose={onClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Manage Account">
+    <CustomModal isVisible={isVisible} handleClose={onClose} secondaryBtnTitle="Cancel" handleClickPrimaryBtn={() => form.submit()} primaryBtnTitle="Save" title="Manage Account">
       <div className="modalManageAccountForm">
         {isPractitionerUpdatingLoading && <SpinLoader />}
         <Form

@@ -1,16 +1,25 @@
 @import '../../style/less/index';
 
-.PatientImgCrop{
-  .ant-modal-body{
+.PatientImgCrop {
+  .ant-modal-body {
     flex-direction: column;
   }
+
+  width: 100%;
+  display: flex;
+  align-self: stretch;
+
+  .media-breakpoint-down(@md,
+  {
+    flex-grow: 1;
+  });
 }
 
 .modalPatientForm {
   width: 100%;
   display: flex;
   align-self: stretch;
-  max-height: 700px;
+  //max-height: 700px;
   position: relative;
 
   .media-breakpoint-down(@md,
@@ -18,7 +27,7 @@
     flex-grow: 1;
   });
 
-  &__form{
+  &__form {
     display: flex;
     padding: 24px 24px 0 24px;
     flex-direction: column;

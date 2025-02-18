@@ -1,21 +1,20 @@
-import React, { ReactElement, useEffect, useState } from 'react'
 import Icon from '@ant-design/icons'
-import { MenuProps, notification, message } from 'antd'
-import { Dropdown, Tooltip } from 'antd'
+import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
+import { Dropdown, MenuProps, message, notification, Tooltip } from 'antd'
+import React, { ReactElement, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
-import { moreVerticalIcn, userIcn, deleteIcn, stethoscopeIcn, manageUserIcn, userAvatarPlaceholderIcn, shareIcn, emailIcn } from '../../../assets/CustomIcons'
-import { ModalPatientForm } from '../../ModalPatientForm'
+import { deleteIcn, emailIcn, manageUserIcn, moreVerticalIcn, shareIcn, stethoscopeIcn, userAvatarPlaceholderIcn, userIcn } from '../../../assets/CustomIcons'
+import { useDeletePatientMutation } from '../../../core/api/patientApi'
+import { useCreateUserMutation } from '../../../core/api/userApi'
+import { getImgSRC } from '../../../helpers/fileToBase64'
+import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
+import { ModalConfirmAction } from '../../ModalConfirmAction'
+import { ModalPatientForm } from '../../ModalPatientForm'
 import { ModalPatientProfile } from '../../ModalPatientProfile'
 import './index.css'
-import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
-import { ModalConfirmAction } from '../../ModalConfirmAction'
-import { useDeletePatientMutation } from '../../../core/api/patientApi'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
-import { getImgSRC } from '../../../helpers/fileToBase64'
-import { useCreateUserMutation } from '../../../core/api/userApi'
-import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
 import { ModalSharePatient } from '../../ModalSharePatient'
 
 interface UserRowProps {
@@ -241,10 +240,7 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
       {isPatientFormModalOpen &&
         createPortal(<ModalPatientForm mode="edit" patientToEdit={patient} isVisible={isPatientFormModalOpen} onClose={() => setPatientFormModalOpen(false)} />, document.body)}
       {isAddConsultationModalOpen &&
-        createPortal(
-          <ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} onSubmit={() => console.log('hi')} />,
-          document.body,
-        )}
+        createPortal(<ModalAddConsultationForm isVisible={isAddConsultationModalOpen} onClose={() => setAddConsultationModalOpen(false)} patient={patient} />, document.body)}
       {isPatientProfileModalOpen &&
         createPortal(
           <ModalPatientProfile
@@ -252,9 +248,6 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             isVisible={isPatientProfileModalOpen}
             onClose={() => setPatientProfileModalOpen(false)}
             onEdit={() => setPatientFormModalOpen(true)}
-            onDelete={() => {
-              deletePatient(patient)
-            }}
             onAddConsultation={() => setAddConsultationModalOpen(true)}
           />,
           document.body,
