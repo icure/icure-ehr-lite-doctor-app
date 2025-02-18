@@ -116,7 +116,6 @@ body * {
   width: 100%;
   display: flex;
   align-self: stretch;
-  max-height: 700px;
   position: relative;
 }
 @media screen and (max-width: calc(768px - 1px)) {

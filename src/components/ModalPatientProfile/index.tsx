@@ -1,21 +1,21 @@
-import React, { ReactElement } from 'react'
 import Icon from '@ant-design/icons'
-import { Button, Popconfirm, Typography } from 'antd'
-import { differenceInDays, differenceInMonths, differenceInYears, fromUnixTime } from 'date-fns'
-import { createSelector } from '@reduxjs/toolkit'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { createSelector } from '@reduxjs/toolkit'
+import { Typography } from 'antd'
+import { differenceInDays, differenceInMonths, differenceInYears, fromUnixTime } from 'date-fns'
+import React, { ReactElement } from 'react'
+import { emailIcn, locationIcn, phoneIcn, userAvatarPlaceholderIcn } from '../../assets/CustomIcons'
+import { useFindContactsByHcPartyPatientQuery } from '../../core/api/contactApi'
+import { useAppSelector } from '../../core/hooks'
+import { CardinalApiState } from '../../core/services/auth.api'
+import { formatTimestampToHumanReadable } from '../../helpers/dateFormaters'
+import { getImgSRC } from '../../helpers/fileToBase64'
+import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
+import { CommonPlaceholder } from '../CommonPlaceholder'
 
 import { CustomModal } from '../CustomModal'
-import { emailIcn, locationIcn, phoneIcn, userAvatarPlaceholderIcn } from '../../assets/CustomIcons'
-import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
-import { getImgSRC } from '../../helpers/fileToBase64'
-import { useFindContactsByHcPartyPatientQuery } from '../../core/api/contactApi'
-import { CardinalApiState } from '../../core/services/auth.api'
-import { useAppSelector } from '../../core/hooks'
-import { SpinLoader } from '../SpinLoader'
-import { formatTimestampToHumanReadable } from '../../helpers/dateFormaters'
 import './index.css'
-import { CommonPlaceholder } from '../CommonPlaceholder'
+import { SpinLoader } from '../SpinLoader'
 import { Consultation } from './Consultation'
 
 interface ModalPatientProfileProps {
@@ -23,7 +23,6 @@ interface ModalPatientProfileProps {
   patient: DecryptedPatient
   onClose: () => void
   onEdit: () => void
-  onDelete: () => void
   onAddConsultation: () => void
 }
 
@@ -36,7 +35,7 @@ const reduxSelector = createSelector(
   }),
 )
 
-export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDelete, onAddConsultation }: ModalPatientProfileProps): ReactElement => {
+export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAddConsultation }: ModalPatientProfileProps): ReactElement => {
   const { healthcarePartyId } = useAppSelector(reduxSelector)
   const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
   const { data: listOfContacts, isLoading: isListOfContactsLoading } = useFindContactsByHcPartyPatientQuery(
@@ -75,24 +74,19 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDel
 
     return 'error'
   }
-  const customModalFooter = () => (
-    <div className="customFooter">
-      <Popconfirm title="Delete patient" description="Are you sure to delete this patient?" onConfirm={onDelete} okText="Yes" cancelText="No">
-        <Button type="link" danger>
-          Delete patient
-        </Button>
-      </Popconfirm>
 
-      <div className="customFooter__btnGroup">
-        <Button onClick={onEdit}>Edit patient profile</Button>
-        <Button onClick={onAddConsultation} type="primary">
-          Add consultation
-        </Button>
-      </div>
-    </div>
-  )
   return (
-    <CustomModal width={1000} isVisible={isVisible} handleClose={onClose} okBtnTitle="Save" title="Patient profile" customFooter={customModalFooter()}>
+    <CustomModal
+      isVisible={isVisible}
+      handleClose={onClose}
+      title="Patient profile"
+      secondaryBtnTitle="Edit patient"
+      handleClickSecondaryBtn={onEdit}
+      primaryBtnTitle="Add consultation"
+      handleClickPrimaryBtn={onAddConsultation}
+      width={1000}
+      contentHeight={1000}
+    >
       <div className="modalPatienProfile">
         {<SpinLoader /> && (isListOfContactsLoading || (listOfContacts?.length !== 0 && sortedContacts?.length === 0))}
         <div className="modalPatienProfile__innerContainer">
@@ -128,6 +122,7 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onDel
                 </div>
               </div>
             </div>
+
             <div className="modalPatienProfile__shortInfo__rightBlock">
               <div className="modalPatienProfile__shortInfo__overview">
                 <h4>Overview:</h4>

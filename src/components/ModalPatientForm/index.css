@@ -112,14 +112,23 @@ body {
 body * {
   font-family: Lato400, sans-serif;
 }
+.PatientImgCrop {
+  width: 100%;
+  display: flex;
+  align-self: stretch;
+}
 .PatientImgCrop .ant-modal-body {
   flex-direction: column;
+}
+@media screen and (max-width: calc(768px - 1px)) {
+  .PatientImgCrop {
+    flex-grow: 1;
+  }
 }
 .modalPatientForm {
   width: 100%;
   display: flex;
   align-self: stretch;
-  max-height: 700px;
   position: relative;
 }
 @media screen and (max-width: calc(768px - 1px)) {

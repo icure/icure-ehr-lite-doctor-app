@@ -1,19 +1,19 @@
-import React, { useEffect } from 'react'
+import { DecryptedContact, DecryptedContent, DecryptedHealthElement, DecryptedPatient, DecryptedService, DecryptedSubContact, Identifier, Measure } from '@icure/cardinal-sdk'
+import { createSelector } from '@reduxjs/toolkit'
 import { DatePicker, Form, Input, InputNumber } from 'antd'
+import dayjs from 'dayjs'
+import React, { useEffect } from 'react'
+import { v4 as uuid } from 'uuid'
+import { useCreateContactMutation } from '../../core/api/contactApi'
+import { useCreateHealthElementMutation } from '../../core/api/healthElementApi'
+import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
+import { useAppSelector } from '../../core/hooks'
+import { CardinalApiState } from '../../core/services/auth.api'
+import { getNumericDate } from '../../helpers/dateFormaters'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
-import dayjs from 'dayjs'
-import { v4 as uuid } from 'uuid'
-import { DecryptedContact, DecryptedContent, DecryptedHealthElement, DecryptedPatient, DecryptedService, DecryptedSubContact, Identifier, Measure } from '@icure/cardinal-sdk'
-import { useCreateContactMutation } from '../../core/api/contactApi'
-import { createSelector } from '@reduxjs/toolkit'
-import { CardinalApiState } from '../../core/services/auth.api'
-import { useAppSelector } from '../../core/hooks'
-import { useGetPractitionerQuery } from '../../core/api/practitionerApi'
 import { SpinLoader } from '../SpinLoader'
-import { useCreateHealthElementMutation } from '../../core/api/healthElementApi'
-import { getNumericDate } from '../../helpers/dateFormaters'
 
 interface modalAddConsultationFormFormProps {
   isVisible: boolean
@@ -161,7 +161,14 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
   }
 
   return (
-    <CustomModal isVisible={isVisible} handleClose={handleOnClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Add consultation">
+    <CustomModal
+      isVisible={isVisible}
+      handleClose={handleOnClose}
+      secondaryBtnTitle="Cancel"
+      handleClickPrimaryBtn={() => form.submit()}
+      primaryBtnTitle="Save"
+      title="Add consultation"
+    >
       <div className="modalAddConsultationForm">
         {(isContactCreatingLoading || isHealthElementCreatingLoading) && <SpinLoader />}
         <Form

@@ -1,16 +1,18 @@
-import React, { useEffect, useState, ReactElement } from 'react'
+import { AddressType, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+import type { GetProps, UploadFile, UploadProps } from 'antd'
 import { DatePicker, Form, Input, Select, Upload } from 'antd'
-import type { UploadFile, UploadProps, GetProps } from 'antd'
 import ImgCrop from 'antd-img-crop'
 import dayjs from 'dayjs'
-
-import { CustomModal } from '../CustomModal'
-import './index.css'
-import { SpinLoader } from '../SpinLoader'
+import React, { ReactElement, useEffect, useState } from 'react'
+import { DEFAULT_IMG_CROP_MODAL_WIDTH } from '../../constants'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
-import { AddressType, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+import { breakpoints, getWindowSize } from '../../helpers/windowSize'
+
+import { CustomModal, getCustomModalResponsiveStyles } from '../CustomModal'
+import './index.css'
+import { SpinLoader } from '../SpinLoader'
 
 type RangePickerProps = GetProps<typeof DatePicker.RangePicker>
 
@@ -28,6 +30,7 @@ type PatientForm = {
   postalCode: string
   picture: Int8Array | undefined
 }
+
 interface ModalPatientFormProps {
   mode: 'edit' | 'create'
   isVisible: boolean
@@ -152,14 +155,15 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     return current && current > dayjs().endOf('day')
   }
   const dateFormat = 'DD.MM.YYYY'
+  const { innerWidth } = getWindowSize()
 
   return (
     <CustomModal
       isVisible={isVisible}
       handleClose={handleOnClose}
-      closeBtnTitle="Cancel"
-      handleOk={() => form.submit()}
-      okBtnTitle="Save"
+      secondaryBtnTitle="Cancel"
+      handleClickPrimaryBtn={() => form.submit()}
+      primaryBtnTitle="Save"
       title={mode === 'edit' ? 'Edit patient' : 'Create patient'}
     >
       <div className="modalPatientForm">
@@ -196,7 +200,12 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                 </Select>
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">
-                <ImgCrop rotationSlider modalClassName="PatientImgCrop">
+                <ImgCrop
+                  rotationSlider
+                  modalClassName="PatientImgCrop"
+                  modalWidth={innerWidth < breakpoints.md ? '100vw' : DEFAULT_IMG_CROP_MODAL_WIDTH}
+                  modalProps={{ style: getCustomModalResponsiveStyles(innerWidth < breakpoints.md) }}
+                >
                   <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsInt8Array(data))}>
                     {fileList.length === 0 ? '+ Upload' : '+ Replace'}
                   </Upload>

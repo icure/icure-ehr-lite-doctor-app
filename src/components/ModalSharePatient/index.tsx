@@ -1,12 +1,12 @@
-import React, { ReactElement } from 'react'
+import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { Form } from 'antd'
+import React, { ReactElement } from 'react'
+import { useSharePatientWithMutation } from '../../core/api/patientApi'
 import { CustomModal } from '../CustomModal'
 import './index.css'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
-import { useSharePatientWithMutation } from '../../core/api/patientApi'
-import { SpinLoader } from '../SpinLoader'
 import { DevicesSelect } from '../DevicesSelect'
 import { PractitionersSelect } from '../PractitionersSelect'
+import { SpinLoader } from '../SpinLoader'
 
 interface ModalPatientFormProps {
   isVisible: boolean
@@ -39,7 +39,14 @@ export const ModalSharePatient = ({ isVisible, onClose, patientToEdit }: ModalPa
   }
 
   return (
-    <CustomModal isVisible={isVisible} handleClose={handleOnClose} closeBtnTitle="Cancel" handleOk={() => form.submit()} okBtnTitle="Save" title="Share patient">
+    <CustomModal
+      isVisible={isVisible}
+      handleClose={handleOnClose}
+      secondaryBtnTitle="Cancel"
+      handleClickPrimaryBtn={() => form.submit()}
+      primaryBtnTitle="Save"
+      title="Share patient"
+    >
       <div className="modalSharePatient">
         {isSharePatientLoading && <SpinLoader />}
         <Form className="modalSharePatient__form" layout="vertical" colon={false} form={form} onFinish={(values) => handleOnOk(values)}>
