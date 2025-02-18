@@ -28,16 +28,15 @@ export const getCustomModalResponsiveStyles = (mobileViewCondition: boolean) => 
       height: '100vh',
       paddingTop: 20,
       paddingBottom: 0,
-      display: 'flex',
-      overflow: 'hidden',
-      maxWidth: '100vw',
-      width: '100vw',
     }
   } else {
     return {
       top: '5%',
       height: 'calc(100vh - 5%)',
+      display: 'flex',
       overflow: 'hidden',
+      maxWidth: '100vw',
+      width: '100vw',
     }
   }
 }
@@ -58,12 +57,12 @@ export const CustomModal = ({
   primaryBtnDisabled,
 }: PatientFormModalProps): ReactElement => {
   const { innerWidth } = getWindowSize()
-
+  console.log(contentHeight)
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
       borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
       padding: innerWidth < breakpoints.md ? '16px' : '20px 24px',
-      // background: mode === 'danger' ? '#FDF3F3' : '#EEF6FE',
+      background: mode === 'danger' ? '#FDF3F3' : '#EEF6FE',
       borderRadius: '8px 8px 0px 0px',
       margin: 0,
     },
@@ -74,15 +73,16 @@ export const CustomModal = ({
       borderTop: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
       padding: innerWidth < breakpoints.md ? '16px' : '20px 24px',
       margin: 0,
-      // background: 'white',
+      background: 'white',
     },
     content: {
       padding: 0,
       background: 'white',
-      height: innerWidth < breakpoints.md ? '100%' : 'auto',
       maxHeight: innerWidth < breakpoints.md ? '100%' : (contentHeight ?? DEFAULT_MODAL_CONTENT_HEIGHT),
+      height: '100%',
 
-      width: innerWidth < breakpoints.md ? '100vw' : '100%',
+      width: '100vw',
+      maxWidth: innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH),
       display: 'flex',
       flexDirection: 'column',
       paddingBottom: 0,

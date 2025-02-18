@@ -184,13 +184,13 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
               <DatePicker disabled format="DD.MM.YYYY" placeholder="Date of visit" size="large" style={{ width: '100%' }} maxDate={dayjs()} />
             </Form.Item>
             <Form.Item name="complains" label="Complains" rules={[{ required: true, message: 'Complains field is required' }]}>
-              <Input.TextArea placeholder="Type the patient complains" size="large" style={{ fontSize: 13 }} />
+              <Input.TextArea placeholder="Type the patient complains" size="large" style={{ fontSize: 13 }} autoSize={{ minRows: 1, maxRows: 7 }} />
             </Form.Item>
             <Form.Item name="anamnesis" label="Anamnesis" rules={[{ required: true, message: 'Anamnesis field is required' }]}>
-              <Input.TextArea placeholder="Type the Anamnesis" size="large" style={{ fontSize: 13 }} />
+              <Input.TextArea placeholder="Type the Anamnesis" size="large" style={{ fontSize: 13 }} autoSize={{ minRows: 1, maxRows: 7 }} />
             </Form.Item>
             <Form.Item name="clinicalExam" label="Clinical Exam" rules={[{ required: true, message: 'Clinical Exam field is required' }]}>
-              <Input.TextArea placeholder="Type the Clinical Exam" size="large" style={{ fontSize: 13 }} />
+              <Input.TextArea placeholder="Type the Clinical Exam" size="large" style={{ fontSize: 13 }} autoSize={{ minRows: 1, maxRows: 7 }} />
             </Form.Item>
             <div className="modalAddConsultationForm__form__infoBlock">
               <h3 className="modalAddConsultationForm__form__infoBlock__title">Blood Pressure</h3>
@@ -209,10 +209,10 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
               </div>
             </div>
             <Form.Item name="diagnosis" label="Diagnosis" rules={[{ required: true, message: 'Diagnosis is field required' }]}>
-              <Input.TextArea placeholder="Type the Diagnosis" size="large" style={{ fontSize: 13 }} />
+              <Input.TextArea placeholder="Type the Diagnosis" size="large" style={{ fontSize: 13 }} autoSize={{ minRows: 1, maxRows: 7 }} />
             </Form.Item>
             <Form.Item name="treatment" label="Treatment" rules={[{ required: true, message: 'Treatment is field required' }]}>
-              <Input.TextArea placeholder="Type the Treatment" size="large" style={{ fontSize: 13 }} />
+              <Input.TextArea placeholder="Type the Treatment" size="large" style={{ fontSize: 13 }} autoSize={{ minRows: 1, maxRows: 7 }} />
             </Form.Item>
           </div>
         </Form>

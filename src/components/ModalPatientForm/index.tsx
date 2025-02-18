@@ -4,7 +4,7 @@ import { DatePicker, Form, Input, Select, Upload } from 'antd'
 import ImgCrop from 'antd-img-crop'
 import dayjs from 'dayjs'
 import React, { ReactElement, useEffect, useState } from 'react'
-import { DEFAULT_IMG_CROP_MODAL_WIDTH } from '../../constants'
+import { DEFAULT_MODAL_WIDTH } from '../../constants'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
@@ -203,7 +203,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                 <ImgCrop
                   rotationSlider
                   modalClassName="PatientImgCrop"
-                  modalWidth={innerWidth < breakpoints.md ? '100vw' : DEFAULT_IMG_CROP_MODAL_WIDTH}
+                  modalWidth={innerWidth < breakpoints.md ? '100vw' : DEFAULT_MODAL_WIDTH}
                   modalProps={{ style: getCustomModalResponsiveStyles(innerWidth < breakpoints.md) }}
                 >
                   <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsInt8Array(data))}>
