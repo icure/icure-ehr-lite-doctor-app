@@ -170,9 +170,7 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
     cardinalApi: { email, token },
   } = getState() as { cardinalApi: CardinalApiState }
   dispatch(setLoginProcessStarted(true))
-  console.log('1.1')
-  console.log('email: ' + email)
-  console.log('token: ' + token)
+
   if (!email) {
     dispatch(setLoginProcessStarted(false))
     throw new Error('No email provided')
@@ -182,7 +180,7 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
     dispatch(setLoginProcessStarted(false))
     throw new Error('No token provided')
   }
-  console.log('1.2')
+
   try {
     const api = await CardinalSdk.initialize(
       undefined,
@@ -238,6 +236,7 @@ export const api = createSlice({
     },
     setUser: (state, { payload: { user } }: PayloadAction<{ user: User }>) => {
       state.user = user
+      state.online = !!user
     },
     resetCredentials: (state) => {
       state.online = false
@@ -259,7 +258,7 @@ export const api = createSlice({
     })
     builder.addCase(completeAuthentication.fulfilled, (state, { payload: user }) => {
       state.user = user as User
-      // state.online = true
+      state.online = !!user
       state.waitingForToken = false
     })
     builder.addCase(completeAuthentication.rejected, (state, {}) => {
@@ -267,7 +266,7 @@ export const api = createSlice({
     })
     builder.addCase(login.fulfilled, (state, { payload: user }) => {
       state.user = user as User
-      state.online = true
+      state.online = !!user
     })
     builder.addCase(login.rejected, (state, {}) => {
       state.invalidToken = true

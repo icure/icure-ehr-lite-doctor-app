@@ -85,7 +85,6 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
       primaryBtnTitle="Start consultation"
       handleClickPrimaryBtn={onAddConsultation}
       width={1000}
-      contentHeight={1000}
     >
       <div className="modalPatienProfile">
         {<SpinLoader /> && (isListOfContactsLoading || (listOfContacts?.length !== 0 && sortedContacts?.length === 0))}

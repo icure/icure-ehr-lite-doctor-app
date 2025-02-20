@@ -1,6 +1,6 @@
+import { DecryptedPatient, IdWithRev, Patient, PatientFilters } from '@icure/cardinal-sdk'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, cardinalApi } from '../services/auth.api'
-import { DecryptedPatient, Patient, PatientFilters } from '@icure/cardinal-sdk'
+import { cardinalApi, guard } from '../services/auth.api'
 
 export const patientApiRtk = createApi({
   reducerPath: 'patientApi',
@@ -21,7 +21,25 @@ export const patientApiRtk = createApi({
         })
       },
 
-      invalidatesTags: (result, error, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
+      invalidatesTags: (result, _, arg) => (!result?.rev ? [] : result.rev.startsWith('1-') ? [{ type: 'Patient', id: 'all' }] : [{ type: 'Patient', id: arg.id }]),
+    }),
+    createPatients: builder.mutation<IdWithRev[] | undefined, DecryptedPatient[]>({
+      async queryFn(patients, { getState }) {
+        const patientApi = (await cardinalApi(getState))?.patient
+        return guard([patientApi], async (): Promise<Array<IdWithRev> | undefined> => {
+          const patientsWithEncryptionMetadata = await Promise.all(patients.map(async (patient) => await patientApi?.withEncryptionMetadata(patient)))
+
+          // Filter out undefined values
+          const validPatients = patientsWithEncryptionMetadata.filter((patient): patient is DecryptedPatient => patient !== undefined)
+
+          if (validPatients.length === 0) {
+            throw new Error('No valid patients to create')
+          }
+
+          return await patientApi?.createPatients(validPatients)
+        })
+      },
+      invalidatesTags: [{ type: 'Patient', id: 'all' }],
     }),
     filterPatientsByDataOwner: builder.query<string[] | undefined, string>({
       async queryFn(practitionerId, { getState }) {
@@ -112,5 +130,11 @@ export const patientApiRtk = createApi({
   }),
 })
 
-export const { useCreateOrUpdatePatientMutation, useFilterPatientsByDataOwnerQuery, useGetPatientsByIdsQuery, useDeletePatientMutation, useSharePatientWithMutation } =
-  patientApiRtk
+export const {
+  useCreateOrUpdatePatientMutation,
+  useFilterPatientsByDataOwnerQuery,
+  useGetPatientsByIdsQuery,
+  useDeletePatientMutation,
+  useSharePatientWithMutation,
+  useCreatePatientsMutation,
+} = patientApiRtk

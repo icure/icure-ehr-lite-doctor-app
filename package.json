@@ -12,6 +12,7 @@
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "exponential-backoff": "^3.1.1",
+    "file-saver": "^2.0.5",
     "friendly-challenge": "^0.9.18",
     "localforage": "^1.10.0",
     "minisearch": "^6.3.0",
@@ -22,7 +23,8 @@
     "react-scripts": "^5.0.1",
     "redux": "^4.1.2",
     "redux-persist": "^6.0.0",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "xlsx": "^0.18.5"
   },
   "scripts": {
     "start": "concurrently --kill-others \"less-watch-compiler --config less-watcher.config.json\" \"react-scripts start\"",
@@ -50,6 +52,7 @@
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.2.0",
     "@testing-library/user-event": "^14.6.1",
+    "@types/file-saver": "^2",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.1",
     "@types/react": "^18.3.18",
