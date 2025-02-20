@@ -10,19 +10,13 @@ const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
   (cardinalApi: CardinalApiState) => ({
     online: cardinalApi.online,
-    cardinalApi: cardinalApi,
   }),
 )
 
 function AuthenticatedLayout() {
   const navigate = useNavigate()
 
-  const { online, cardinalApi } = useAppSelector(reduxSelector)
-
-  console.log('online:' + ' ' + online)
-
-  console.log('cardinalApi')
-  console.log(cardinalApi)
+  const { online } = useAppSelector(reduxSelector)
 
   useEffect(() => {
     if (!online) {

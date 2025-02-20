@@ -1,7 +1,7 @@
 import { Button, ConfigProvider, Modal } from 'antd'
 import React, { CSSProperties, ReactElement } from 'react'
 
-import { DEFAULT_MODAL_CONTENT_HEIGHT, DEFAULT_MODAL_WIDTH } from '../../constants'
+import { DEFAULT_MODAL_WIDTH } from '../../constants'
 import { breakpoints, getWindowSize } from '../../helpers/windowSize'
 
 interface PatientFormModalProps {
@@ -13,7 +13,6 @@ interface PatientFormModalProps {
   primaryBtnTitle?: string | ReactElement
   children: ReactElement
   width?: number
-  contentHeight?: number
   title: string
   customFooter?: ReactElement
   mode?: 'danger' | undefined
@@ -28,6 +27,10 @@ export const getCustomModalResponsiveStyles = (mobileViewCondition: boolean) => 
       height: '100vh',
       paddingTop: 20,
       paddingBottom: 0,
+      display: 'flex',
+      overflow: 'hidden',
+      maxWidth: '100vw',
+      width: '100vw',
     }
   } else {
     return {
@@ -48,7 +51,6 @@ export const CustomModal = ({
   handleClickSecondaryBtn,
   children,
   width,
-  contentHeight,
   title,
   secondaryBtnTitle,
   primaryBtnTitle,
@@ -57,7 +59,6 @@ export const CustomModal = ({
   primaryBtnDisabled,
 }: PatientFormModalProps): ReactElement => {
   const { innerWidth } = getWindowSize()
-  console.log(contentHeight)
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
       borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
@@ -78,11 +79,13 @@ export const CustomModal = ({
     content: {
       padding: 0,
       background: 'white',
-      maxHeight: innerWidth < breakpoints.md ? '100%' : (contentHeight ?? DEFAULT_MODAL_CONTENT_HEIGHT),
-      height: '100%',
+
+      maxHeight: '100%',
+      height: innerWidth < breakpoints.md ? '100%' : 'auto',
 
       width: '100vw',
       maxWidth: innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH),
+
       display: 'flex',
       flexDirection: 'column',
       paddingBottom: 0,
