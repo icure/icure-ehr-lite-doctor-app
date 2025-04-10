@@ -1,18 +1,22 @@
 import Icon from '@ant-design/icons'
-import { AddressType, CodeStub, DecryptedAddress, DecryptedPatient, DecryptedTelecom, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+import { AddressType, CodeStub, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
 import { Alert, Button, Upload, UploadFile, UploadProps } from 'antd'
+import { getTime, parse } from 'date-fns'
 import { saveAs } from 'file-saver'
 import React, { useEffect, useState } from 'react'
 import * as XLSX from 'xlsx'
 import { attachedFileIcn, deleteIcn } from '../../assets/CustomIcons'
+import { DATE_FORMAT } from '../../constants'
 import { useCreatePatientsMutation } from '../../core/api/patientApi'
+import { getPatientBirthDateFromImport, splitAddressGeneric } from '../../helpers/patientDataManipulations'
+import { PatientsTagsEnum } from '../../helpers/types'
 
 import { CustomModal } from '../CustomModal'
 import './index.css'
 import { SpinLoader } from '../SpinLoader'
 import { PatientToUploadTable } from './PatientToUploadTable'
 import { getExampleSheetBuffer, sheetTitle } from './utils/fileUtils'
-import { UploadedPatientsTableEnum, UploadedPatientType } from './utils/types'
+import { UploadedPatientsTableTitlesEnum, UploadedPatientType } from './utils/types'
 
 interface ModalImportPatientsProps {
   isVisible: boolean
@@ -44,12 +48,13 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
 
   const handleImport = () => {
     const getPreparedPatientData = (value: UploadedPatientType) => {
-      const { name: firstName, surname: lastName, email, tags: tagsAsString } = value
+      const { firstName, lastName, email, birthSex, language, statusTags, streetAddress, postalAddress, dateOfBirth } = value
       const name = new PersonName({
         firstNames: [firstName],
         lastName: lastName,
         use: PersonNameUse.Official,
       })
+
       const address = new DecryptedAddress({
         addressType: AddressType.Home,
         telecoms: [
@@ -58,11 +63,16 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
             telecomNumber: email,
           }),
         ],
+        street: splitAddressGeneric(streetAddress).nonNumericPart,
+        houseNumber: splitAddressGeneric(streetAddress).numericPart,
+        city: splitAddressGeneric(postalAddress).nonNumericPart,
+        postalCode: splitAddressGeneric(postalAddress).numericPart,
       })
+
       const getTags = () => {
-        const separatedTags = tagsAsString.split(',')
+        const separatedTags = statusTags.split(', ')
         return separatedTags.map((tag) => {
-          const tagType = 'PETRACARE'
+          const tagType = 'PREVENTI'
           const tagVersion = '1'
 
           return new CodeStub({
@@ -73,8 +83,26 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
           })
         })
       }
+      const getBirthSex = () => (birthSex === 'Male' ? Gender.Male : birthSex === 'Female' ? Gender.Female : Gender.Unknown)
 
-      return { firstName, lastName, names: [name], addresses: [address], tags: getTags() }
+      const getDateOfBirthUnixTimestamp = () => {
+        if (!dateOfBirth) {
+          return undefined
+        }
+        const parsedDate = parse(dateOfBirth, DATE_FORMAT, new Date())
+        return Math.floor(getTime(parsedDate) / 1000)
+      }
+
+      return {
+        firstName,
+        lastName,
+        names: [name],
+        dateOfBirth: getDateOfBirthUnixTimestamp(),
+        birthSex: getBirthSex(),
+        addresses: [address],
+        tags: getTags(),
+        languages: [language],
+      }
     }
     const patientsToBeCreated = uploadState.validRowsList.map((patient) => new DecryptedPatient(getPreparedPatientData(patient)))
     createPatients(patientsToBeCreated)
@@ -100,13 +128,13 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
     })
     setComponentState('upload')
   }
-
   const handleFileUpload = (file: File) => {
     const reader = new FileReader()
     reader.onload = (e) => {
       if (!e.target?.result) return
-      const bstr = e.target.result as string
-      const workbook = XLSX.read(bstr, { type: 'binary', bookVBA: true })
+
+      const data = new Uint8Array(e.target.result as ArrayBuffer)
+      const workbook = XLSX.read(data, { type: 'array', bookVBA: true }) // Use 'array' instead of 'binary'
 
       if (!workbook) return
       const sheetName = workbook.SheetNames[0]
@@ -117,23 +145,29 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
 
       // Process Data
       const formattedData = jsonData.map((row) => ({
-        name: row[UploadedPatientsTableEnum.NAME],
-        surname: row[UploadedPatientsTableEnum.SURNAME],
-        email: row[UploadedPatientsTableEnum.EMAIL],
-        tags: row[UploadedPatientsTableEnum.TAGS],
+        firstName: row[UploadedPatientsTableTitlesEnum.FIRST_NAME],
+        lastName: row[UploadedPatientsTableTitlesEnum.LAST_NAME],
+        email: row[UploadedPatientsTableTitlesEnum.EMAIL],
+        birthSex: row[UploadedPatientsTableTitlesEnum.BIRTH_SEX],
+        dateOfBirth: getPatientBirthDateFromImport(row[UploadedPatientsTableTitlesEnum.DATE_OF_BIRTH]),
+        language: row[UploadedPatientsTableTitlesEnum.LANGUAGE],
+        statusTags: row[UploadedPatientsTableTitlesEnum.STATUS_TAGS],
+        streetAddress: row[UploadedPatientsTableTitlesEnum.STREET_ADDRESS],
+        postalAddress: row[UploadedPatientsTableTitlesEnum.POSTAL_ADDRESS],
       }))
 
       // Validate Data
       setUploadState({
-        validRowsList: formattedData.filter((row) => !!row.name && !!row.surname && !!row.email && isEmail(row.email) && !!row.tags),
+        validRowsList: formattedData.filter((row) => !!row.firstName && !!row.lastName && !!row.email && isEmail(row.email) && !!row.statusTags),
         unValidEmailRowsList: formattedData.filter((row) => row.email && !isEmail(row.email)),
-        missingFieldsRowsList: formattedData.filter((row) => !row.name || !row.surname || !row.email || !row.tags),
+        missingFieldsRowsList: formattedData.filter((row) => !row.firstName || !row.lastName || !row.email || !row.statusTags),
       })
     }
 
-    reader.readAsBinaryString(file)
+    reader.readAsArrayBuffer(file) // Correct method for binary files
     return false // Prevent upload
   }
+
   const uploadProps: UploadProps = {
     accept: SheetJSFT,
     beforeUpload: handleFileUpload,
@@ -145,8 +179,8 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
   }
 
   const customFooter = () => {
-    return (
-      <div className="customFooter">
+    return [
+      <div key="customFooter" className="customFooter">
         <Upload {...uploadProps}>
           <Button type="primary">Upload file</Button>
         </Upload>
@@ -157,8 +191,8 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
             Import patients
           </Button>
         </div>
-      </div>
-    )
+      </div>,
+    ]
   }
 
   return (
@@ -176,11 +210,38 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
 
             <Alert
               message={
-                <p>
-                  Entries will be rejected if required fields are missing: <span className="highlighted"> Name, Surname, Email, and Tags.</span>
-                </p>
+                <>
+                  <p>
+                    Entries will be rejected if required fields are missing: <span className="highlighted"> Fist Name, Last Name, Email, and Tags.</span>
+                  </p>
+                  <p>
+                    The Date of Birth should be in the <span className="highlighted">{DATE_FORMAT}</span> format. For example: 31/01/1970
+                  </p>
+                </>
               }
               type="warning"
+              showIcon
+            />
+            <Alert
+              message={
+                <p>
+                  There are 5 available patient tags:{' '}
+                  <span className="highlighted--info">
+                    {PatientsTagsEnum.UNINVITED +
+                      ', ' +
+                      PatientsTagsEnum.WELCOMED +
+                      ', ' +
+                      PatientsTagsEnum.QUESTIONNAIRE_SENT +
+                      ', ' +
+                      PatientsTagsEnum.RESPONSE_RECEIVED +
+                      ', ' +
+                      PatientsTagsEnum.NURSE_APPOINTMENT_TAKEN +
+                      ', ' +
+                      PatientsTagsEnum.DOCTOR_APPOINTMENT_TAKEN}
+                  </span>
+                </p>
+              }
+              type="info"
               showIcon
             />
           </div>

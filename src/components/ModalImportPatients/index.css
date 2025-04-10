@@ -130,10 +130,14 @@ body * {
 }
 .modalImportPatients .highlighted {
   color: #FAAD14;
-  font-weight: bold;
+  font-family: Lato700, sans-serif;
 }
 .modalImportPatients .highlighted:hover {
   text-decoration: underline;
+}
+.modalImportPatients .highlighted--info {
+  font-family: Lato700, sans-serif;
+  color: #3d87c5;
 }
 @media screen and (max-width: calc(768px - 1px)) {
   .modalImportPatients {

@@ -1,8 +1,7 @@
 import Icon from '@ant-design/icons'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
-import { Typography } from 'antd'
-import { differenceInDays, differenceInMonths, differenceInYears, fromUnixTime } from 'date-fns'
+import { Tag } from 'antd'
 import React, { ReactElement } from 'react'
 import { emailIcn, locationIcn, phoneIcn, userAvatarPlaceholderIcn } from '../../assets/CustomIcons'
 import { useFindContactsByHcPartyPatientQuery } from '../../core/api/contactApi'
@@ -10,6 +9,7 @@ import { useAppSelector } from '../../core/hooks'
 import { CardinalApiState } from '../../core/services/auth.api'
 import { formatTimestampToHumanReadable } from '../../helpers/dateFormaters'
 import { getImgSRC } from '../../helpers/fileToBase64'
+import { getTagColor } from '../../helpers/getTagColor'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
 import { CommonPlaceholder } from '../CommonPlaceholder'
 
@@ -26,8 +26,6 @@ interface ModalPatientProfileProps {
   onAddConsultation: () => void
 }
 
-const { Text } = Typography
-
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
   (cardinalApi: CardinalApiState) => ({
@@ -37,7 +35,8 @@ const reduxSelector = createSelector(
 
 export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAddConsultation }: ModalPatientProfileProps): ReactElement => {
   const { healthcarePartyId } = useAppSelector(reduxSelector)
-  const { id, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, gender, userDateOfBirthOneString, dateOfBirth } = getPatientDataFormated(patient)
+  const { language, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, birthSex, userDateOfBirthOneString, tags, age } =
+    getPatientDataFormated(patient)
   const { data: listOfContacts, isLoading: isListOfContactsLoading } = useFindContactsByHcPartyPatientQuery(
     {
       hcPartyId: healthcarePartyId ?? '',
@@ -49,31 +48,6 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
   const sortedContacts = [...(listOfContacts ?? [])]?.sort((a, b) => (b.openingDate ?? 0) - (a.openingDate ?? 0))
 
   const patientAvatarSrc = getImgSRC(picture)
-  const getAge = (date: number | undefined): string | undefined => {
-    if (!date) {
-      return undefined
-    }
-
-    const now = new Date()
-    const birthDate = fromUnixTime(date)
-
-    const years = differenceInYears(now, birthDate)
-    if (years !== 0) {
-      return `${years} years`
-    }
-
-    const months = differenceInMonths(now, birthDate)
-    if (months !== 0) {
-      return `${months} months`
-    }
-
-    const days = differenceInDays(now, birthDate)
-    if (days !== 0) {
-      return `${days} days`
-    }
-
-    return 'error'
-  }
 
   return (
     <CustomModal
@@ -127,26 +101,35 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
                 <h4>Overview:</h4>
                 <div className="modalPatienProfile__shortInfo__overview__itemsWrap">
                   <div className="modalPatienProfile__shortInfo__overview__item">
-                    <h5>Patient ID:</h5>
-                    <div className="modalPatienProfile__shortInfo__overview__item__withChildren">
-                      <p>{id}</p>
-                      <Text copyable={{ text: id }} />
-                    </div>
-                  </div>
-                  <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Date of birth:</h5>
                     <p>{userDateOfBirthOneString}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
                     <h5>Age:</h5>
-                    <p>{getAge(dateOfBirth) ?? '-'}</p>
+                    <p>{age}</p>
                   </div>
                   <div className="modalPatienProfile__shortInfo__overview__item">
-                    <h5>Gender:</h5>
-                    <p>{gender}</p>
+                    <h5>Sex at birth:</h5>
+                    <p>{birthSex}</p>
+                  </div>
+                  <div className="modalPatienProfile__shortInfo__overview__item">
+                    <h5>Language:</h5>
+                    <p>{language}</p>
                   </div>
                 </div>
               </div>
+
+              <div className="modalPatienProfile__shortInfo__overview">
+                <h4>Tags:</h4>
+                <div className="modalPatienProfile__shortInfo__overview__tags">
+                  {tags.map((tag, index) => (
+                    <Tag key={index} color={getTagColor(tag.code)} bordered={false}>
+                      {tag.code}
+                    </Tag>
+                  ))}
+                </div>
+              </div>
+
               <div className="modalPatienProfile__shortInfo__overview">
                 <h4>Visit history:</h4>
                 <div className="modalPatienProfile__shortInfo__overview__itemsWrap">
@@ -160,7 +143,6 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
                   </div>
                 </div>
               </div>
-              <div className="modalPatienProfile__shortInfo__overview"></div>
             </div>
           </div>
 

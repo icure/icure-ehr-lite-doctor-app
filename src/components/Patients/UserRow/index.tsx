@@ -1,7 +1,7 @@
 import Icon from '@ant-design/icons'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-import { Dropdown, MenuProps, message, notification, Tooltip } from 'antd'
+import { Dropdown, MenuProps, message, notification, Tag, Tooltip } from 'antd'
 import React, { ReactElement, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
@@ -9,6 +9,7 @@ import { deleteIcn, emailIcn, manageUserIcn, moreVerticalIcn, shareIcn, stethosc
 import { useDeletePatientMutation } from '../../../core/api/patientApi'
 import { useCreateUserMutation } from '../../../core/api/userApi'
 import { getImgSRC } from '../../../helpers/fileToBase64'
+import { getTagColor } from '../../../helpers/getTagColor'
 import { getPatientDataFormated } from '../../../helpers/patientDataManipulations'
 import { ModalAddConsultationForm } from '../../ModalAddConsultationForm'
 import { ModalConfirmAction } from '../../ModalConfirmAction'
@@ -181,7 +182,8 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
     }
   }
 
-  const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
+  const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, tags, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
+
   const patientAvatarSrc = getImgSRC(picture)
 
   return (
@@ -203,27 +205,47 @@ export const UserRow = ({ patient }: UserRowProps): ReactElement => {
             <span className="userRow__contentDesktop__item__title">Name:</span>
             <span className="userRow__contentDesktop__item__value userRow__contentDesktop__item__value--name">{userNameOneString}</span>
           </div>
-          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--dateOfBirth">
+          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--language">
             <span className="userRow__contentDesktop__item__title">Date of birth:</span>
-            <span className="userRow__contentDesktop__item__value">{userDateOfBirthOneString}</span>
+            <span className="userRow__contentDesktop__item__value ">{userDateOfBirthOneString}</span>
           </div>
-          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--phoneNumber">
+          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--language">
             <span className="userRow__contentDesktop__item__title">Phone number:</span>
-            <span className="userRow__contentDesktop__item__value">{phoneNumber}</span>
+            <span className="userRow__contentDesktop__item__value ">{phoneNumber}</span>
           </div>
           <div className="userRow__contentDesktop__item userRow__contentDesktop__item--email">
             <span className="userRow__contentDesktop__item__title">E-mail address:</span>
             <span className="userRow__contentDesktop__item__value">{emailAddress}</span>
           </div>
-          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--diagnosis">
+          <div className="userRow__contentDesktop__item userRow__contentDesktop__item--address">
             <span className="userRow__contentDesktop__item__title">Home address:</span>
             <span className="userRow__contentDesktop__item__value">{userHomeAddressOneString}</span>
+          </div>
+          <div className="userRow__contentDesktop__item">
+            <span className="userRow__contentDesktop__item__title">Tags:</span>
+            <div className="userRow__contentDesktop__item__tagsContainer">
+              {tags.map((tag, index) => (
+                <Tag key={index} color={getTagColor(tag.code)} bordered={false}>
+                  {tag.code}
+                </Tag>
+              ))}
+            </div>
           </div>
         </div>
         <div className="userRow__contentMobile">
           <span className="userRow__contentMobile__name">{userNameOneString}</span>
-          <span className="userRow__contentMobile__value">{userDateOfBirthOneString + ', ' + phoneNumber + ', ' + emailAddress + ', ' + userHomeAddressOneString}</span>
+          <span className="userRow__contentMobile__value">
+            {userDateOfBirthOneString},{phoneNumber}, {emailAddress}, {userHomeAddressOneString}
+          </span>
+          <div className="userRow__contentMobile__tagsGroup">
+            {tags.map((tag, index) => (
+              <Tag key={index} color={getTagColor(tag.code)} bordered={false}>
+                {tag.code}
+              </Tag>
+            ))}
+          </div>
         </div>
+
         <div className="userRow__btnGroup" onClick={(e) => e.stopPropagation()}>
           <Tooltip title="Add consultation">
             <div className="userRow__btnGroup__item userRow__btnGroup__item--addConsultation" onClick={() => setAddConsultationModalOpen(true)}>

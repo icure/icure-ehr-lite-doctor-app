@@ -14,9 +14,11 @@ interface PatientFormModalProps {
   children: ReactElement
   width?: number
   title: string
-  customFooter?: ReactElement
+  customFooter?: ReactElement[]
   mode?: 'danger' | undefined
   primaryBtnDisabled?: boolean
+  closable?: boolean
+  blockAntModalBodyVerticalScroll?: boolean
 }
 
 export const getCustomModalResponsiveStyles = (mobileViewCondition: boolean) => {
@@ -57,6 +59,8 @@ export const CustomModal = ({
   customFooter,
   mode,
   primaryBtnDisabled,
+  closable,
+  blockAntModalBodyVerticalScroll,
 }: PatientFormModalProps): ReactElement => {
   const { innerWidth } = getWindowSize()
   const modalStyles: { [key: string]: CSSProperties } = {
@@ -81,8 +85,7 @@ export const CustomModal = ({
       background: 'white',
 
       maxHeight: '100%',
-      height: innerWidth < breakpoints.md ? '100%' : 'auto',
-
+      height: innerWidth < breakpoints.md || blockAntModalBodyVerticalScroll ? '100%' : 'auto',
       width: '100vw',
       maxWidth: innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH),
 
@@ -94,7 +97,7 @@ export const CustomModal = ({
     body: {
       flex: 1,
       display: 'flex',
-      overflowY: 'scroll',
+      overflowY: blockAntModalBodyVerticalScroll ? 'hidden' : 'scroll',
     },
   }
 
@@ -124,6 +127,8 @@ export const CustomModal = ({
       }}
     >
       <Modal
+        closable={closable ?? true}
+        maskClosable={false}
         open={isVisible}
         title={title}
         onCancel={handleClose}

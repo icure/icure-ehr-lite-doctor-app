@@ -1,15 +1,20 @@
 import * as XLSX from 'xlsx'
-import { UploadedPatientsTableEnum } from './types'
+import { UploadedPatientsTableKeysEnum, UploadedPatientsTableTitlesEnum } from './types'
 
 export const sheetTitle = 'Patients-sheet-example'
 export const getExampleSheetBuffer = () => {
   // Generate Excel Sheet
   const exampleSheet = XLSX.utils.book_new()
   const columns = [
-    { title: UploadedPatientsTableEnum.NAME, dataIndex: 'name', key: 'name' },
-    { title: UploadedPatientsTableEnum.SURNAME, dataIndex: 'surname', key: 'surname' },
-    { title: UploadedPatientsTableEnum.EMAIL, dataIndex: 'email', key: 'email' },
-    { title: UploadedPatientsTableEnum.TAGS, dataIndex: 'tags', key: 'tags' },
+    { title: UploadedPatientsTableTitlesEnum.FIRST_NAME, dataIndex: UploadedPatientsTableKeysEnum.FIRST_NAME, key: UploadedPatientsTableKeysEnum.FIRST_NAME },
+    { title: UploadedPatientsTableTitlesEnum.LAST_NAME, dataIndex: UploadedPatientsTableKeysEnum.LAST_NAME, key: UploadedPatientsTableKeysEnum.LAST_NAME },
+    { title: UploadedPatientsTableTitlesEnum.EMAIL, dataIndex: UploadedPatientsTableKeysEnum.EMAIL, key: UploadedPatientsTableKeysEnum.EMAIL },
+    { title: UploadedPatientsTableTitlesEnum.DATE_OF_BIRTH, dataIndex: UploadedPatientsTableKeysEnum.DATE_OF_BIRTH, key: UploadedPatientsTableKeysEnum.DATE_OF_BIRTH },
+    { title: UploadedPatientsTableTitlesEnum.BIRTH_SEX, dataIndex: UploadedPatientsTableKeysEnum.BIRTH_SEX, key: UploadedPatientsTableKeysEnum.BIRTH_SEX },
+    { title: UploadedPatientsTableTitlesEnum.LANGUAGE, dataIndex: UploadedPatientsTableKeysEnum.LANGUAGE, key: UploadedPatientsTableKeysEnum.LANGUAGE },
+    { title: UploadedPatientsTableTitlesEnum.STATUS_TAGS, dataIndex: UploadedPatientsTableKeysEnum.STATUS_TAGS, key: UploadedPatientsTableKeysEnum.STATUS_TAGS },
+    { title: UploadedPatientsTableTitlesEnum.STREET_ADDRESS, dataIndex: UploadedPatientsTableKeysEnum.STREET_ADDRESS, key: UploadedPatientsTableKeysEnum.STREET_ADDRESS },
+    { title: UploadedPatientsTableTitlesEnum.POSTAL_ADDRESS, dataIndex: UploadedPatientsTableKeysEnum.POSTAL_ADDRESS, key: UploadedPatientsTableKeysEnum.POSTAL_ADDRESS },
   ]
   exampleSheet.Props = { Title: sheetTitle }
   exampleSheet.SheetNames.push(sheetTitle)

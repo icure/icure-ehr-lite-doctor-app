@@ -1952,14 +1952,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/cardinal-sdk@file:./tsPackage::locator=icure-ehr-lite-doctor-app%40workspace%3A.":
-  version: 0.0.0-unspecified
-  resolution: "@icure/cardinal-sdk@file:./tsPackage#./tsPackage::hash=6aeefc&locator=icure-ehr-lite-doctor-app%40workspace%3A."
+"@icure/cardinal-sdk@npm:^1.3.0-ts-2":
+  version: 1.3.0-ts-2
+  resolution: "@icure/cardinal-sdk@npm:1.3.0-ts-2"
   dependencies:
     "@js-joda/core": "npm:3.2.0"
     format-util: "npm:^1.0.5"
     ws: "npm:8.18.0"
-  checksum: 908beedf7fa7a5357101ec48d3a06d8f1ba505a73e50d497e2867b289053eda862f8b93c7ab378e992e87c1f83d5504cec18720f1560f96df9fda2fa7a7536c6
+  checksum: aca8c82ea9993863792555b54462468749d036300f2001234e7968bde3bead49cf3898d6ea64e0ca3d0939a822b966c549dd9ad7561d679b0cd42b69d39daabe
   languageName: node
   linkType: hard
 
@@ -8757,7 +8757,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "icure-ehr-lite-doctor-app@workspace:."
   dependencies:
-    "@icure/cardinal-sdk": ./tsPackage
+    "@icure/cardinal-sdk": "npm:^1.3.0-ts-2"
     "@icure/form": "npm:^3.0.1"
     "@reduxjs/toolkit": "npm:^1.9.7"
     "@testing-library/dom": "npm:^10.4.0"

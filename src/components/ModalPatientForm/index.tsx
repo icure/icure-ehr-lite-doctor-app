@@ -1,13 +1,14 @@
-import { AddressType, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
+import { AddressType, CodeStub, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
 import type { GetProps, UploadFile, UploadProps } from 'antd'
 import { DatePicker, Form, Input, Select, Upload } from 'antd'
 import ImgCrop from 'antd-img-crop'
 import dayjs from 'dayjs'
 import React, { ReactElement, useEffect, useState } from 'react'
-import { DEFAULT_MODAL_WIDTH } from '../../constants'
+import { DATE_FORMAT_TO_DISPLAY, DEFAULT_MODAL_WIDTH } from '../../constants'
 import { useCreateOrUpdatePatientMutation } from '../../core/api/patientApi'
 import { getFileUploaderCommonProps, getImgSRC } from '../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../helpers/patientDataManipulations'
+import { PatientsTagsEnum } from '../../helpers/types'
 import { breakpoints, getWindowSize } from '../../helpers/windowSize'
 
 import { CustomModal, getCustomModalResponsiveStyles } from '../CustomModal'
@@ -20,7 +21,8 @@ type PatientForm = {
   firstName: string
   lastName: string
   dateOfBirth: number
-  gender: Gender
+  birthSex: Gender
+  language: string
   phoneNumber: string
   emailAddress: string
   country: string
@@ -29,6 +31,7 @@ type PatientForm = {
   houseNumber: string
   postalCode: string
   picture: Int8Array | undefined
+  tags: PatientsTagsEnum[]
 }
 
 interface ModalPatientFormProps {
@@ -65,7 +68,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
   }
 
   const getPreparedUserData = (value: PatientForm) => {
-    const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } = value
+    const { firstName, lastName, dateOfBirth, birthSex, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, tags, language } = value
     const name = new PersonName({
       firstNames: [firstName],
       lastName: lastName,
@@ -91,8 +94,21 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     })
     const dateOfBirthUnixTimestamp = dayjs(dateOfBirth).unix()
     const picture = patientPictureAsInt8Array ?? patientAvatarSrc
+    const getTags = () => {
+      return tags.map((tag) => {
+        const tagType = 'PETRA_CARE'
+        const tagVersion = '1'
 
-    return { firstName, lastName, gender, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture }
+        return new CodeStub({
+          id: `${tagType}|${tag}|${tagVersion}`,
+          type: tagType,
+          code: tag,
+          version: tagVersion,
+        })
+      })
+    }
+
+    return { firstName, lastName, birthSex, names: [name], addresses: [address], dateOfBirth: dateOfBirthUnixTimestamp, picture, tags: getTags(), languages: [language] }
   }
   const handleSubmit = (value: PatientForm) => {
     if (mode === 'create') createOrUpdatePatient(new DecryptedPatient(getPreparedUserData(value)))
@@ -101,12 +117,14 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     form.resetFields()
   }
   const getPatientToEdit = (patient: DecryptedPatient) => {
-    const { firstName, lastName, dateOfBirth, gender, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, picture } = getPatientDataFormated(patient)
+    const { firstName, lastName, dateOfBirth, birthSex, language, tags, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, picture } =
+      getPatientDataFormated(patient)
     return {
       firstName,
       lastName,
       dateOfBirth: dateOfBirth ? dayjs.unix(dateOfBirth) : undefined,
-      gender,
+      birthSex,
+      language,
       phoneNumber,
       emailAddress,
       country,
@@ -115,6 +133,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       houseNumber,
       postalCode,
       picture,
+      tags: tags.map((tag) => tag.code),
     }
   }
 
@@ -154,7 +173,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     // Can not select days before today and today
     return current && current > dayjs().endOf('day')
   }
-  const dateFormat = 'DD.MM.YYYY'
   const { innerWidth } = getWindowSize()
 
   return (
@@ -186,18 +204,16 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                 <Input placeholder="Last name" size="large" />
               </Form.Item>
               <Form.Item name="dateOfBirth" label="Date of birth" rules={[{ required: true, message: 'Date of birth is required' }]}>
-                <DatePicker format={dateFormat} placeholder="Date of birth" size="large" style={{ width: '100%' }} disabledDate={disabledDate} />
+                <DatePicker format={DATE_FORMAT_TO_DISPLAY} placeholder="Date of birth" size="large" style={{ width: '100%' }} disabledDate={disabledDate} />
               </Form.Item>
-              <Form.Item name="gender" label="Gender" rules={[{ required: true, message: 'Gender is required' }]}>
-                <Select placeholder="Gender" size="large">
+              <Form.Item name="birthSex" label="Sex at birth" rules={[{ required: true, message: 'Sex at birth is required' }]}>
+                <Select placeholder="Sex at birth" size="large">
                   <Option value={Gender.Male}>{Gender.Male}</Option>
                   <Option value={Gender.Female}>{Gender.Female}</Option>
-                  <Option value={Gender.Indeterminate}>{Gender.Indeterminate}</Option>
-                  <Option value={Gender.Changed}>{Gender.Changed}</Option>
-                  <Option value={Gender.ChangedToMale}>{Gender.ChangedToMale}</Option>
-                  <Option value={Gender.ChangedToFemale}>{Gender.ChangedToFemale}</Option>
-                  <Option value={Gender.Unknown}>{Gender.Unknown}</Option>
                 </Select>
+              </Form.Item>
+              <Form.Item name="language" label="Language" rules={[{ required: true, message: 'Language is required' }]}>
+                <Input placeholder="Language" size="large" />
               </Form.Item>
               <Form.Item label="Picture" valuePropName="file">
                 <ImgCrop
@@ -241,6 +257,21 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
               </Form.Item>
               <Form.Item name="postalCode" label="Postal code" rules={[{ required: true, message: 'Postal code is required' }]}>
                 <Input placeholder="Postal code" size="large" />
+              </Form.Item>
+            </div>
+          </div>
+          <div className="modalPatientForm__form__infoBlock">
+            <h3 className="modalPatientForm__form__infoBlock__title">Tags:</h3>
+            <div className="modalPatientForm__form__infoBlock__inputs">
+              <Form.Item name="tags" label="Tags" rules={[{ required: true, message: 'Tags are required' }]}>
+                <Select placeholder="Tags" size="large" mode="multiple">
+                  <Option value={PatientsTagsEnum.UNINVITED}>{PatientsTagsEnum.UNINVITED}</Option>
+                  <Option value={PatientsTagsEnum.WELCOMED}>{PatientsTagsEnum.WELCOMED}</Option>
+                  <Option value={PatientsTagsEnum.QUESTIONNAIRE_SENT}>{PatientsTagsEnum.QUESTIONNAIRE_SENT}</Option>
+                  <Option value={PatientsTagsEnum.RESPONSE_RECEIVED}>{PatientsTagsEnum.RESPONSE_RECEIVED}</Option>
+                  <Option value={PatientsTagsEnum.NURSE_APPOINTMENT_TAKEN}>{PatientsTagsEnum.NURSE_APPOINTMENT_TAKEN}</Option>
+                  <Option value={PatientsTagsEnum.DOCTOR_APPOINTMENT_TAKEN}>{PatientsTagsEnum.DOCTOR_APPOINTMENT_TAKEN}</Option>
+                </Select>
               </Form.Item>
             </div>
           </div>
