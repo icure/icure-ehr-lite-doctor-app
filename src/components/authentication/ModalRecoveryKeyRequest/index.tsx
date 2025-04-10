@@ -4,7 +4,7 @@ import React from 'react'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { CardinalApiState, markRecoveryKeyAsLost, provideRecoveryKey } from '../../../core/services/auth.api'
 
-import { CustomModal } from '../../CustomModal'
+import { CustomModal } from '../../common/CustomModal'
 import './index.css'
 
 const reduxSelector = createSelector(

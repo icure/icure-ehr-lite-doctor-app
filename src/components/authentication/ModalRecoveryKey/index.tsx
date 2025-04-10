@@ -6,9 +6,9 @@ import { useGetPractitionerQuery } from '../../../core/api/practitionerApi'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 
 import { CardinalApiState, setNewlyCreatedRecoveryKey } from '../../../core/services/auth.api'
-import { CopyJSONButton } from '../../CopyJSONButton'
+import { CopyJSONButton } from '../../common/CopyJSONButton'
 import './index.css'
-import { CustomModal } from '../../CustomModal'
+import { CustomModal } from '../../common/CustomModal'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
