@@ -91,7 +91,7 @@ export const patientApiRtk = createApi({
             .map((word) => {
               const matchingTags = allPatientsTagsEnum
                 .filter((e) => e.toLowerCase().includes(word.toLowerCase()))
-                .map((c) => PatientFilters.byTagForDataOwner(practitionerId, 'PREVENTI', c))
+                .map((c) => PatientFilters.byTagForDataOwner(practitionerId, 'PETRA_CARE', c))
               const partailFilter = matchingTags.length
                 ? union(
                     PatientFilters.byFuzzyNameForDataOwner(practitionerId, word),

@@ -72,7 +72,7 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
       const getTags = () => {
         const separatedTags = statusTags.split(', ')
         return separatedTags.map((tag) => {
-          const tagType = 'PREVENTI'
+          const tagType = 'PETRA_CARE'
           const tagVersion = '1'
 
           return new CodeStub({

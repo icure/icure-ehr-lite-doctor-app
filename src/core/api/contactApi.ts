@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { DecryptedContact, DecryptedPatient, Patient } from '@icure/cardinal-sdk'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { cardinalApi, guard } from '../services/auth.api'
 import { loadFromIterator, tagsByIds } from './utils'
 
@@ -44,7 +44,7 @@ export const contactApiRtk = createApi({
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },
             ]
-          : [],
+          : [{ type: 'Contact', id: 'all' }],
     }),
     findContactsByHcPartyPatient: builder.query<DecryptedContact[] | undefined, { hcPartyId: string; patient: Patient }>({
       async queryFn({ hcPartyId, patient }, { getState }) {
@@ -53,7 +53,7 @@ export const contactApiRtk = createApi({
           return await loadFromIterator(await contactApi!.findContactsByHcPartyPatient(hcPartyId, patient), 1000)
         })
       },
-      providesTags: tagsByIds('Contact'),
+      providesTags: tagsByIds('Contact', 'all'),
     }),
   }),
 })
