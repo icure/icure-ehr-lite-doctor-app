@@ -130,11 +130,22 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
   }
   const handleFileUpload = (file: File) => {
     const reader = new FileReader()
+    const isTextFile = (filename: string) => filename.endsWith('.csv') || filename.endsWith('.txt') || filename.endsWith('.xml')
+
     reader.onload = (e) => {
       if (!e.target?.result) return
 
-      const data = new Uint8Array(e.target.result as ArrayBuffer)
-      const workbook = XLSX.read(data, { type: 'array', bookVBA: true }) // Use 'array' instead of 'binary'
+      let workbook
+
+      if (isTextFile(file.name)) {
+        // Text-based file
+        const text = e.target.result as string
+        workbook = XLSX.read(text, { type: 'string', codepage: 65001 })
+      } else {
+        // Binary-based file
+        const data = new Uint8Array(e.target.result as ArrayBuffer)
+        workbook = XLSX.read(data, { type: 'array', bookVBA: true })
+      }
 
       if (!workbook) return
       const sheetName = workbook.SheetNames[0]
@@ -164,8 +175,17 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
       })
     }
 
-    reader.readAsArrayBuffer(file) // Correct method for binary files
-    return false // Prevent upload
+    reader.onerror = (e) => {
+      console.error('FileReader error:', e)
+    }
+
+    if (isTextFile(file.name)) {
+      reader.readAsText(file, 'utf-8')
+    } else {
+      reader.readAsArrayBuffer(file)
+    }
+
+    return false // Prevent automatic upload
   }
 
   const uploadProps: UploadProps = {
