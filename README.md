@@ -1,6 +1,6 @@
 ![Cardinal logo](./cardinal_logo.svg)
 
-<h1>CardinalSDK React JS Template</h1>
+<h1>CardinalSDK React JS Tutorial App</h1>
 
 Start working on your e-health React JS app with Cardinal in a few minutes, by using our dedicated React JS template:
 
