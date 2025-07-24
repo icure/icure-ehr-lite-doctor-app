@@ -92,19 +92,25 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
   }
 
   private async promptUserForRecoveryKey(reason: RecoveryDataUseFailureReason = RecoveryDataUseFailureReason.Missing): Promise<string | undefined> {
-    const promise = new Promise<string>((resolve) => {
-      // let unsubscribe:
+    const promise = new Promise<string | undefined>((resolve) => {
+      // eslint-disable-next-line prefer-const
+      let unsubscribe: Unsubscribe | undefined
       const handleChange = () => {
         const {
-          cardinalApi: { recoveryKeys },
+          cardinalApi: { recoveryKeys, recoveryKeyRequest },
         } = store.getState()
-        if (recoveryKeys === undefined) {
+        if (!recoveryKeys?.length) {
+          // The following happens in case of skip
+          if (!recoveryKeyRequest) {
+            resolve(undefined)
+            unsubscribe?.()
+          }
           return
         }
-        resolve(recoveryKeys[0])
+        resolve(recoveryKeys[0].replace(/-/g, '').replace(/0/g, 'O').replace(/1/g, 'I').replace(/8/g, 'B'))
         unsubscribe?.()
       }
-      const unsubscribe: Unsubscribe | undefined = store.subscribe(handleChange)
+      unsubscribe = store.subscribe(handleChange)
     })
 
     store.dispatch(askForRecoveryKey({ reason }))
@@ -156,12 +162,16 @@ function getError(e: Error): FetchBaseQueryError {
   return { status: 'CUSTOM_ERROR', error: e.message, data: e }
 }
 
-export const guard = async <T>(guardedInputs: unknown[], lambda: () => Promise<T>): Promise<{ error: FetchBaseQueryError } | { data: T | undefined }> => {
+export async function guard<T, A, B, C, D, E, F = undefined>(
+  guardedInputs: [A?, B?, C?, D?, E?],
+  lambda: (constrainedInputs: [A, B, C, D, E]) => Promise<T>,
+  fallback: F = undefined as F,
+): Promise<{ error: FetchBaseQueryError } | { data: T | F }> {
   if (guardedInputs.some((x) => !x)) {
-    return { data: undefined }
+    return { data: fallback }
   }
   try {
-    const res = await lambda()
+    const res = await lambda(guardedInputs as [A, B, C, D, E])
     const curate = (result: T): T => {
       if (result === null || result === undefined) {
         return null as T

@@ -1,4 +1,4 @@
-import { DecryptedContact, DecryptedPatient, Patient } from '@icure/cardinal-sdk'
+import { DecryptedContact, DecryptedPatient, Patient } from '@icure/cardinal-sdk/model.mjs'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { cardinalApi, guard } from '../services/auth.api'
 import { loadFromIterator, tagsByIds } from './utils'
@@ -13,7 +13,7 @@ export const contactApiRtk = createApi({
     createContact: builder.mutation<DecryptedContact | undefined, { patient: DecryptedPatient; contact: DecryptedContact }>({
       async queryFn({ patient, contact }, { getState }) {
         const contactApi = (await cardinalApi(getState))?.contact
-        return guard([contactApi], async (): Promise<DecryptedContact | undefined> => {
+        return guard([contactApi], async ([contactApi]): Promise<DecryptedContact | undefined> => {
           const contactWithMetadata = await contactApi?.withEncryptionMetadata(contact, patient)
           if (!contactWithMetadata) {
             throw new Error('Error while creating ContactWithMetadata')
@@ -33,7 +33,7 @@ export const contactApiRtk = createApi({
     modifyContact: builder.mutation<DecryptedContact | undefined, DecryptedContact>({
       async queryFn(contact, { getState }) {
         const contactApi = (await cardinalApi(getState))?.contact
-        return guard([contactApi], async (): Promise<DecryptedContact | undefined> => {
+        return guard([contactApi], async ([contactApi]): Promise<DecryptedContact | undefined> => {
           return await contactApi?.modifyContact(contact)
         })
       },
@@ -44,13 +44,22 @@ export const contactApiRtk = createApi({
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },
             ]
-          : [{ type: 'Contact', id: 'all' }],
+          : [],
     }),
     findContactsByHcPartyPatient: builder.query<DecryptedContact[] | undefined, { hcPartyId: string; patient: Patient }>({
       async queryFn({ hcPartyId, patient }, { getState }) {
         const contactApi = (await cardinalApi(getState))?.contact
-        return guard([contactApi], async (): Promise<DecryptedContact[]> => {
-          return await loadFromIterator(await contactApi!.findContactsByHcPartyPatient(hcPartyId, patient), 1000)
+        return guard([contactApi], async ([contactApi]): Promise<DecryptedContact[]> => {
+          return await loadFromIterator(await contactApi.findContactsByHcPartyPatient(hcPartyId, patient), 1000)
+        })
+      },
+      providesTags: tagsByIds('Contact', 'all'),
+    }),
+    findContactsWithFormIds: builder.query<DecryptedContact[] | undefined, { hcPartyId: string; formIds: string[] }>({
+      async queryFn({ hcPartyId, formIds }, { getState }) {
+        const contactApi = (await cardinalApi(getState))?.contact
+        return guard([contactApi], async ([contactApi]): Promise<DecryptedContact[]> => {
+          return await contactApi.listContactsByHCPartyAndFormIds(hcPartyId, formIds)
         })
       },
       providesTags: tagsByIds('Contact', 'all'),
@@ -58,4 +67,4 @@ export const contactApiRtk = createApi({
   }),
 })
 
-export const { useCreateContactMutation, useModifyContactMutation, useFindContactsByHcPartyPatientQuery } = contactApiRtk
+export const { useCreateContactMutation, useModifyContactMutation, useFindContactsByHcPartyPatientQuery, useFindContactsWithFormIdsQuery } = contactApiRtk

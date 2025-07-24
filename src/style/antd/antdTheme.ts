@@ -43,5 +43,12 @@ export const ANTD_NEW_THEME = {
       colorWarning: '#EB3437',
       colorTextHeading: '#EB3437',
     },
+    Tabs: {
+      colorBorderSecondary: '#dce7f2',
+    },
+    Collapse: {
+      colorBorder: '#dce7f2',
+      headerBg: '#eef6fe',
+    },
   },
 }

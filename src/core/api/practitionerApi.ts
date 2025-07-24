@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, cardinalApi } from '../services/auth.api'
 import { HealthcareParty, HealthcarePartyFilters } from '@icure/cardinal-sdk'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { cardinalApi, guard } from '../services/auth.api'
 import { loadFromIterator, tagsByIds } from './utils'
 
 export const practitionerApiRtk = createApi({
@@ -13,8 +13,8 @@ export const practitionerApiRtk = createApi({
     getPractitioner: builder.query<HealthcareParty | undefined, string>({
       async queryFn(id, { getState }) {
         const practitionerApi = (await cardinalApi(getState))?.healthcareParty
-        return guard([practitionerApi], async (): Promise<HealthcareParty> => {
-          const practitioner = await practitionerApi?.getHealthcareParty(id)
+        return guard([practitionerApi], async ([practitionerApi]): Promise<HealthcareParty> => {
+          const practitioner = await practitionerApi.getHealthcareParty(id)
           if (!practitioner) {
             throw new Error('Practitioner does not exist')
           }
@@ -26,8 +26,8 @@ export const practitionerApiRtk = createApi({
     filterPractitionersByName: builder.query<HealthcareParty[] | undefined, string>({
       async queryFn(name, { getState }) {
         const practitionerApi = (await cardinalApi(getState))?.healthcareParty
-        return guard([practitionerApi], async (): Promise<HealthcareParty[]> => {
-          return await loadFromIterator(await practitionerApi!.filterHealthPartiesBy(HealthcarePartyFilters.byName(name)), 1000)
+        return guard([practitionerApi], async ([practitionerApi]): Promise<HealthcareParty[]> => {
+          return await loadFromIterator(await practitionerApi.filterHealthPartiesBy(HealthcarePartyFilters.byName(name)), 1000)
         })
       },
       providesTags: tagsByIds('Practitioner'),
@@ -35,8 +35,11 @@ export const practitionerApiRtk = createApi({
     createOrUpdatePractitioner: builder.mutation<HealthcareParty | undefined, HealthcareParty>({
       async queryFn(practitioner, { getState }) {
         const practitionerApi = (await cardinalApi(getState))?.healthcareParty
-        return guard([practitionerApi], async (): Promise<HealthcareParty> => {
-          const updatedPractitioner = !!practitioner.rev ? await practitionerApi?.modifyHealthcareParty(practitioner) : await practitionerApi?.createHealthcareParty(practitioner)
+        return guard([practitionerApi], async ([practitionerApi]): Promise<HealthcareParty> => {
+          console.log('practitioner')
+          console.log(practitioner)
+
+          const updatedPractitioner = !!practitioner.rev ? await practitionerApi.modifyHealthcareParty(practitioner) : await practitionerApi.createHealthcareParty(practitioner)
           if (!updatedPractitioner) {
             throw new Error('Practitioner does not exist')
           }

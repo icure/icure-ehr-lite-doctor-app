@@ -1,7 +1,7 @@
 import React from 'react'
 import { ModalRecoveryKey } from '../../components/authentication/ModalRecoveryKey'
 import { Header } from '../../components/common/Header'
-import { Patients } from '../../components/patient/Patients'
+import { Patients } from '../../components/patient-elements/Patients'
 
 import './index.css'
 

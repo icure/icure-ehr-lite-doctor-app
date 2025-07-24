@@ -97,7 +97,7 @@ export const CustomModal = ({
     body: {
       flex: 1,
       display: 'flex',
-      overflowY: blockAntModalBodyVerticalScroll ? 'hidden' : 'scroll',
+      // overflowY: blockAntModalBodyVerticalScroll ? 'hidden' : 'scroll',
     },
   }
 

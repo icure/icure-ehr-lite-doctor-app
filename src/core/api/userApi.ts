@@ -1,6 +1,6 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
-import { guard, cardinalApi } from '../services/auth.api'
 import { randomUuid, User } from '@icure/cardinal-sdk'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
+import { cardinalApi, guard } from '../services/auth.api'
 
 export const userApiRtk = createApi({
   reducerPath: 'userApi',
@@ -12,8 +12,8 @@ export const userApiRtk = createApi({
     createUser: builder.mutation<User | undefined, { email: string; id: string; name: string }>({
       async queryFn({ email, id, name }, { getState }) {
         const userApi = (await cardinalApi(getState))?.user
-        return guard([userApi], async (): Promise<User> => {
-          const createdUser = await userApi?.createUser(
+        return guard([userApi], async ([userApi]): Promise<User> => {
+          const createdUser = await userApi.createUser(
             new User({
               id: randomUuid(),
               name: name,

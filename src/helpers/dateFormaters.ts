@@ -1,4 +1,4 @@
-import { differenceInDays, differenceInMonths, differenceInYears, format, fromUnixTime, parse } from 'date-fns'
+import { differenceInDays, differenceInMonths, differenceInYears, format, parse } from 'date-fns'
 
 export const getNumericDate = (date: Date | number): number => {
   return Number(format(date, 'yyyyMMddHHmmss'))
@@ -12,40 +12,47 @@ export const formatTimestampToHumanReadable = (timestamp: number | undefined): s
   return format(parsedDate, 'd MMMM yyyy')
 }
 
-export const getAge = (date: number | undefined): string | undefined => {
+export const getAgeDescription = (date: number | undefined, language = 'en'): string | undefined => {
   if (!date) {
     return '-'
   }
 
+  const units =
+    language === 'fr'
+      ? [
+          ['an', 'ans'],
+          ['mois', 'mois'],
+          ['jour', 'jours'],
+        ]
+      : language === 'nl'
+        ? [
+            ['jaar', 'jaar'],
+            ['maand', 'maanden'],
+            ['dag', 'dagen'],
+          ]
+        : [
+            ['year', 'years'],
+            ['month', 'months'],
+            ['day', 'days'],
+          ]
+
   const now = new Date()
-  const birthDate = fromUnixTime(date)
+  const birthDate = new Date(date / 10000, (date % 10000) / 100 - 1, date % 100)
 
   const years = differenceInYears(now, birthDate)
   if (years !== 0) {
-    if (years % 10 == 1) {
-      return `${years} year`
-    } else {
-      return `${years} years`
-    }
+    return `${years} ${units[0][years === 1 ? 0 : 1]}`
   }
 
   const months = differenceInMonths(now, birthDate)
   if (months !== 0) {
-    if (months % 10 == 1) {
-      return `${months} month`
-    } else {
-      return `${months} months`
-    }
+    return `${months} ${units[1][months === 1 ? 0 : 1]}`
   }
 
   const days = differenceInDays(now, birthDate)
   if (days !== 0) {
-    if (days % 10 == 1) {
-      return `${days} day`
-    } else {
-      return `${days} days`
-    }
+    return `${days} ${units[2][days === 1 ? 0 : 1]}`
   }
 
-  return 'error'
+  return 'just born'
 }

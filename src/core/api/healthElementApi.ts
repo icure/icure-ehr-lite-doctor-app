@@ -1,5 +1,5 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { DecryptedHealthElement, DecryptedPatient } from '@icure/cardinal-sdk'
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { cardinalApi, guard } from '../services/auth.api'
 
 export const healthElementApiRtk = createApi({
@@ -12,7 +12,7 @@ export const healthElementApiRtk = createApi({
     createHealthElement: builder.mutation<DecryptedHealthElement | undefined, { patient: DecryptedPatient; healthElement: DecryptedHealthElement }>({
       async queryFn({ patient, healthElement }, { getState }) {
         const healthElementApi = (await cardinalApi(getState))?.healthElement
-        return guard([healthElementApi], async (): Promise<DecryptedHealthElement | undefined> => {
+        return guard([healthElementApi], async ([healthElementApi]): Promise<DecryptedHealthElement | undefined> => {
           const healthElementWithMetadata = await healthElementApi?.withEncryptionMetadata(healthElement, patient)
 
           if (!healthElementWithMetadata) {
@@ -34,7 +34,7 @@ export const healthElementApiRtk = createApi({
     getHealthElements: builder.query<DecryptedHealthElement[] | undefined, string[]>({
       async queryFn(entityIds, { getState }) {
         const healthElementApi = (await cardinalApi(getState))?.healthElement
-        return guard([healthElementApi], async (): Promise<Array<DecryptedHealthElement> | undefined> => {
+        return guard([healthElementApi], async ([healthElementApi]): Promise<Array<DecryptedHealthElement> | undefined> => {
           return await healthElementApi?.getHealthElements(entityIds)
         })
       },
