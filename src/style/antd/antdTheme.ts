@@ -38,6 +38,7 @@ export const ANTD_NEW_THEME = {
       fontSize: 13,
       optionSelectedBg: '#DCE7F2',
       optionSelectedColor: '#084B83',
+      colorBorder: '#cad0d5',
     },
     Popconfirm: {
       colorWarning: '#EB3437',
@@ -49,6 +50,7 @@ export const ANTD_NEW_THEME = {
     Collapse: {
       colorBorder: '#dce7f2',
       headerBg: '#fcfcfd',
+      colorTextPlaceholder: '#9ca8b2',
     },
   },
 }

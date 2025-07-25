@@ -119,6 +119,7 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
 }
 
 export interface CardinalApiState {
+  ehealthCertificatePassword?: string
   email?: string
   token?: string
   user?: User
@@ -379,6 +380,9 @@ export const cardinalApiRtk = createSlice({
       state.email = email
       state.invalidEmail = false
     },
+    setEhealthCertificatePassword: (state, { payload: { password } }: PayloadAction<{ password?: string }>) => {
+      state.ehealthCertificatePassword = password
+    },
     setUser: (state, { payload: { user } }: PayloadAction<{ user: User }>) => {
       state.user = user
       state.online = !!user
@@ -428,6 +432,7 @@ export const {
   setRegistrationInformation,
   setToken,
   setEmail,
+  setEhealthCertificatePassword,
   resetCredentials,
   setLoginProcessStarted,
   setWaitingForToken,

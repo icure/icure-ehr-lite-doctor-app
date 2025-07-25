@@ -62,7 +62,6 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
       primaryBtnTitle="Start consultation"
       handleClickPrimaryBtn={onAddConsultation}
       width={DEFAULT_MODAL_WIDTH}
-      blockAntModalBodyVerticalScroll={true}
     >
       <div className="modalPatienProfile">
         <div className="modalPatienProfile__innerContainer">
