@@ -95,7 +95,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, setEhealthCertificatePassw
             <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
           <Form.Item name="ehealthCertificatePassword" label="Ehealth password (optional)">
-            <Input type="password" size="large" style={{ fontSize: 13 }} />
+            <Input placeholder="Ehealth password" type="password" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
 
           {state === 'waitingForToken' && (

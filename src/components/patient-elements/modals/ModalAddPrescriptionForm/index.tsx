@@ -335,10 +335,10 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     <CustomModal
       isVisible={isVisible}
       handleClose={handleOnClose}
-      secondaryBtnTitle="Cancel"
+      secondaryBtnTitle="CLose"
       // handleClickPrimaryBtn={() => form.submit()}
       // primaryBtnTitle="Save"
-      title="Add consultation"
+      title="Add prescription"
     >
       <div className="modalAddConsultationForm">
         {(isPractitionerTemplatesListFetching || isPractitionerTemplatesFetching) && <SpinLoader />}

@@ -29,6 +29,7 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
     ?.filter((contact) => contact.tags.some((c) => c.id?.startsWith('CD-ITEM|prescription')))
 
   const items: CollapseProps['items'] = sortedContacts?.map((contact, index) => {
+    console.log({ sortedContacts })
     return {
       id: contact.id,
       label: formatTimestampToHumanReadable(contact.openingDate),
@@ -36,14 +37,12 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
     }
   })
 
-  console.log(healthcarePartyId)
   return (
     <>
       <div className="prescriptions">
+        <Collapse style={{ width: '100%' }} items={items} />
         <Button onClick={() => setAddPrescriptionModalOpen(true)}>Create Prescription</Button>
       </div>
-
-      <Collapse items={items} />
 
       {isAddPrescriptionModalOpen &&
         createPortal(<ModalAddPrescriptionForm isVisible={isAddPrescriptionModalOpen} onClose={() => setAddPrescriptionModalOpen(false)} patient={patient} />, document.body)}
