@@ -16,14 +16,18 @@ import {
   uploadAndEncryptCertificate,
   validateDecryptedCertificate,
 } from '@icure/cardinal-prescription-be-react'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
-import { Alert, Form, Select, SelectProps } from 'antd'
+import { Alert, Select, SelectProps } from 'antd'
 import React, { useEffect, useState } from 'react'
+import { v4 as uuid } from 'uuid'
+import { useCreateContactMutation } from '../../../../core/api/contactApi'
 import { useGetEntityTemplatesQuery, useListEntityTemplatesByQuery } from '../../../../core/api/entityTemplateApi'
 import { useGetPractitionerQuery } from '../../../../core/api/practitionerApi'
+import { fhcMedicationToCardinalMedication } from '../../../../core/api/utils'
 import { useAppSelector } from '../../../../core/hooks'
 import { CardinalApiState } from '../../../../core/services/auth.api'
+import { getNumericDate } from '../../../../helpers/dateFormaters'
 
 import { CustomModal } from '../../../common/CustomModal'
 import './index.css'
@@ -191,7 +195,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   const onClosePrescriptionPrintModal = () => setPrescriptionPrintModalOpen(false)
   const handleSendPrescriptions = async () => {
     console.log('click')
-    await Promise.all(
+    const meds = await Promise.all(
       prescriptions
         .filter((m) => !m.rid)
         .map(async (med) => {
@@ -219,25 +223,47 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
                     : item,
                 ),
               )
+              return new Medication({ ...fhcMedicationToCardinalMedication(med.medication), prescriptionRID: res[0]?.rid })
+            } else {
+              return fhcMedicationToCardinalMedication(med.medication)
             }
           } catch (e) {
             console.error(e)
           }
         }),
     )
+    const prescriptionServices = meds.map(
+      (m) =>
+        new DecryptedService({
+          medicalLocationId: undefined,
+          id: uuid(),
+          label: 'Prescription',
+          identifier: [new Identifier({ system: 'cardinal', value: 'prescription' })],
+          content: {
+            en: new DecryptedContent({
+              medicationValue: m,
+            }),
+          },
+        }),
+    )
+
+    const contact = new DecryptedContact({
+      id: uuid(),
+      descr: `${practitioner?.speciality ?? 'Doctor'} consultation`,
+      services: prescriptionServices,
+
+      closingDate: getNumericDate(new Date()), // Closing the Examination
+    })
+
+    createContact({ patient, contact })
   }
   const handlePrintPrescriptions = async () => {
     await handleSendPrescriptions()
     setPrescriptionPrintModalOpen(true)
   }
 
-  // const startOfTheConsultation = getNumericDate(new Date())
   const { healthcarePartyId, userId } = useAppSelector(reduxSelector)
   const { data: practitioner } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
-
-  const [form] = Form.useForm()
-  // const [createContact, { error: createContactError, isError: isCreateContactError, isSuccess: isContactCreatedSuccessfully, isLoading: isContactCreatingLoading }] =
-  //   useCreateContactMutation()
 
   const { data: prescriptionTemplatesList, isFetching: isPractitionerTemplatesListFetching } = useListEntityTemplatesByQuery(
     {
@@ -250,6 +276,12 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   const { data: prescriptionTemplates, isFetching: isPractitionerTemplatesFetching } = useGetEntityTemplatesQuery(selectedPrescriptionTemplateIds ?? [], {
     skip: selectedPrescriptionTemplateIds === undefined || selectedPrescriptionTemplateIds.length === 0,
   })
+
+  const [createContact, { error: createContactError, isError: isCreateContactError }] = useCreateContactMutation()
+
+  if (isCreateContactError) {
+    console.error(createContactError)
+  }
 
   useEffect(() => {
     if (prescriptionTemplates && prescriptionTemplates.length > 0) {
@@ -265,36 +297,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     }
   }, [prescriptionTemplates])
 
-  // if (isCreateContactError) {
-  //   console.error(createContactError)
-  // }
-
-  // const handleSubmit = async () => {
-  //   const prescriptionService = new DecryptedService({
-  //     medicalLocationId: undefined,
-  //     id: uuid(),
-  //     label: 'Prescription',
-  //     identifier: [new Identifier({ system: 'cardinal', value: 'prescription' })],
-  //     content: {
-  //       en: new DecryptedContent({
-  //         stringValue: 'value.complains',
-  //       }),
-  //     },
-  //   })
-  //
-  //   const contact = new DecryptedContact({
-  //     id: uuid(),
-  //     descr: `${practitioner?.speciality ?? 'Doctor'} consultation`,
-  //     openingDate: startOfTheConsultation,
-  //     services: [prescriptionService],
-  //
-  //     closingDate: getNumericDate(new Date()), // Closing the Examination
-  //   })
-  //
-  //   createContact({ patient, contact })
-  // }
   const handleOnClose = () => {
-    form.resetFields()
     onClose()
   }
 
