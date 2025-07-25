@@ -9023,6 +9023,7 @@ __metadata:
     exponential-backoff: "npm:^3.1.1"
     file-saver: "npm:^2.0.5"
     friendly-challenge: "npm:^0.9.18"
+    jsbarcode: "npm:^3.12.1"
     less: "npm:^4.2.2"
     less-watch-compiler: "npm:^1.16.3"
     lint-staged: "npm:^15.4.3"

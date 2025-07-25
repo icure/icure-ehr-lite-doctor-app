@@ -3,15 +3,6 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { cardinalApi, guard } from '../services/auth.api'
 import { loadFromIterator, tagsByIds } from './utils'
 
-const twoDaysAgo = () => {
-  const date = new Date()
-  date.setDate(date.getDate() - 2)
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `${y}${m}${d}`
-}
-
 export const contactApiRtk = createApi({
   reducerPath: 'contactApi',
   tagTypes: ['Contact'],
@@ -38,16 +29,6 @@ export const contactApiRtk = createApi({
               { type: 'Contact', id: result.id },
             ]
           : [],
-    }),
-    currentContact: builder.query<DecryptedContact | undefined, { hcPartyId: string; patient: Patient }>({
-      async queryFn({ hcPartyId, patient }, { getState }) {
-        const contactApi = (await cardinalApi(getState))?.contact
-        return guard([contactApi], async ([contactApi]): Promise<DecryptedContact[]> => {
-          //get the date of two dqys ago formatted as yyyymmdd
-          return await contactApi.findContactsByOpeningDate(99991231, twoDaysAgo())
-        })
-      },
-      providesTags: tagsByIds('Contact', 'all'),
     }),
     modifyContact: builder.mutation<DecryptedContact | undefined, DecryptedContact>({
       async queryFn(contact, { getState }) {
