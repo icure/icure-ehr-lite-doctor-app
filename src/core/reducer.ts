@@ -2,6 +2,7 @@ import { combineReducers } from '@reduxjs/toolkit'
 import { persistReducer } from 'redux-persist'
 import { contactApiRtk } from './api/contactApi'
 import { deviceApiRtk } from './api/deviceApi'
+import { entityTemplateApiRtk } from './api/entityTemplateApi'
 import { healthElementApiRtk } from './api/healthElementApi'
 import { patientApiRtk } from './api/patientApi'
 import { practitionerApiRtk } from './api/practitionerApi'
@@ -18,6 +19,7 @@ export const appReducer = combineReducers({
   patientApi: patientApiRtk.reducer,
   contactApi: contactApiRtk.reducer,
   healthElementApi: healthElementApiRtk.reducer,
+  entityTemplateApi: entityTemplateApiRtk.reducer,
 })
 
 export const persistedReducer = persistReducer(persistConfig, appReducer)

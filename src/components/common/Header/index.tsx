@@ -13,7 +13,7 @@ import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { CardinalApiState, logout } from '../../../core/services/auth.api'
 import { getImgSRC } from '../../../helpers/fileToBase64'
 import { ModalManageAccountForm } from '../../practitioner-elements/ModalManageAccountForm'
-import { PrescriptionTemplatesModal } from '../../practitioner-elements/PrescriptionTemplatesModal'
+import { PrescriptionTemplates } from '../../practitioner-elements/PrescriptionTemplates'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
@@ -127,7 +127,12 @@ export const Header = () => {
       {isPrescriptionTemplatesModalOpen &&
         userId &&
         createPortal(
-          <PrescriptionTemplatesModal isVisible={isPrescriptionTemplatesModalOpen} onClose={() => setPrescriptionTemplateModalOpen(false)} userId={userId} />,
+          <PrescriptionTemplates
+            isVisible={isPrescriptionTemplatesModalOpen}
+            onClose={() => setPrescriptionTemplateModalOpen(false)}
+            userId={userId}
+            practitioner={practitioner}
+          />,
           document.body,
         )}
     </>

@@ -1,5 +1,5 @@
 import { EnsembleAuthenticationProvider, IccAuthApi, IccBesamv2Api, NoAuthenticationProvider, SamVersion } from '@icure/api'
-import { HealthcareParty, Patient } from '@icure/be-fhc-lite-api'
+import { HealthcareParty as HealthcareParty_FHC } from '@icure/be-fhc-lite-api'
 import {
   cardinalLanguage,
   deleteCertificate,
@@ -11,50 +11,30 @@ import {
   PrescribedMedicationType,
   PrescriptionList,
   PrescriptionModal,
-  PrescriptionPrintModal,
-  sendRecipe,
   uploadAndEncryptCertificate,
   validateDecryptedCertificate,
 } from '@icure/cardinal-prescription-be-react'
 import './index.css'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { HealthcareParty } from '@icure/cardinal-sdk'
 import { Alert } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
+import { CustomModal } from '../../common/CustomModal'
 
-import { useGetPractitionerQuery } from '../../../../../../core/api/practitionerApi'
-import { SpinLoader } from '../../../../../common/SpinLoader'
-
-interface PrescriptionsProps {
-  patient: DecryptedPatient
-  healthcarePartyId?: string
+interface AddPrescriptionTemplateFormProps {
+  isVisible: boolean
+  onClose: () => void
+  practitioner?: HealthcareParty
+  handleCreateEntity: (prescriptions: PrescribedMedicationType[]) => void
 }
 
-const vendor = {
-  vendorName: 'vendorName',
-  vendorEmail: 'support@test.be',
-  vendorPhone: '+3200000000',
-}
-const samPackage = {
-  packageName: 'test[test/1.0]-freehealth-connector',
-  packageVersion: '1.0]-freehealth-connector',
-}
-
-// To create new Credentials.UsernamePassword(), follow these steps:
-// 1. Go to https://cockpit.icure.dev/ — the management platform for Cardinal.
-// 2. Register and log in.
-// 3. Create a solution, then a database, and then a healthcare professional (practitioner as HealthcareParty).
-// 4. For this practitioner as HealthcareParty, generate an Active Authentication Token.
-// 5. Use the practitioner as HealthcareParty's email address as the username, and the token as the password.
 const practitionerCredentials = {
-  username: 'ls+230725@icure.com',
-  password: '990a765c-387a-4c17-854d-b919d0e324cc',
+  username: 'larisa.shashuk+medicationsTest@gmail.com',
+  password: '5aa9d0f0-2fab-4f9f-9f6a-5d8244280873',
 }
-const ICURE_URL = 'https://nightly.icure.cloud'
-const CARDINAL_PRESCRIPTION_LANGUAGE = 'en'
+const ICURE_URL = 'https://api.icure.cloud'
+const CARDINAL_PRESCRIPTION_LANGUAGE = 'fr'
 
-export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcarePartyId }) => {
-  const { data: practitioner, isFetching: isPractitionerFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
-  // Service instance refs
+export const AddPrescriptionTemplateForm: FC<AddPrescriptionTemplateFormProps> = ({ isVisible, onClose, handleCreateEntity, practitioner }) => {
   const [certificateUploaded, setCertificateUploaded] = useState(false)
   const [isCertificateValid, setIsCertificateValid] = useState(false)
   const [errorWhileVerifyingCertificate, setErrorWhileVerifyingCertificate] = useState<string | undefined>()
@@ -66,9 +46,8 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
   const [prescriptionToModify, setPrescriptionToModify] = useState<PrescribedMedicationType>()
   const [prescriptionModalMode, setPrescriptionModalMode] = useState<'create' | 'modify' | null>(null)
   const [prescriptions, setPrescriptions] = useState<PrescribedMedicationType[]>([])
-  const [isPrescriptionPrintModalOpen, setPrescriptionPrintModalOpen] = useState(false)
 
-  cardinalLanguage.setLanguage(CARDINAL_PRESCRIPTION_LANGUAGE)
+  cardinalLanguage.setLanguage('en')
 
   // Initialize all backend services on mount
   useEffect(() => {
@@ -101,7 +80,7 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
 
   const validateCertificate = async (passphrase: string) => {
     try {
-      const res = await validateDecryptedCertificate(practitioner as HealthcareParty, passphrase)
+      const res = await validateDecryptedCertificate(practitioner as HealthcareParty_FHC, passphrase)
 
       setIsCertificateValid(res.status)
       setErrorWhileVerifyingCertificate(res.error?.[CARDINAL_PRESCRIPTION_LANGUAGE])
@@ -164,7 +143,6 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
     setPrescriptionModalOpen(false)
   }
   const onSubmitCreatePrescription = (newPrescriptions: PrescribedMedicationType[]) => {
-    console.log(newPrescriptions)
     setPrescriptions((prev) => [...prev, ...newPrescriptions])
     onClosePrescriptionModal()
   }
@@ -180,95 +158,58 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
   const onDeletePrescription = (prescription: PrescribedMedicationType) => {
     setPrescriptions((prev) => prev?.filter((item) => item.uuid !== prescription.uuid))
   }
-  const onClosePrescriptionPrintModal = () => setPrescriptionPrintModalOpen(false)
-  const handleSendPrescriptions = async () => {
-    await Promise.all(
-      prescriptions
-        .filter((m) => !m.rid)
-        .map(async (med) => {
-          try {
-            if (!!samVersion?.version && !!passphrase) {
-              const res = await sendRecipe(
-                {
-                  vendor,
-                  samPackage,
-                },
-                samVersion.version,
-                practitioner as HealthcareParty,
-                patient as Patient,
-                med,
-                passphrase,
-              )
-              setPrescriptions((prev) =>
-                prev.map((item) =>
-                  item.uuid === med.uuid
-                    ? {
-                        ...item,
-                        rid: res[0]?.rid,
-                      }
-                    : item,
-                ),
-              )
-            }
-          } catch (e) {
-            console.error(e)
-          }
-        }),
-    )
-  }
-  const handlePrintPrescriptions = async () => {
-    await handleSendPrescriptions()
-    setPrescriptionPrintModalOpen(true)
-  }
 
   return (
-    <div className="prescriptions">
-      {<SpinLoader /> && isPractitionerFetching}
+    <CustomModal
+      isVisible={isVisible}
+      handleClose={onClose}
+      secondaryBtnTitle="Cancel"
+      handleClickPrimaryBtn={() => handleCreateEntity(prescriptions)}
+      primaryBtnTitle="Save"
+      title="Create Prescription Temtplate"
+    >
+      <div className="AddPrescriptionTemplateForm">
+        {samVersion?.version ? <Alert type="success" message={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" message="SamVersion: Undefined" />}
 
-      {samVersion?.version ? <Alert type="success" message={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" message="SamVersion: Undefined" />}
-
-      <PractitionerCertificate
-        certificateValid={isCertificateValid}
-        certificateUploaded={certificateUploaded}
-        errorWhileVerifyingCertificate={errorWhileVerifyingCertificate}
-        onResetCertificate={onResetCertificate}
-        onUploadCertificate={onUploadCertificate}
-        onDecryptCertificate={onDecryptCertificate}
-      />
-
-      {cardinalSdkInstance && isCertificateValid && (
-        <MedicationSearch sdk={cardinalSdkInstance} deliveryEnvironment="P" onAddPrescription={onCreatePrescription} disableInputEventsTracking={isPrescriptionModalOpen} />
-      )}
-
-      {prescriptions.length !== 0 && (
-        <PrescriptionList
-          handleDeletePrescription={onDeletePrescription}
-          handleModifyPrescription={onModifyPrescription}
-          prescribedMedications={prescriptions}
-          handleSendPrescriptions={handleSendPrescriptions}
-          handlePrintPrescriptions={handlePrintPrescriptions}
+        <PractitionerCertificate
+          certificateValid={isCertificateValid}
+          certificateUploaded={certificateUploaded}
+          errorWhileVerifyingCertificate={errorWhileVerifyingCertificate}
+          onResetCertificate={onResetCertificate}
+          onUploadCertificate={onUploadCertificate}
+          onDecryptCertificate={onDecryptCertificate}
         />
-      )}
 
-      {prescriptionModalMode === 'create' && (
-        <PrescriptionModal
-          onClose={onClosePrescriptionModal}
-          onSubmit={onSubmitCreatePrescription}
-          modalMood={prescriptionModalMode}
-          medicationToPrescribe={medicationToPrescribe}
-        />
-      )}
-      {prescriptionModalMode === 'modify' && (
-        <PrescriptionModal onClose={onClosePrescriptionModal} onSubmit={onSubmitModifyPrescription} modalMood={prescriptionModalMode} prescriptionToModify={prescriptionToModify} />
-      )}
-      {isPrescriptionPrintModalOpen && (
-        <PrescriptionPrintModal
-          prescribedMedications={prescriptions}
-          prescriber={practitioner as HealthcareParty}
-          patient={patient as Patient}
-          closeModal={onClosePrescriptionPrintModal}
-        />
-      )}
-    </div>
+        {cardinalSdkInstance && isCertificateValid && (
+          <MedicationSearch sdk={cardinalSdkInstance} deliveryEnvironment="P" onAddPrescription={onCreatePrescription} disableInputEventsTracking={isPrescriptionModalOpen} />
+        )}
+
+        {prescriptions.length !== 0 && (
+          <PrescriptionList
+            handleDeletePrescription={onDeletePrescription}
+            handleModifyPrescription={onModifyPrescription}
+            prescribedMedications={prescriptions}
+            hideSectionsTitles={true}
+          />
+        )}
+
+        {prescriptionModalMode === 'create' && (
+          <PrescriptionModal
+            onClose={onClosePrescriptionModal}
+            onSubmit={onSubmitCreatePrescription}
+            modalMood={prescriptionModalMode}
+            medicationToPrescribe={medicationToPrescribe}
+          />
+        )}
+        {prescriptionModalMode === 'modify' && (
+          <PrescriptionModal
+            onClose={onClosePrescriptionModal}
+            onSubmit={onSubmitModifyPrescription}
+            modalMood={prescriptionModalMode}
+            prescriptionToModify={prescriptionToModify}
+          />
+        )}
+      </div>
+    </CustomModal>
   )
 }

@@ -14,10 +14,6 @@ interface Consultations {
 }
 
 export const Consultations: FC<Consultations> = ({ healthcarePartyId, patient }) => {
-  const onChange = (key: string | string[]) => {
-    console.log(key)
-  }
-
   const { data: listOfContactsWithDoctor, isLoading: isListOfContactsLoading } = useFindContactsByHcPartyPatientQuery(
     {
       hcPartyId: healthcarePartyId ?? '',
@@ -40,7 +36,7 @@ export const Consultations: FC<Consultations> = ({ healthcarePartyId, patient })
     <>
       {<SpinLoader /> && (isListOfContactsLoading || (listOfContactsWithDoctor?.length !== 0 && sortedContacts?.length === 0))}
 
-      <Collapse items={items} onChange={onChange} />
+      <Collapse items={items} />
 
       {listOfContactsWithDoctor?.length === 0 && (
         <CommonPlaceholder title="No Consultations Available" content="This patient has no consultations recorded. Add a new consultation to get started!" />

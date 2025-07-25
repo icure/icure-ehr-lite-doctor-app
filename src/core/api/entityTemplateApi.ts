@@ -10,10 +10,10 @@ export const entityTemplateApiRtk = createApi({
   }),
   endpoints: (builder) => ({
     createEntityTemplate: builder.mutation<EntityTemplate | undefined, EntityTemplate>({
-      async queryFn(applicationSettings, { getState }) {
+      async queryFn(entityTemplate, { getState }) {
         const entityTemplateApi = (await cardinalApi(getState))?.entityTemplate
         return guard([entityTemplateApi], async ([entityTemplateApi]): Promise<EntityTemplate | undefined> => {
-          const prescriptionTemplate = await entityTemplateApi?.createEntityTemplate(applicationSettings)
+          const prescriptionTemplate = await entityTemplateApi?.createEntityTemplate(entityTemplate)
 
           if (!prescriptionTemplate) {
             throw new Error('Error while creating prescription template')
@@ -56,7 +56,7 @@ export const entityTemplateApiRtk = createApi({
     getEntityTemplate: builder.query<EntityTemplate | undefined, string>({
       async queryFn(documentTemplateId, { getState }) {
         const entityTemplateApi = (await cardinalApi(getState))?.entityTemplate
-        return guard([entityTemplateApi], async ([healthElementApi]): Promise<EntityTemplate | undefined> => {
+        return guard([entityTemplateApi], async ([entityTemplateApi]): Promise<EntityTemplate | undefined> => {
           return await entityTemplateApi?.getEntityTemplate(documentTemplateId)
         })
       },
@@ -65,8 +65,28 @@ export const entityTemplateApiRtk = createApi({
     listEntityTemplatesBy: builder.query<EntityTemplate[] | undefined, { userId: string; type: string }>({
       async queryFn({ userId, type }, { getState }) {
         const entityTemplateApi = (await cardinalApi(getState))?.entityTemplate
-        return guard([entityTemplateApi], async ([healthElementApi]): Promise<Array<EntityTemplate> | undefined> => {
+        return guard([entityTemplateApi], async ([entityTemplateApi]): Promise<Array<EntityTemplate> | undefined> => {
           return await entityTemplateApi?.listEntityTemplatesBy(userId, type)
+        })
+      },
+      providesTags: (res) =>
+        res
+          ? [
+              { type: 'EntityTemplate', id: 'all' },
+              ...res.map((entityTemplate) => {
+                return {
+                  type: 'EntityTemplate',
+                  id: entityTemplate.id,
+                } as { type: 'EntityTemplate'; id: string }
+              }),
+            ]
+          : [],
+    }),
+    getEntityTemplates: builder.query<EntityTemplate[] | undefined, string[]>({
+      async queryFn(templatesIds, { getState }) {
+        const entityTemplateApi = (await cardinalApi(getState))?.entityTemplate
+        return guard([entityTemplateApi], async ([entityTemplateApi]): Promise<Array<EntityTemplate> | undefined> => {
+          return await entityTemplateApi?.getEntityTemplates(templatesIds)
         })
       },
       providesTags: (res) =>
@@ -85,4 +105,4 @@ export const entityTemplateApiRtk = createApi({
   }),
 })
 
-export const { useCreateEntityTemplateMutation, useModifyEntityTemplateMutation, useGetEntityTemplateQuery, useListEntityTemplatesByQuery } = entityTemplateApiRtk
+export const { useCreateEntityTemplateMutation, useModifyEntityTemplateMutation, useGetEntityTemplatesQuery, useListEntityTemplatesByQuery } = entityTemplateApiRtk

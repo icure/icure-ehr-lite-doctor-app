@@ -2,6 +2,7 @@ import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
 import { Tabs } from 'antd'
 import React, { ReactElement } from 'react'
+import { DEFAULT_MODAL_WIDTH } from '../../../../constants'
 import { useAppSelector } from '../../../../core/hooks'
 import { CardinalApiState } from '../../../../core/services/auth.api'
 
@@ -60,7 +61,7 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
       handleClickSecondaryBtn={onEdit}
       primaryBtnTitle="Start consultation"
       handleClickPrimaryBtn={onAddConsultation}
-      width={1500}
+      width={DEFAULT_MODAL_WIDTH}
       blockAntModalBodyVerticalScroll={true}
     >
       <div className="modalPatienProfile">

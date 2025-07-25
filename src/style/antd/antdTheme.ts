@@ -48,7 +48,7 @@ export const ANTD_NEW_THEME = {
     },
     Collapse: {
       colorBorder: '#dce7f2',
-      headerBg: '#eef6fe',
+      headerBg: '#fcfcfd',
     },
   },
 }

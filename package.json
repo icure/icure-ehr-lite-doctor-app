@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {
     "@icure/be-fhc-lite-api": "^0.6.4",
-    "@icure/cardinal-prescription-be-react": "^0.0.4",
+    "@icure/cardinal-prescription-be-react": "^0.0.8",
     "@icure/cardinal-sdk": "^2.0.0-PREVIEW-11",
     "@icure/form": "3.0.38",
     "@reduxjs/toolkit": "^1.9.7",
