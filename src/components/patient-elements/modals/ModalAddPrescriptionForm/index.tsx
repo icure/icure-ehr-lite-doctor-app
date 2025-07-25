@@ -207,8 +207,22 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
                   samPackage,
                 },
                 samVersion.version,
-                practitioner as HealthcareParty,
-                patient as Patient,
+                new HealthcareParty({
+                  ...practitioner,
+                  addresses: practitioner?.addresses?.map((a) => ({
+                    ...a,
+                    addressType: a.addressType?.toLowerCase() ?? 'work',
+                    telecoms: a.telecoms.map((t) => ({ ...t, telecomType: t.telecomType?.toLowerCase() ?? 'email' })),
+                  })),
+                }),
+                new Patient({
+                  ...patient,
+                  addresses: patient?.addresses?.map((a) => ({
+                    ...a,
+                    addressType: a.addressType?.toLowerCase() ?? 'home',
+                    telecoms: a.telecoms.map((t) => ({ ...t, telecomType: t.telecomType?.toLowerCase() ?? 'email' })),
+                  })),
+                }),
                 med,
                 passphrase,
               )
