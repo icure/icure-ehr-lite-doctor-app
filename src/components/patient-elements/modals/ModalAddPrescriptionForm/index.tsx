@@ -18,7 +18,7 @@ import {
 } from '@icure/cardinal-prescription-be-react'
 import { DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
-import { Alert, Select, SelectProps } from 'antd'
+import { Alert, Form, Select, SelectProps } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useCreateContactMutation } from '../../../../core/api/contactApi'
@@ -338,7 +338,9 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
         <div className="modalAddConsultationForm__form__inputs">
           {cardinalSdkInstance && isCertificateValid && (
             <>
-              <Select mode="multiple" allowClear style={{ width: '100%' }} placeholder="Prescription templates" onChange={handleTemplateChange} options={options} />
+              <Form.Item layout="vertical" name="prescriptionTemplate" label="Select prescription templates:">
+                <Select mode="multiple" allowClear style={{ width: '100%' }} placeholder="Prescription template" onChange={handleTemplateChange} options={options} />
+              </Form.Item>
 
               <MedicationSearch sdk={cardinalSdkInstance!} deliveryEnvironment="P" onAddPrescription={onCreatePrescription} disableInputEventsTracking={isPrescriptionModalOpen} />
             </>
