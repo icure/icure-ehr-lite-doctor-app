@@ -17,11 +17,14 @@ import {
   validateDecryptedCertificate,
 } from '@icure/cardinal-prescription-be-react'
 import './index.css'
-import { DecryptedPatient } from '@icure/cardinal-sdk'
+import { DecryptedContact, DecryptedContent, DecryptedHealthElement, DecryptedPatient, DecryptedService, Identifier } from '@icure/cardinal-sdk'
 import { Alert } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
+import { v4 as uuid } from 'uuid'
+import { useCreateContactMutation } from '../../../../../../core/api/contactApi'
 
 import { useGetPractitionerQuery } from '../../../../../../core/api/practitionerApi'
+import { getNumericDate } from '../../../../../../helpers/dateFormaters'
 import { SpinLoader } from '../../../../../common/SpinLoader'
 
 interface PrescriptionsProps {
@@ -67,6 +70,43 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
   const [prescriptionModalMode, setPrescriptionModalMode] = useState<'create' | 'modify' | null>(null)
   const [prescriptions, setPrescriptions] = useState<PrescribedMedicationType[]>([])
   const [isPrescriptionPrintModalOpen, setPrescriptionPrintModalOpen] = useState(false)
+  const [createContact, { error: createContactError, isError: isCreateContactError, isSuccess: isContactCreatedSuccessfully, isLoading: isContactCreatingLoading }] =
+    useCreateContactMutation()
+
+  if (isCreateContactError) {
+    console.error(createContactError)
+  }
+
+  const handleSubmit = async (value: ConsultationType) => {
+    const diagnosisHealthElement = new DecryptedHealthElement({
+      id: uuid(),
+      descr: value.diagnosis,
+    })
+
+    const prescriptionService = new DecryptedService({
+      medicalLocationId: undefined,
+      id: uuid(),
+      label: 'Prescription',
+      identifier: [new Identifier({ system: 'cardinal', value: 'prescription' })],
+      content: {
+        en: new DecryptedContent({
+          stringValue: value.complains,
+        }),
+      },
+    })
+
+    const contact = new DecryptedContact({
+      id: uuid(),
+      descr: `${practitioner?.speciality ?? 'Doctor'} consultation`,
+      openingDate: startOfTheConsultation,
+      services: [prescriptionService],
+
+      closingDate: getNumericDate(new Date()), // Closing the Examination
+    })
+
+    createContact({ patient, contact })
+    form.resetFields()
+  }
 
   cardinalLanguage.setLanguage(CARDINAL_PRESCRIPTION_LANGUAGE)
 
@@ -199,6 +239,7 @@ export const Prescriptions: FC<PrescriptionsProps> = ({ patient, healthcareParty
                 med,
                 passphrase,
               )
+
               setPrescriptions((prev) =>
                 prev.map((item) =>
                   item.uuid === med.uuid
