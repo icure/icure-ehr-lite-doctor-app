@@ -12,11 +12,12 @@ import { KerberusWidget } from '../KerberusWidget'
 
 interface LoginFormProps {
   state: 'initialised' | 'loading' | 'waitingForToken'
+  setEhealthCertificatePassword: (password: string) => void
   submitEmailForTokenRequest: (email: string, captchaToken: Solution) => void
   submitEmailAndValidationTokenForAuthentication: (email: string, validationCode: string) => void
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ state, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ state, setEhealthCertificatePassword, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
   const [captchaToken, setCaptchaToken] = useState<Solution | undefined>(undefined)
   const [progress, setProgress] = useState<number | undefined>(undefined)
 
@@ -56,8 +57,12 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, submitEmailForTokenRequest
    *
    * @param values
    */
-  const handleSubmit = (values: { email: string; validationCode: string }) => {
-    const { email, validationCode } = values
+  const handleSubmit = (values: { email: string; validationCode: string; ehealthCertificatePassword?: string }) => {
+    const { email, ehealthCertificatePassword, validationCode } = values
+
+    if (ehealthCertificatePassword?.length) {
+      setEhealthCertificatePassword(ehealthCertificatePassword)
+    }
 
     /** Some error management should be done here ? */
     if (email.length === 0) {
@@ -88,6 +93,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, submitEmailForTokenRequest
         <div className="auth-form__inputs">
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }]}>
             <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
+          </Form.Item>
+          <Form.Item name="ehealthCertificatePassword" label="Ehealth password (optional)">
+            <Input type="password" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
 
           {state === 'waitingForToken' && (

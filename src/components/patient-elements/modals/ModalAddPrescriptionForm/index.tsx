@@ -16,7 +16,7 @@ import {
   uploadAndEncryptCertificate,
   validateDecryptedCertificate,
 } from '@icure/cardinal-prescription-be-react'
-import { DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
+import { CodeStub, DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
 import { Alert, Form, Select, SelectProps } from 'antd'
 import React, { useEffect, useState } from 'react'
@@ -25,8 +25,8 @@ import { useCreateContactMutation } from '../../../../core/api/contactApi'
 import { useGetEntityTemplatesQuery, useListEntityTemplatesByQuery } from '../../../../core/api/entityTemplateApi'
 import { useGetPractitionerQuery } from '../../../../core/api/practitionerApi'
 import { fhcMedicationToCardinalMedication } from '../../../../core/api/utils'
-import { useAppSelector } from '../../../../core/hooks'
-import { CardinalApiState } from '../../../../core/services/auth.api'
+import { useAppDispatch, useAppSelector } from '../../../../core/hooks'
+import { CardinalApiState, setEhealthCertificatePassword } from '../../../../core/services/auth.api'
 import { getNumericDate } from '../../../../helpers/dateFormaters'
 
 import { CustomModal } from '../../../common/CustomModal'
@@ -45,6 +45,7 @@ const reduxSelector = createSelector(
   (cardinalApi: CardinalApiState) => ({
     healthcarePartyId: cardinalApi.user?.healthcarePartyId,
     userId: cardinalApi.user?.id,
+    ehealthCertificatePassword: cardinalApi.ehealthCertificatePassword,
   }),
 )
 
@@ -67,11 +68,14 @@ const CARDINAL_PRESCRIPTION_LANGUAGE = 'en'
 
 export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalAddConsultationFormFormProps) => {
   // Service instance refs
+
+  const dispatch = useAppDispatch()
+  const { healthcarePartyId, userId, ehealthCertificatePassword } = useAppSelector(reduxSelector)
+
   const [certificateUploaded, setCertificateUploaded] = useState(false)
   const [isCertificateValid, setIsCertificateValid] = useState(false)
   const [errorWhileVerifyingCertificate, setErrorWhileVerifyingCertificate] = useState<string | undefined>()
   const [samVersion, setSamVersion] = useState<SamVersion | undefined>()
-  const [passphrase, setPassphrase] = useState<string | undefined>()
   const [cardinalSdkInstance, setCardinalSdkInstance] = useState<IccBesamv2Api | undefined>(undefined)
   const [isPrescriptionModalOpen, setPrescriptionModalOpen] = useState(false)
   const [medicationToPrescribe, setMedicationToPrescribe] = useState<MedicationType>()
@@ -130,17 +134,17 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   }
 
   useEffect(() => {
-    if (certificateUploaded && passphrase) {
-      validateCertificate(passphrase).catch(console.error)
+    if (certificateUploaded && ehealthCertificatePassword) {
+      validateCertificate(ehealthCertificatePassword).catch(console.error)
     } else {
       setIsCertificateValid(false)
       setErrorWhileVerifyingCertificate(undefined)
     }
-  }, [passphrase, certificateUploaded])
+  }, [ehealthCertificatePassword, certificateUploaded])
 
   // We do this if the certificate is uploaded, but the passphrase is not set
   const onDecryptCertificate = (passphrase: string) => {
-    setPassphrase(passphrase)
+    dispatch(setEhealthCertificatePassword({ password: passphrase }))
   }
   // We do this if no certificate is uploaded
   const onUploadCertificate = async (certificateData: ArrayBuffer, passphrase: string) => {
@@ -159,7 +163,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   const onResetCertificate = async (): Promise<void> => {
     if (!practitioner?.ssin) return
     await deleteCertificate(practitioner?.ssin)
-    setPassphrase(undefined)
+    dispatch(setEhealthCertificatePassword({}))
     setCertificateUploaded(false)
     setIsCertificateValid(false)
     setErrorWhileVerifyingCertificate(undefined)
@@ -200,7 +204,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
         .filter((m) => !m.rid)
         .map(async (med) => {
           try {
-            if (!!samVersion?.version && !!passphrase) {
+            if (!!samVersion?.version && !!ehealthCertificatePassword) {
               const res = await sendRecipe(
                 {
                   vendor,
@@ -224,7 +228,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
                   })),
                 }),
                 med,
-                passphrase,
+                ehealthCertificatePassword,
               )
 
               setPrescriptions((prev) =>
@@ -263,7 +267,8 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
 
     const contact = new DecryptedContact({
       id: uuid(),
-      descr: `${practitioner?.speciality ?? 'Doctor'} consultation`,
+      tags: [new CodeStub({ id: 'CD-ITEM|prescription|1' })],
+      descr: `${practitioner?.speciality ?? 'Doctor'} prescription`,
       services: prescriptionServices,
 
       closingDate: getNumericDate(new Date()), // Closing the Examination
@@ -276,7 +281,6 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     setPrescriptionPrintModalOpen(true)
   }
 
-  const { healthcarePartyId, userId } = useAppSelector(reduxSelector)
   const { data: practitioner } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
 
   const { data: prescriptionTemplatesList, isFetching: isPractitionerTemplatesListFetching } = useListEntityTemplatesByQuery(

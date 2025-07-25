@@ -8,7 +8,15 @@ import '../index.css'
 import LoginForm from '../../../components/authentication/LoginForm'
 import { ModalRecoveryKeyRequest } from '../../../components/authentication/ModalRecoveryKeyRequest'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
-import { CardinalApiState, completeAuthentication, setEmail, setToken, setWaitingForToken, startAuthentication } from '../../../core/services/auth.api'
+import {
+  CardinalApiState,
+  completeAuthentication,
+  setEhealthCertificatePassword,
+  setEmail,
+  setToken,
+  setWaitingForToken,
+  startAuthentication,
+} from '../../../core/services/auth.api'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
@@ -49,6 +57,9 @@ export default function LoginPage() {
         state={loginProcessStarted ? 'loading' : waitingForToken ? 'waitingForToken' : 'initialised'}
         submitEmailForTokenRequest={(email: string, captchaToken: Solution) => startAuthenticationProcessWithEmailAndCaptchaToken(email, captchaToken)}
         submitEmailAndValidationTokenForAuthentication={(email: string, validationCode: string) => completeAuthenticationProcessWithEmailAndValidationCode(email, validationCode)}
+        setEhealthCertificatePassword={(password: string) => {
+          dispatch(setEhealthCertificatePassword({ password }))
+        }}
       />
       {recoveryKeyRequest && createPortal(<ModalRecoveryKeyRequest />, document.body)}
     </div>
