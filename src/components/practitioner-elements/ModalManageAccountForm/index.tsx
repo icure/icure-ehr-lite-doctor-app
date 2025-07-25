@@ -34,8 +34,8 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
           },
         ],
   )
-  const handleSubmit = (value: { firstName: string; lastName: string; emailAddress: string; speciality: string }) => {
-    const { firstName, lastName, emailAddress, speciality } = value
+  const handleSubmit = (value: { firstName: string; lastName: string; emailAddress: string; ssin: string; nihii: string }) => {
+    const { firstName, lastName, emailAddress, nihii, ssin } = value
     const address = new DecryptedAddress({
       addressType: AddressType.Home,
       telecoms: [
@@ -46,7 +46,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
       ],
     })
     const picture = patientPictureAsBase64 ?? practitionerToBeUpdated?.picture
-    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, speciality, addresses: [address], picture }))
+    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, addresses: [address], picture, ssin, nihii }))
     form.resetFields()
   }
 
@@ -89,7 +89,8 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             emailAddress: practitionerEmail,
             firstName: practitionerToBeUpdated?.firstName,
             lastName: practitionerToBeUpdated?.lastName,
-            speciality: practitionerToBeUpdated?.speciality,
+            ssin: practitionerToBeUpdated?.ssin,
+            nihii: practitionerToBeUpdated?.nihii,
             file: practitionerToBeUpdated?.picture,
           }}
         >
@@ -103,9 +104,17 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             <Form.Item name="emailAddress" label="Email address" rules={[{ required: true, message: 'Email address is required' }]}>
               <Input placeholder="Email address" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
-            <Form.Item name="speciality" label="Speciality" rules={[{ required: true, message: 'Speciality is required' }]}>
-              <Input placeholder="Speciality" size="large" style={{ fontSize: 13 }} />
+            <Form.Item name="ssin" label="Social Security Identification Number (SSIN)" rules={[{ required: true, message: 'SSIN is required' }]}>
+              <Input placeholder="SSIN" size="large" style={{ fontSize: 13 }} />
             </Form.Item>
+            <Form.Item
+              name="nihii"
+              label="Number assigned by the National Institute for Health and Invalidity Insurance"
+              rules={[{ required: true, message: 'NIHII is required' }]}
+            >
+              <Input placeholder="NIHII" size="large" style={{ fontSize: 13 }} />
+            </Form.Item>
+
             <Form.Item label="Picture" valuePropName="file">
               <ImgCrop rotationSlider modalClassName="PatientImgCrop">
                 <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsBase64(data))}>

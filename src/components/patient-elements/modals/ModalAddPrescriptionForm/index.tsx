@@ -64,6 +64,7 @@ const practitionerCredentials = {
   password: '990a765c-387a-4c17-854d-b919d0e324cc',
 }
 const ICURE_URL = 'https://nightly.icure.cloud'
+const FHC_URL = 'https://fhcacc.icure.cloud'
 const CARDINAL_PRESCRIPTION_LANGUAGE = 'en'
 
 export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalAddConsultationFormFormProps) => {
@@ -118,7 +119,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
 
   const validateCertificate = async (passphrase: string) => {
     try {
-      const res = await validateDecryptedCertificate(practitioner as HealthcareParty, passphrase)
+      const res = await validateDecryptedCertificate(practitioner as HealthcareParty, passphrase, FHC_URL)
 
       setIsCertificateValid(res.status)
       setErrorWhileVerifyingCertificate(res.error?.[CARDINAL_PRESCRIPTION_LANGUAGE])
@@ -229,6 +230,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
                 }),
                 med,
                 ehealthCertificatePassword,
+                FHC_URL,
               )
 
               setPrescriptions((prev) =>

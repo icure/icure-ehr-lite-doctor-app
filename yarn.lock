@@ -2043,9 +2043,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@icure/cardinal-prescription-be-react@npm:^0.0.8":
-  version: 0.0.8
-  resolution: "@icure/cardinal-prescription-be-react@npm:0.0.8"
+"@icure/cardinal-prescription-be-react@npm:^0.0.10":
+  version: 0.0.10
+  resolution: "@icure/cardinal-prescription-be-react@npm:0.0.10"
   dependencies:
     "@icure/api": "npm:^8.4.6"
     "@icure/be-fhc-lite-api": "npm:^0.6.4"
@@ -2057,7 +2057,7 @@ __metadata:
   peerDependencies:
     react: ^18.0.0
     react-dom: ^18.0.0
-  checksum: c2406d83f47fe3ef6bc148fc9664c22fc2ab9d4bca3ad4edf92effb6d3bb8c595306bd03f155d72b11034b3ba9f9295941d35f79c28062db4a3d1718a3bdcccb
+  checksum: 41b224de97bc18287c6ec8b4dddd716c375f8edadae3abe1e86b80ced5ed870e1dc50d260af756ca3f5ca8942cc3063ef27775888a4a4618911b02a0d05cc731
   languageName: node
   linkType: hard
 
@@ -8990,7 +8990,7 @@ __metadata:
   resolution: "icure-ehr-lite-doctor-app@workspace:."
   dependencies:
     "@icure/be-fhc-lite-api": "npm:^0.6.4"
-    "@icure/cardinal-prescription-be-react": "npm:^0.0.8"
+    "@icure/cardinal-prescription-be-react": "npm:^0.0.10"
     "@icure/cardinal-sdk": "npm:^2.0.0-PREVIEW-11"
     "@icure/form": "npm:3.0.38"
     "@reduxjs/toolkit": "npm:^1.9.7"
