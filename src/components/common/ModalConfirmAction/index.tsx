@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { CustomModal } from '../CustomModal'
-import './index.css'
+import './index.less'
 
 interface ModalConfirmActionProps {
   title: string

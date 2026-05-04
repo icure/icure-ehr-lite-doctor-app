@@ -2,7 +2,7 @@ import { DecryptedContact, DecryptedContent, Measure, Medication } from '@icure/
 import React from 'react'
 import { useGetHealthElementsQuery } from '../../../../../../../core/api/healthElementApi'
 import { formatTimestampToHumanReadable } from '../../../../../../../helpers/dateFormaters'
-import './index.css'
+import './index.less'
 
 type ConsultationCardProps = {
   contact: DecryptedContact

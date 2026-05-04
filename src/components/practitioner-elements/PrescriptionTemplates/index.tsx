@@ -1,6 +1,14 @@
 import { PrescribedMedicationType } from '@icure/cardinal-prescription-be-react'
-import './index.css'
-import { EntityTemplate, HealthcareParty } from '@icure/cardinal-sdk'
+import './index.less'
+import { HealthcareParty } from '@icure/cardinal-sdk'
+
+// TODO(prescription-templates): EntityTemplate was removed from @icure/cardinal-sdk in 2.x stable.
+// Local stub keeps the build green; runtime calls fail until reworked against FormTemplate.
+class EntityTemplate {
+  constructor(_init: Record<string, unknown>) {
+    Object.assign(this, _init)
+  }
+}
 import { Button, Collapse, type CollapseProps } from 'antd'
 import React, { FC, useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'

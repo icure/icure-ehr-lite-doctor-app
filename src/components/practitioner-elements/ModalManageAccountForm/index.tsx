@@ -7,7 +7,7 @@ import { getFileUploaderCommonProps, getImgSRC } from '../../../helpers/fileToBa
 
 import { CustomModal } from '../../common/CustomModal'
 import { SpinLoader } from '../../common/SpinLoader'
-import './index.css'
+import './index.less'
 
 interface ModalManageAccountFormProps {
   isVisible: boolean

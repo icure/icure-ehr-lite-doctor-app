@@ -6,7 +6,7 @@ import { MSG_GW_URL, SPEC_ID } from '../../../constants'
 
 import { routes } from '../../../navigation/Router'
 
-import '../index.css'
+import '../index.less'
 import { SpinLoader } from '../../common/SpinLoader'
 import { KerberusWidget } from '../KerberusWidget'
 

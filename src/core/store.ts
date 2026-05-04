@@ -1,6 +1,5 @@
 import { Action, configureStore, ThunkAction } from '@reduxjs/toolkit'
 import { persistStore } from 'redux-persist'
-import thunk from 'redux-thunk'
 import { contactApiRtk } from './api/contactApi'
 import { deviceApiRtk } from './api/deviceApi'
 import { entityTemplateApiRtk } from './api/entityTemplateApi'
@@ -21,7 +20,6 @@ export const store = configureStore({
       contactApiRtk.middleware,
       healthElementApiRtk.middleware,
       entityTemplateApiRtk.middleware,
-      thunk,
       // Add your own middleware here. For example, you can add a logger:
     ),
 })

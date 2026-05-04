@@ -12,7 +12,7 @@ import { CardinalApiState } from '../../../../core/services/auth.api'
 import { getNumericDate } from '../../../../helpers/dateFormaters'
 
 import { CustomModal } from '../../../common/CustomModal'
-import './index.css'
+import './index.less'
 import { SpinLoader } from '../../../common/SpinLoader'
 
 interface modalAddConsultationFormFormProps {

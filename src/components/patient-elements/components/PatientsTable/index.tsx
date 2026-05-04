@@ -4,7 +4,7 @@ import { CommonPlaceholder } from '../../../common/CommonPlaceholder'
 import { SpinLoader } from '../../../common/SpinLoader'
 
 import { PatientRow } from '../PatientRow'
-import './index.css'
+import './index.less'
 
 interface PatientsTableProps {
   showSpinner: boolean

@@ -6,7 +6,7 @@ import { emailIcn, locationIcn, phoneIcn, userAvatarPlaceholderIcn } from '../..
 import { getImgSRC } from '../../../../../../helpers/fileToBase64'
 import { getTagColor } from '../../../../../../helpers/getTagColor'
 import { getPatientDataFormated } from '../../../../../../helpers/patientDataManipulations'
-import './index.css'
+import './index.less'
 
 interface OverviewProps {
   patient: DecryptedPatient

@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { CardinalApiState, markRecoveryKeyAsLost, provideRecoveryKey } from '../../../core/services/auth.api'
 
 import { CustomModal } from '../../common/CustomModal'
-import './index.css'
+import './index.less'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,

@@ -8,7 +8,7 @@ import { attachedFileIcn, deleteIcn } from '../../../../assets/CustomIcons'
 import { useCreatePatientsMutation } from '../../../../core/api/patientApi'
 
 import { CustomModal } from '../../../common/CustomModal'
-import './index.css'
+import './index.less'
 import { SpinLoader } from '../../../common/SpinLoader'
 import { PatientToUploadTable } from './PatientToUploadTable'
 import { getExampleSheetBuffer, sheetTitle } from './utils/fileUtils'

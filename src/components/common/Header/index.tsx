@@ -1,7 +1,7 @@
 import Icon from '@ant-design/icons'
 import { createSelector } from '@reduxjs/toolkit'
 
-import './index.css'
+import './index.less'
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import React, { useState } from 'react'

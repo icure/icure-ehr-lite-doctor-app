@@ -15,7 +15,7 @@ import { ModalConfirmAction } from '../../../common/ModalConfirmAction'
 import { ModalAddConsultationForm } from '../../modals/ModalAddConsultationForm'
 import { ModalPatientForm } from '../../modals/ModalPatientForm'
 import { ModalPatientProfile } from '../../modals/ModalPatientProfile'
-import './index.css'
+import './index.less'
 import { ModalSharePatient } from '../../modals/ModalSharePatient'
 
 interface PatientRowProps {

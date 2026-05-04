@@ -4,7 +4,7 @@ import React, { useEffect } from 'react'
 import { createPortal } from 'react-dom'
 
 import logo from '../../../assets/logo_vertical.svg'
-import '../index.css'
+import '../index.less'
 import LoginForm from '../../../components/authentication/LoginForm'
 import { ModalRecoveryKeyRequest } from '../../../components/authentication/ModalRecoveryKeyRequest'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'

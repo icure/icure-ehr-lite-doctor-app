@@ -1,6 +1,6 @@
 import { EnsembleAuthenticationProvider, IccAuthApi, IccBesamv2Api, NoAuthenticationProvider } from '@icure/api'
 import { cardinalLanguage, MedicationSearch, MedicationType, PrescribedMedicationType, PrescriptionList, PrescriptionModal } from '@icure/cardinal-prescription-be-react'
-import './index.css'
+import './index.less'
 import { HealthcareParty } from '@icure/cardinal-sdk'
 import React, { FC, useEffect, useState } from 'react'
 import { CustomModal } from '../../common/CustomModal'

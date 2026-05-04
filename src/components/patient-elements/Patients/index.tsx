@@ -5,7 +5,7 @@ import { useAppSelector } from '../../../core/hooks'
 import { CardinalApiState } from '../../../core/services/auth.api'
 import { ActionsPanel } from '../components/ActionsPanel'
 import { PatientsTable } from '../components/PatientsTable'
-import './index.css'
+import './index.less'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,

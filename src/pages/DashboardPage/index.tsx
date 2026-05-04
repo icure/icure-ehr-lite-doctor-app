@@ -3,7 +3,7 @@ import { ModalRecoveryKey } from '../../components/authentication/ModalRecoveryK
 import { Header } from '../../components/common/Header'
 import { Patients } from '../../components/patient-elements/Patients'
 
-import './index.css'
+import './index.less'
 
 export default function DashboardPage() {
   return (

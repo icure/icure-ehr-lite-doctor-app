@@ -4,7 +4,7 @@ import React, { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
 
 import { addIcn, uploadIcn } from '../../../../assets/CustomIcons'
-import './index.css'
+import './index.less'
 import { useDebounce } from '../../../../core/hooks'
 import { breakpoints, getWindowSize } from '../../../../helpers/windowSize'
 import { ModalImportPatients } from '../../modals/ModalImportPatients'

@@ -12,7 +12,7 @@ import { PatientsLanguagesEnum, PatientsTagsEnum } from '../../../../helpers/typ
 import { breakpoints, getWindowSize } from '../../../../helpers/windowSize'
 
 import { CustomModal, getCustomModalResponsiveStyles } from '../../../common/CustomModal'
-import './index.css'
+import './index.less'
 import { SpinLoader } from '../../../common/SpinLoader'
 
 type RangePickerProps = GetProps<typeof DatePicker.RangePicker>

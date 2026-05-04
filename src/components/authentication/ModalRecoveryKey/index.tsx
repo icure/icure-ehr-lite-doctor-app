@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 
 import { CardinalApiState, setNewlyCreatedRecoveryKey } from '../../../core/services/auth.api'
 import { CopyJSONButton } from '../../common/CopyJSONButton'
-import './index.css'
+import './index.less'
 import { CustomModal } from '../../common/CustomModal'
 
 const reduxSelector = createSelector(

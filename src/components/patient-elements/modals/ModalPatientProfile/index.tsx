@@ -7,7 +7,7 @@ import { useAppSelector } from '../../../../core/hooks'
 import { CardinalApiState } from '../../../../core/services/auth.api'
 
 import { CustomModal } from '../../../common/CustomModal'
-import './index.css'
+import './index.less'
 import { Consultations } from './ContentTabs/Consultations'
 import { Overview } from './ContentTabs/Overview'
 import { Prescriptions } from './ContentTabs/Prescriptions'

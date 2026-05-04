@@ -30,7 +30,7 @@ import { CardinalApiState, setEhealthCertificatePassword } from '../../../../cor
 import { getNumericDate } from '../../../../helpers/dateFormaters'
 
 import { CustomModal } from '../../../common/CustomModal'
-import './index.css'
+import './index.less'
 import { SpinLoader } from '../../../common/SpinLoader'
 import { PRESCRIPTION_ENTITY_TEMPLATE_TYPE } from '../../../practitioner-elements/PrescriptionTemplates'
 
