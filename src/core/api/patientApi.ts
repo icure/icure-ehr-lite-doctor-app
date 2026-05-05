@@ -1,5 +1,5 @@
 import { CodeFilters, DecryptedPatient, intersection, Patient } from '@icure/cardinal-sdk'
-import { PatientFilters, union } from '@icure/cardinal-sdk/filters.mjs'
+import { ContactFilters, FormFilters, PatientFilters, union } from '@icure/cardinal-sdk/filters.mjs'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { CUSTOM_TAG_TYPE } from '../../constants'
 import { allPatientsTagsEnum } from '../../helpers/types'
@@ -188,8 +188,8 @@ export const patientApiRtk = createApi({
         const healthcarePartyApi = (await cardinalApi(getState))?.healthcareParty
         return guard([patientApi, formApi, contactApi, healthcarePartyApi], async ([patientApi, formApi, contactApi, healthcarePartyApi]) => {
           const hcp = await healthcarePartyApi.getCurrentHealthcareParty()
-          const forms = await loadFromIterator(await formApi.findFormsByHcPartyPatient(hcp.id, patient), 100000)
-          const contacts = await loadFromIterator(await contactApi.findContactsByHcPartyPatient(hcp.id, patient), 100000)
+          const forms = await loadFromIterator(await formApi.filterFormsBy(FormFilters.byPatientsOpeningDateForDataOwner(hcp.id, [patient])), 100000)
+          const contacts = await loadFromIterator(await contactApi.filterContactsBy(ContactFilters.byPatientsForDataOwner(hcp.id, [patient])), 100000)
           if (forms.length > 0) {
             await formApi.deleteForms(forms)
           }
@@ -217,8 +217,8 @@ export const patientApiRtk = createApi({
           await patients.reduce(async (pr, p) => {
             await pr
 
-            const forms = await loadFromIterator(await formApi.findFormsByHcPartyPatient(hcp.id, p), 100000)
-            const contacts = await loadFromIterator(await contactApi.findContactsByHcPartyPatient(hcp.id, p), 100000)
+            const forms = await loadFromIterator(await formApi.filterFormsBy(FormFilters.byPatientsOpeningDateForDataOwner(hcp.id, [p])), 100000)
+            const contacts = await loadFromIterator(await contactApi.filterContactsBy(ContactFilters.byPatientsForDataOwner(hcp.id, [p])), 100000)
 
             if (forms.length > 0) {
               await formApi.deleteForms(forms)
@@ -266,7 +266,7 @@ export const patientApiRtk = createApi({
             throw new Error('Patient does not exist')
           }
 
-          const formsIt = await formApi?.findFormsByHcPartyPatient(currentHcp.id, updatedPatient)
+          const formsIt = await formApi?.filterFormsBy(FormFilters.byPatientsOpeningDateForDataOwner(currentHcp.id, [updatedPatient]))
           if (formsIt) {
             while (true) {
               const forms = await formsIt.next(5)
@@ -277,7 +277,7 @@ export const patientApiRtk = createApi({
             }
           }
 
-          const contactsIt = await contactApi?.findContactsByHcPartyPatient(currentHcp.id, updatedPatient)
+          const contactsIt = await contactApi?.filterContactsBy(ContactFilters.byPatientsForDataOwner(currentHcp.id, [updatedPatient]))
           if (contactsIt) {
             while (true) {
               const contacts = await contactsIt.next(5)
