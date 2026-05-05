@@ -33,7 +33,7 @@ export const contactApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },
@@ -61,7 +61,7 @@ export const contactApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },
@@ -72,7 +72,7 @@ export const contactApiRtk = createApi({
       async queryFn({ hcPartyId, patient }, { getState }) {
         const contactApi = (await cardinalApi(getState))?.contact
         return guard([contactApi], async ([contactApi]): Promise<DecryptedContact[]> => {
-          return await loadFromIterator(await contactApi.findContactsByHcPartyPatient(hcPartyId, patient), 1000)
+          return await loadFromIterator(await contactApi.filterContactsBy(ContactFilters.byPatientsForDataOwner(hcPartyId, [patient])), 1000)
         })
       },
       providesTags: tagsByIds('Contact', 'all'),
@@ -81,7 +81,7 @@ export const contactApiRtk = createApi({
       async queryFn({ hcPartyId, formIds }, { getState }) {
         const contactApi = (await cardinalApi(getState))?.contact
         return guard([contactApi], async ([contactApi]): Promise<DecryptedContact[]> => {
-          return await contactApi.listContactsByHCPartyAndFormIds(hcPartyId, formIds)
+          return await loadFromIterator(await contactApi.filterContactsBy(ContactFilters.byFormIdsForDataOwner(hcPartyId, formIds)), 1000)
         })
       },
       providesTags: tagsByIds('Contact', 'all'),

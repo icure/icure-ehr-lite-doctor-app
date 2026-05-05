@@ -2,7 +2,7 @@ import { Button, ConfigProvider, Modal } from 'antd'
 import React, { CSSProperties, ReactElement } from 'react'
 
 import { DEFAULT_MODAL_WIDTH } from '../../../constants'
-import { breakpoints, getWindowSize } from '../../../helpers/windowSize'
+import { breakpoints, useWindowSize } from '../../../helpers/windowSize'
 
 interface PatientFormModalProps {
   isVisible: boolean
@@ -38,10 +38,6 @@ export const getCustomModalResponsiveStyles = (mobileViewCondition: boolean) => 
     return {
       top: '5%',
       height: 'calc(100vh - 5%)',
-      display: 'flex',
-      overflow: 'hidden',
-      maxWidth: '100vw',
-      width: '100vw',
     }
   }
 }
@@ -62,7 +58,7 @@ export const CustomModal = ({
   closable,
   blockAntModalBodyVerticalScroll,
 }: PatientFormModalProps): ReactElement => {
-  const { innerWidth } = getWindowSize()
+  const { innerWidth } = useWindowSize()
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
       borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,
@@ -80,15 +76,11 @@ export const CustomModal = ({
       margin: 0,
       background: 'white',
     },
-    content: {
+    container: {
       padding: 0,
       background: 'white',
-
       maxHeight: '100%',
       height: innerWidth < breakpoints.md || blockAntModalBodyVerticalScroll ? '100%' : 'auto',
-      width: '100vw',
-      maxWidth: innerWidth < breakpoints.md ? '100vw' : (width ?? DEFAULT_MODAL_WIDTH),
-
       display: 'flex',
       flexDirection: 'column',
       paddingBottom: 0,
@@ -96,8 +88,9 @@ export const CustomModal = ({
     },
     body: {
       flex: 1,
+      minHeight: 0,
       display: 'flex',
-      // overflowY: blockAntModalBodyVerticalScroll ? 'hidden' : 'scroll',
+      overflowY: blockAntModalBodyVerticalScroll ? 'hidden' : 'auto',
     },
   }
 
@@ -128,7 +121,7 @@ export const CustomModal = ({
     >
       <Modal
         closable={closable ?? true}
-        maskClosable={false}
+        mask={{ closable: false }}
         open={isVisible}
         title={title}
         onCancel={handleClose}

@@ -18,11 +18,10 @@ import {
 } from '@icure/cardinal-prescription-be-react'
 import { CodeStub, DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
-import { Alert, Form, Select, SelectProps } from 'antd'
+import { Alert } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useCreateContactMutation } from '../../../../core/api/contactApi'
-import { useGetEntityTemplatesQuery, useListEntityTemplatesByQuery } from '../../../../core/api/entityTemplateApi'
 import { useGetPractitionerQuery } from '../../../../core/api/practitionerApi'
 import { fhcMedicationToCardinalMedication } from '../../../../core/api/utils'
 import { useAppDispatch, useAppSelector } from '../../../../core/hooks'
@@ -30,9 +29,7 @@ import { CardinalApiState, setEhealthCertificatePassword } from '../../../../cor
 import { getNumericDate } from '../../../../helpers/dateFormaters'
 
 import { CustomModal } from '../../../common/CustomModal'
-import './index.css'
-import { SpinLoader } from '../../../common/SpinLoader'
-import { PRESCRIPTION_ENTITY_TEMPLATE_TYPE } from '../../../practitioner-elements/PrescriptionTemplates'
+import './index.less'
 
 interface modalAddConsultationFormFormProps {
   isVisible: boolean
@@ -71,20 +68,19 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   // Service instance refs
 
   const dispatch = useAppDispatch()
-  const { healthcarePartyId, userId, ehealthCertificatePassword } = useAppSelector(reduxSelector)
+  const { healthcarePartyId, ehealthCertificatePassword } = useAppSelector(reduxSelector)
 
   const [certificateUploaded, setCertificateUploaded] = useState(false)
   const [isCertificateValid, setIsCertificateValid] = useState(false)
   const [errorWhileVerifyingCertificate, setErrorWhileVerifyingCertificate] = useState<string | undefined>()
   const [samVersion, setSamVersion] = useState<SamVersion | undefined>()
   const [cardinalSdkInstance, setCardinalSdkInstance] = useState<IccBesamv2Api | undefined>(undefined)
-  const [isPrescriptionModalOpen, setPrescriptionModalOpen] = useState(false)
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false)
   const [medicationToPrescribe, setMedicationToPrescribe] = useState<MedicationType>()
   const [prescriptionToModify, setPrescriptionToModify] = useState<PrescribedMedicationType>()
   const [prescriptionModalMode, setPrescriptionModalMode] = useState<'create' | 'modify' | null>(null)
   const [prescriptions, setPrescriptions] = useState<PrescribedMedicationType[]>([])
-  const [isPrescriptionPrintModalOpen, setPrescriptionPrintModalOpen] = useState(false)
-  const [selectedPrescriptionTemplateIds, setSelectedPrescriptionTemplateIds] = useState<string[] | undefined>(undefined)
+  const [isPrescriptionPrintModalOpen, setISPrescriptionPrintModalOpen] = useState(false)
 
   cardinalLanguage.setLanguage(CARDINAL_PRESCRIPTION_LANGUAGE)
 
@@ -130,7 +126,6 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
       setCertificateUploaded(false)
 
       console.error('Error while validating certificate from the Demo App:', error)
-    } finally {
     }
   }
 
@@ -171,7 +166,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   }
 
   const onCreatePrescription = (medication: MedicationType) => {
-    setPrescriptionModalOpen(true)
+    setIsPrescriptionModalOpen(true)
     setPrescriptionModalMode('create')
     setMedicationToPrescribe(medication)
   }
@@ -179,7 +174,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     setPrescriptionModalMode(null)
     setMedicationToPrescribe(undefined)
     setPrescriptionToModify(undefined)
-    setPrescriptionModalOpen(false)
+    setIsPrescriptionModalOpen(false)
   }
   const onSubmitCreatePrescription = (newPrescriptions: PrescribedMedicationType[]) => {
     setPrescriptions((prev) => [...prev, ...newPrescriptions])
@@ -190,14 +185,14 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     onClosePrescriptionModal()
   }
   const onModifyPrescription = (prescription: PrescribedMedicationType) => {
-    setPrescriptionModalOpen(true)
+    setIsPrescriptionModalOpen(true)
     setPrescriptionModalMode('modify')
     setPrescriptionToModify(prescription)
   }
   const onDeletePrescription = (prescription: PrescribedMedicationType) => {
     setPrescriptions((prev) => prev?.filter((item) => item.uuid !== prescription.uuid))
   }
-  const onClosePrescriptionPrintModal = () => setPrescriptionPrintModalOpen(false)
+  const onClosePrescriptionPrintModal = () => setISPrescriptionPrintModalOpen(false)
   const handleSendPrescriptions = async () => {
     console.log('click')
     const meds = await Promise.all(
@@ -243,7 +238,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
                     : item,
                 ),
               )
-              return new Medication({ ...fhcMedicationToCardinalMedication(med.medication), prescriptionRID: res[0]?.rid })
+              return new Medication({ ...fhcMedicationToCardinalMedication(med.medication), commentForDelivery: res[0]?.rid })
             } else {
               return fhcMedicationToCardinalMedication(med.medication)
             }
@@ -255,7 +250,6 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     const prescriptionServices = meds.map(
       (m) =>
         new DecryptedService({
-          medicalLocationId: undefined,
           id: uuid(),
           label: 'Prescription',
           identifier: [new Identifier({ system: 'cardinal', value: 'prescription' })],
@@ -280,22 +274,10 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   }
   const handlePrintPrescriptions = async () => {
     await handleSendPrescriptions()
-    setPrescriptionPrintModalOpen(true)
+    setISPrescriptionPrintModalOpen(true)
   }
 
   const { data: practitioner } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
-
-  const { data: prescriptionTemplatesList, isFetching: isPractitionerTemplatesListFetching } = useListEntityTemplatesByQuery(
-    {
-      userId: userId ?? '',
-      type: PRESCRIPTION_ENTITY_TEMPLATE_TYPE,
-    },
-    { skip: !userId },
-  )
-
-  const { data: prescriptionTemplates, isFetching: isPractitionerTemplatesFetching } = useGetEntityTemplatesQuery(selectedPrescriptionTemplateIds ?? [], {
-    skip: selectedPrescriptionTemplateIds === undefined || selectedPrescriptionTemplateIds.length === 0,
-  })
 
   const [createContact, { error: createContactError, isError: isCreateContactError }] = useCreateContactMutation()
 
@@ -303,48 +285,21 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     console.error(createContactError)
   }
 
-  useEffect(() => {
-    if (prescriptionTemplates && prescriptionTemplates.length > 0) {
-      const prescriptionsFromTemplates: PrescribedMedicationType[] = prescriptionTemplates.flatMap((template: { entity: PrescribedMedicationType[] }) => template.entity)
-
-      console.log({ prescriptionTemplates, prescriptionsFromTemplates })
-
-      setPrescriptions((prev: PrescribedMedicationType[]) => {
-        const existingUuids = new Set(prev.map((p) => p.uuid))
-        const newPrescriptions = prescriptionsFromTemplates.filter((p) => !existingUuids.has(p.uuid))
-        return [...prev, ...newPrescriptions]
-      })
-    }
-  }, [prescriptionTemplates])
-
   const handleOnClose = () => {
     onClose()
-  }
-
-  const options: SelectProps['options'] = prescriptionTemplatesList?.map((template) => {
-    return {
-      label: template.descr,
-      value: template.id,
-    }
-  })
-
-  const handleTemplateChange = (ids: string[]) => {
-    console.log({ ids })
-    setSelectedPrescriptionTemplateIds(ids)
   }
 
   return (
     <CustomModal
       isVisible={isVisible}
       handleClose={handleOnClose}
-      secondaryBtnTitle="CLose"
+      secondaryBtnTitle="Close"
       // handleClickPrimaryBtn={() => form.submit()}
       // primaryBtnTitle="Save"
       title="Add prescription"
     >
       <div className="modalAddConsultationForm">
-        {(isPractitionerTemplatesListFetching || isPractitionerTemplatesFetching) && <SpinLoader />}
-        {samVersion?.version ? <Alert type="success" message={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" message="SamVersion: Undefined" />}
+        {samVersion?.version ? <Alert type="success" title={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" title="SamVersion: Undefined" />}
 
         <PractitionerCertificate
           certificateValid={isCertificateValid}
@@ -358,10 +313,6 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
         <div className="modalAddConsultationForm__form__inputs">
           {cardinalSdkInstance && isCertificateValid && (
             <>
-              <Form.Item layout="vertical" name="prescriptionTemplate" label="Select prescription templates:">
-                <Select mode="multiple" allowClear style={{ width: '100%' }} placeholder="Prescription template" onChange={handleTemplateChange} options={options} />
-              </Form.Item>
-
               <MedicationSearch sdk={cardinalSdkInstance!} deliveryEnvironment="P" onAddPrescription={onCreatePrescription} disableInputEventsTracking={isPrescriptionModalOpen} />
             </>
           )}

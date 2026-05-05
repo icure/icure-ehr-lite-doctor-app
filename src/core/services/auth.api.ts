@@ -22,13 +22,32 @@ import {
 } from '@icure/cardinal-sdk'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-import { Unsubscribe } from 'redux'
 import { MSG_GW_URL, NIGHTLY_ICURE_CLOUD_URL, PROCESS_ID, SPEC_ID } from '../../constants'
 
 import { revertAll, setSavedCredentials } from '../app'
 import { store } from '../store'
+import { requestKeyRecovery } from './keyRecoveryBridge'
 
 const apiCache: { [key: string]: CardinalSdk } = {}
+
+export type RecoveryKeyScope = 'self-and-parents' | 'parents-only'
+
+export const formatRecoveryKey = (key: RecoveryDataKey): string =>
+  key
+    .asBase32()
+    .match(/.{1,4}/g)
+    ?.join('-') ?? key.asBase32()
+
+export const generateRecoveryKeyForCurrentUser = async (sdk: CardinalSdk, scope: RecoveryKeyScope): Promise<string> => {
+  const recoveryKeyOptions = new RecoveryKeyOptions.Generate({ recoveryKeySize: RecoveryKeySize.Bytes32 })
+  if (scope === 'parents-only') {
+    const ids = await sdk.dataOwner.getCurrentDataOwnerHierarchyIds()
+    const parentId = ids.length >= 2 ? ids[ids.length - 2] : undefined
+    if (!parentId) throw new Error('No parent organisation is associated with this user.')
+    return formatRecoveryKey(await sdk.recovery.createRecoveryInfoForAvailableParentKeyPairs(parentId, { includeAncestorKeys: false, recoveryKeyOptions }))
+  }
+  return formatRecoveryKey(await sdk.recovery.createRecoveryInfoForAvailableKeyPairs({ includeParentsKeys: true, recoveryKeyOptions }))
+}
 
 export class PetraCareCryptoStrategies extends CryptoStrategies {
   async notifyNewKeyCreated(sdk: CardinalApis): Promise<void> {
@@ -36,85 +55,96 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
       includeParentsKeys: true,
       recoveryKeyOptions: new RecoveryKeyOptions.Generate({ recoveryKeySize: RecoveryKeySize.Bytes32 }),
     })
-
-    const formattedKey = recoveryKey
-      .asBase32()
-      .match(/.{1,4}/g)
-      ?.join('-')
-
-    if (!!formattedKey) store.dispatch(setNewlyCreatedRecoveryKey({ recoveryKey: formattedKey }))
+    store.dispatch(setNewlyCreatedRecoveryKey({ recoveryKey: formatRecoveryKey(recoveryKey) }))
   }
 
   async recoverAndVerifySelfHierarchyKeys(
     keysData: Array<CryptoStrategies.KeyDataRecoveryRequest>,
-    cryptoPrimitives: XCryptoService,
+    _cryptoPrimitives: XCryptoService,
     keyPairRecoverer: KeyPairRecoverer,
   ): Promise<{ [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData }> {
-    let recovered: RecoveryResult<{ [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } }> | undefined = undefined
-    let reason = RecoveryDataUseFailureReason.Missing
-    do {
-      const rk = await this.promptUserForRecoveryKey(reason)
-      if (!rk) {
-        break
-      }
-      let decodedRecoveryKey: RecoveryDataKey
+    const aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } } = {}
+
+    const stillMissing = keysData.some((kd) => kd.unavailableKeys.length > 0)
+    if (!stillMissing) {
+      return this.buildRecoveryResult(keysData, aggregate)
+    }
+
+    const reasonCount = Math.max(
+      1,
+      keysData.reduce((sum, kd) => sum + kd.unavailableKeys.length, 0),
+    )
+    const reasons = Array.from({ length: reasonCount }, () => RecoveryDataUseFailureReason.Missing)
+    const recoveryKeys = await this.promptUserForRecoveryKeys(reasons)
+
+    if (recoveryKeys?.length) {
+      await this.tryRecoverKeys(recoveryKeys, keyPairRecoverer, aggregate)
+    }
+
+    return this.buildRecoveryResult(keysData, aggregate)
+  }
+
+  private async tryRecoverKeys(
+    recoveryKeys: string[],
+    keyPairRecoverer: KeyPairRecoverer,
+    aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } },
+  ): Promise<void> {
+    for (const rk of recoveryKeys) {
+      let decoded: RecoveryDataKey | undefined
       try {
-        decodedRecoveryKey = RecoveryDataKey.fromBase32(rk)
+        decoded = RecoveryDataKey.fromBase32(rk)
       } catch (e) {
-        console.warn(e)
-        reason = RecoveryDataUseFailureReason.InvalidContent
+        console.warn('Invalid recovery key, skipping:', e)
         continue
       }
-      recovered = await keyPairRecoverer.recoverWithRecoveryKey(decodedRecoveryKey, false)
-    } while (!recovered || recovered instanceof RecoveryResult.Failure)
-    if (!recovered) {
-      return {}
-    }
-    const result: { [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData } = {}
-    for (const recoveryRequest of keysData) {
-      const dataOwner = recoveryRequest.dataOwnerDetails.dataOwner
-      const currDataOwnerRecoveredData = (recovered as RecoveryResult.Success<{ [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } }>).data[dataOwner.id]
-      const currRecoveryResult: { [fp: KeypairFingerprintV1String]: XRsaKeypair } = {}
-      if (currDataOwnerRecoveredData != undefined) {
-        for (const unavailableKeyInfo of recoveryRequest.unavailableKeys) {
-          const recoveredKey = currDataOwnerRecoveredData[unavailableKeyInfo.publicKey]
-          if (recoveredKey != undefined) {
-            currRecoveryResult[spkiHexKeyToFingerprintV1(unavailableKeyInfo.publicKey)] = recoveredKey
+
+      const res = await keyPairRecoverer.recoverWithRecoveryKey(decoded, false)
+      if (res instanceof RecoveryResult.Success) {
+        const data = res.data
+        for (const dataOwnerId of Object.keys(data)) {
+          aggregate[dataOwnerId] = aggregate[dataOwnerId] ?? {}
+          const perOwner = data[dataOwnerId]
+          for (const pub of Object.keys(perOwner)) {
+            aggregate[dataOwnerId][pub as SpkiHexString] = perOwner[pub as SpkiHexString]
           }
         }
       }
-      result[dataOwner.id] = {
-        recoveredKeys: currRecoveryResult,
+    }
+  }
+
+  private buildRecoveryResult(
+    keysData: Array<CryptoStrategies.KeyDataRecoveryRequest>,
+    aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } },
+  ): { [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData } {
+    const result: { [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData } = {}
+    for (const recoveryRequest of keysData) {
+      const dataOwnerId = recoveryRequest.dataOwnerDetails.dataOwner.id
+      const perOwnerRecovered = aggregate[dataOwnerId]
+
+      const recoveredForThisOwner: { [fp: KeypairFingerprintV1String]: XRsaKeypair } = {}
+      if (perOwnerRecovered) {
+        for (const unavailable of recoveryRequest.unavailableKeys) {
+          const recoveredKey = perOwnerRecovered[unavailable.publicKey]
+          if (recoveredKey) {
+            recoveredForThisOwner[spkiHexKeyToFingerprintV1(unavailable.publicKey) as KeypairFingerprintV1String] = recoveredKey
+          }
+        }
+      }
+
+      result[dataOwnerId] = {
+        recoveredKeys: recoveredForThisOwner,
         keyAuthenticity: {},
       }
     }
     return result
   }
 
-  private async promptUserForRecoveryKey(reason: RecoveryDataUseFailureReason = RecoveryDataUseFailureReason.Missing): Promise<string | undefined> {
-    const promise = new Promise<string | undefined>((resolve) => {
-      // eslint-disable-next-line prefer-const
-      let unsubscribe: Unsubscribe | undefined
-      const handleChange = () => {
-        const {
-          cardinalApi: { recoveryKeys, recoveryKeyRequest },
-        } = store.getState()
-        if (!recoveryKeys?.length) {
-          // The following happens in case of skip
-          if (!recoveryKeyRequest) {
-            resolve(undefined)
-            unsubscribe?.()
-          }
-          return
-        }
-        resolve(recoveryKeys[0].replace(/-/g, '').replace(/0/g, 'O').replace(/1/g, 'I').replace(/8/g, 'B'))
-        unsubscribe?.()
-      }
-      unsubscribe = store.subscribe(handleChange)
-    })
-
-    store.dispatch(askForRecoveryKey({ reason }))
-    return promise
+  // Bridge to the React UI via an external promise-based store (see keyRecoveryBridge).
+  // Submitting in the dialog resolves with `recovered`; closing/skipping resolves with `cancel`.
+  private async promptUserForRecoveryKeys(reasons: RecoveryDataUseFailureReason[]): Promise<string[] | undefined> {
+    const outcome = await requestKeyRecovery({ reasons: reasons.map((r) => r.toString()) })
+    if (outcome.kind === 'cancel') return undefined
+    return outcome.recoveryKeys.map((k) => k.replace(/-/g, '').replace(/0/g, 'O').replace(/1/g, 'I').replace(/8/g, 'B'))
   }
 }
 
@@ -135,8 +165,6 @@ export interface CardinalApiState {
   mobilePhone?: string
   loginProcessStarted: boolean
   newlyCreatedRecoveryKey?: string
-  recoveryKeyRequest?: { reason: string }
-  recoveryKeys?: string[]
 }
 
 const cardinalApiInitialState: CardinalApiState = {
@@ -155,8 +183,6 @@ const cardinalApiInitialState: CardinalApiState = {
   mobilePhone: undefined,
   loginProcessStarted: false,
   newlyCreatedRecoveryKey: undefined,
-  recoveryKeyRequest: undefined,
-  recoveryKeys: undefined,
 }
 
 function getError(e: Error): FetchBaseQueryError {
@@ -317,6 +343,7 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
       StorageFacade.usingBrowserLocalStorage(),
       {
         useHierarchicalDataOwners: false,
+        cryptoStrategies: new PetraCareCryptoStrategies(),
       },
     )
 
@@ -345,18 +372,6 @@ export const cardinalApiRtk = createSlice({
   reducers: {
     setNewlyCreatedRecoveryKey: (state, { payload: { recoveryKey } }: PayloadAction<{ recoveryKey: string | undefined }>) => {
       state.newlyCreatedRecoveryKey = recoveryKey
-    },
-    askForRecoveryKey: (state, { payload: { reason } }: PayloadAction<{ reason: string }>) => {
-      state.recoveryKeyRequest = { reason }
-      state.recoveryKeys = undefined
-    },
-    provideRecoveryKey: (state, { payload: { recoveryKey } }: PayloadAction<{ recoveryKey: string }>) => {
-      state.recoveryKeyRequest = undefined
-      state.recoveryKeys = [recoveryKey]
-    },
-    markRecoveryKeyAsLost: (state) => {
-      state.recoveryKeyRequest = undefined
-      state.recoveryKeys = []
     },
     setRegistrationInformation: (
       state,
@@ -402,7 +417,7 @@ export const cardinalApiRtk = createSlice({
       state.authProcess = authProcess
       state.waitingForToken = true
     })
-    builder.addCase(startAuthentication.rejected, (state, {}) => {
+    builder.addCase(startAuthentication.rejected, (state) => {
       state.invalidEmail = true
     })
     builder.addCase(completeAuthentication.fulfilled, (state, { payload: user }) => {
@@ -410,14 +425,14 @@ export const cardinalApiRtk = createSlice({
       state.online = !!user
       state.waitingForToken = false
     })
-    builder.addCase(completeAuthentication.rejected, (state, {}) => {
+    builder.addCase(completeAuthentication.rejected, (state) => {
       state.invalidToken = true
     })
     builder.addCase(login.fulfilled, (state, { payload: user }) => {
       state.user = user as User
       state.online = !!user
     })
-    builder.addCase(login.rejected, (state, {}) => {
+    builder.addCase(login.rejected, (state) => {
       state.invalidToken = true
       state.online = false
     })
@@ -426,9 +441,6 @@ export const cardinalApiRtk = createSlice({
 
 export const {
   setNewlyCreatedRecoveryKey,
-  askForRecoveryKey,
-  provideRecoveryKey,
-  markRecoveryKeyAsLost,
   setRegistrationInformation,
   setToken,
   setEmail,

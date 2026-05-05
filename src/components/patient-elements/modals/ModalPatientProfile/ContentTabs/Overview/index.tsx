@@ -3,34 +3,24 @@ import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { Tag } from 'antd'
 import React, { FC } from 'react'
 import { emailIcn, locationIcn, phoneIcn, userAvatarPlaceholderIcn } from '../../../../../../assets/CustomIcons'
-import { getImgSRC } from '../../../../../../helpers/fileToBase64'
 import { getTagColor } from '../../../../../../helpers/getTagColor'
 import { getPatientDataFormated } from '../../../../../../helpers/patientDataManipulations'
-import './index.css'
+import './index.less'
 
 interface OverviewProps {
   patient: DecryptedPatient
 }
 
 export const Overview: FC<OverviewProps> = ({ patient }) => {
-  const { language, picture, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, birthSex, userDateOfBirthOneString, tags, age } =
-    getPatientDataFormated(patient)
-
-  const patientAvatarSrc = getImgSRC(picture)
+  const { language, userNameOneString, userHomeAddressOneString, emailAddress, phoneNumber, birthSex, userDateOfBirthOneString, tags, age } = getPatientDataFormated(patient)
 
   return (
     <div className="patientOverviewTab">
       <div className="patientOverviewTab__leftBlock">
         <div className="patientOverviewTab__intro">
-          {patientAvatarSrc ? (
-            <div className="patientOverviewTab__intro__photo">
-              <img src={patientAvatarSrc} alt="patientPicture" />
-            </div>
-          ) : (
-            <div className="patientOverviewTab__intro__userAvatarPlaceholder">
-              <Icon component={userAvatarPlaceholderIcn} />
-            </div>
-          )}
+          <div className="patientOverviewTab__intro__userAvatarPlaceholder">
+            <Icon component={userAvatarPlaceholderIcn} />
+          </div>
           <h3 className="patientOverviewTab__name">{userNameOneString}</h3>
         </div>
         <div className="patientOverviewTab__contactDetails">

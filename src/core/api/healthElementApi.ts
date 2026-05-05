@@ -24,7 +24,7 @@ export const healthElementApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'HealthElement', id: 'all' },
               { type: 'HealthElement', id: result.id },

@@ -1,0 +1,71 @@
+@import '../../../style/less/index';
+
+.modalAccessRecoveryKey {
+  width: 100%;
+  display: flex;
+  align-self: stretch;
+  flex-direction: column;
+  gap: 12px;
+  padding: 24px;
+
+  .media-breakpoint-down(@md, {
+    padding: 12px;
+    flex-grow: 1;
+  });
+
+  &__intro {
+    color: @grey-700;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  &__scope {
+    width: 100%;
+
+    .ant-radio-wrapper {
+      align-items: flex-start;
+      padding: 12px 14px;
+      border: 1px solid @blue-400;
+      border-radius: 12px;
+      margin-inline-end: 0;
+      width: 100%;
+
+      &.ant-radio-wrapper-checked {
+        border-color: @blue-700;
+        background: @blue-100;
+      }
+
+      &.ant-radio-wrapper-disabled {
+        opacity: 0.55;
+      }
+
+      > span:last-child {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+  }
+
+  &__scopeTitle {
+    font-family: @font-700;
+    color: @grey-800;
+    font-size: 14px;
+  }
+
+  &__scopeDesc {
+    color: @grey-600;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  &__keyValue {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px;
+    word-break: break-all;
+    letter-spacing: 0.04em;
+    user-select: all;
+    margin: 0 !important;
+  }
+}

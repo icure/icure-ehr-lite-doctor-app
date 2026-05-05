@@ -6,18 +6,17 @@ import { MSG_GW_URL, SPEC_ID } from '../../../constants'
 
 import { routes } from '../../../navigation/Router'
 
-import '../index.css'
+import '../index.less'
 import { SpinLoader } from '../../common/SpinLoader'
 import { KerberusWidget } from '../KerberusWidget'
 
 interface LoginFormProps {
   state: 'initialised' | 'loading' | 'waitingForToken'
-  setEhealthCertificatePassword: (password: string) => void
   submitEmailForTokenRequest: (email: string, captchaToken: Solution) => void
   submitEmailAndValidationTokenForAuthentication: (email: string, validationCode: string) => void
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ state, setEhealthCertificatePassword, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ state, submitEmailForTokenRequest, submitEmailAndValidationTokenForAuthentication }) => {
   const [captchaToken, setCaptchaToken] = useState<Solution | undefined>(undefined)
   const [progress, setProgress] = useState<number | undefined>(undefined)
 
@@ -57,12 +56,8 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, setEhealthCertificatePassw
    *
    * @param values
    */
-  const handleSubmit = (values: { email: string; validationCode: string; ehealthCertificatePassword?: string }) => {
-    const { email, ehealthCertificatePassword, validationCode } = values
-
-    if (ehealthCertificatePassword?.length) {
-      setEhealthCertificatePassword(ehealthCertificatePassword)
-    }
+  const handleSubmit = (values: { email: string; validationCode: string }) => {
+    const { email, validationCode } = values
 
     /** Some error management should be done here ? */
     if (email.length === 0) {
@@ -93,9 +88,6 @@ const LoginForm: React.FC<LoginFormProps> = ({ state, setEhealthCertificatePassw
         <div className="auth-form__inputs">
           <Form.Item name="email" label="Email" rules={[{ required: true, message: 'Email is required' }]}>
             <Input placeholder="Email" size="large" style={{ fontSize: 13 }} />
-          </Form.Item>
-          <Form.Item name="ehealthCertificatePassword" label="Ehealth password (optional)">
-            <Input placeholder="Ehealth password" type="password" size="large" style={{ fontSize: 13 }} />
           </Form.Item>
 
           {state === 'waitingForToken' && (

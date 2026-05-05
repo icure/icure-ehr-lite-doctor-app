@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react'
 
-import './index.css'
+import './index.less'
 
 interface CommonPlaceholderProps {
   title: string

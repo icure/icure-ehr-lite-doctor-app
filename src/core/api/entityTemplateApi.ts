@@ -1,4 +1,7 @@
-import { EntityTemplate } from '@icure/cardinal-sdk'
+// TODO(prescription-templates): EntityTemplate was removed from @icure/cardinal-sdk in 2.x stable.
+// This file is kept building against a local stub until the feature is reworked against FormTemplate.
+// Runtime calls to entityTemplateApi.* will fail until this is rewritten.
+type EntityTemplate = { id?: string } & Record<string, unknown>
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { cardinalApi, guard } from '../services/auth.api'
 
@@ -24,7 +27,7 @@ export const entityTemplateApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'EntityTemplate', id: 'all' },
               { type: 'EntityTemplate', id: result.id },
@@ -46,7 +49,7 @@ export const entityTemplateApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'EntityTemplate', id: 'all' },
               { type: 'EntityTemplate', id: result.id },

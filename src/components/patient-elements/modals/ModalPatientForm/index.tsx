@@ -1,18 +1,15 @@
 import { AddressType, CodeStub, DecryptedAddress, DecryptedPatient, DecryptedTelecom, Gender, PersonName, PersonNameUse, TelecomType } from '@icure/cardinal-sdk'
-import type { GetProps, UploadFile, UploadProps } from 'antd'
-import { DatePicker, Form, Input, Select, Upload } from 'antd'
-import ImgCrop from 'antd-img-crop'
+import type { GetProps } from 'antd'
+import { DatePicker, Form, Input, Select } from 'antd'
 import dayjs from 'dayjs'
-import React, { ReactElement, useEffect, useState } from 'react'
-import { CUSTOM_TAG_TYPE, DEFAULT_MODAL_WIDTH } from '../../../../constants'
+import React, { ReactElement, useEffect } from 'react'
+import { CUSTOM_TAG_TYPE } from '../../../../constants'
 import { useCreateOrUpdatePatientMutation } from '../../../../core/api/patientApi'
-import { getFileUploaderCommonProps, getImgSRC } from '../../../../helpers/fileToBase64'
 import { getPatientDataFormated } from '../../../../helpers/patientDataManipulations'
 import { PatientsLanguagesEnum, PatientsTagsEnum } from '../../../../helpers/types'
-import { breakpoints, getWindowSize } from '../../../../helpers/windowSize'
 
-import { CustomModal, getCustomModalResponsiveStyles } from '../../../common/CustomModal'
-import './index.css'
+import { CustomModal } from '../../../common/CustomModal'
+import './index.less'
 import { SpinLoader } from '../../../common/SpinLoader'
 
 type RangePickerProps = GetProps<typeof DatePicker.RangePicker>
@@ -31,7 +28,6 @@ type PatientForm = {
   street?: string
   houseNumber?: string
   postalCode?: string
-  picture?: Int8Array | undefined
   tags?: PatientsTagsEnum[]
 }
 
@@ -43,20 +39,6 @@ interface ModalPatientFormProps {
 }
 
 export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: ModalPatientFormProps): ReactElement => {
-  const [patientPictureAsInt8Array, setPatientPictureAsInt8Array] = useState<Int8Array | undefined>(undefined)
-  const patientAvatarSrc = patientToEdit?.picture
-  const [fileList, setFileList] = useState<UploadFile[]>(
-    patientAvatarSrc
-      ? [
-          {
-            uid: '-1',
-            name: 'image.png',
-            status: 'done',
-            url: getImgSRC(patientAvatarSrc),
-          },
-        ]
-      : [],
-  )
   const [form] = Form.useForm()
 
   const [
@@ -95,7 +77,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     })
 
     const dateOfBirthUnixTimestamp = dateOfBirth ? +dayjs(dateOfBirth).format('YYYYMMDD') : undefined
-    const picture = patientPictureAsInt8Array ?? patientAvatarSrc
     const getTags = () => {
       return tags?.map((tag) => {
         const tagType = CUSTOM_TAG_TYPE
@@ -118,7 +99,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       names: [name],
       addresses: [address],
       dateOfBirth: dateOfBirthUnixTimestamp,
-      picture,
       tags: getTags(),
       languages: language ? [language] : [],
     }
@@ -130,7 +110,7 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
     form.resetFields()
   }
   const getPatientToEdit = (patient: DecryptedPatient) => {
-    const { firstName, lastName, ssin, dateOfBirth, birthSex, language, tags, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode, picture } =
+    const { firstName, lastName, ssin, dateOfBirth, birthSex, language, tags, phoneNumber, emailAddress, country, city, street, houseNumber, postalCode } =
       getPatientDataFormated(patient)
     return {
       firstName,
@@ -146,7 +126,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
       street,
       houseNumber,
       postalCode,
-      picture,
       tags: tags?.map((tag) => tag.code),
     }
   }
@@ -158,36 +137,16 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
   }, [isPatientCreatedOrUpdateSuccessfully])
 
   const handleOnClose = () => {
-    setFileList([])
-    setPatientPictureAsInt8Array(undefined)
     form.resetFields()
     onClose()
   }
 
   const { Option } = Select
 
-  const fileUploaderProps: UploadProps = {
-    listType: 'picture-card',
-    multiple: false,
-    showUploadList: {
-      showRemoveIcon: true,
-    },
-    maxCount: 1,
-    fileList: fileList,
-    onChange: ({ fileList: newFileList }) => {
-      setFileList(newFileList)
-    },
-    onRemove() {
-      setFileList([])
-      setPatientPictureAsInt8Array(undefined)
-    },
-  }
-
   const disabledDate: RangePickerProps['disabledDate'] = (current) => {
     // Can not select days before today and today
     return current && current > dayjs().endOf('day')
   }
-  const { innerWidth } = getWindowSize()
 
   return (
     <CustomModal
@@ -235,18 +194,6 @@ export const ModalPatientForm = ({ mode, isVisible, onClose, patientToEdit }: Mo
                   <Option value={'nl'}>{PatientsLanguagesEnum.NL}</Option>
                   <Option value={'en'}>{PatientsLanguagesEnum.EN}</Option>
                 </Select>
-              </Form.Item>
-              <Form.Item label="Picture" valuePropName="file">
-                <ImgCrop
-                  rotationSlider
-                  modalClassName="PatientImgCrop"
-                  modalWidth={innerWidth < breakpoints.md ? '100vw' : DEFAULT_MODAL_WIDTH}
-                  modalProps={{ style: getCustomModalResponsiveStyles(innerWidth < breakpoints.md) }}
-                >
-                  <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsInt8Array(data))}>
-                    {fileList.length === 0 ? '+ Upload' : '+ Replace'}
-                  </Upload>
-                </ImgCrop>
               </Form.Item>
             </div>
           </div>

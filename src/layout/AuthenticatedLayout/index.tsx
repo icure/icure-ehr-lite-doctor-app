@@ -5,6 +5,8 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import { useAppSelector } from '../../core/hooks'
 import { CardinalApiState } from '../../core/services/auth.api'
 import { routes } from '../../navigation/Router'
+import { ModalRecoveryKey } from '../../components/authentication/ModalRecoveryKey'
+import { ModalRecoveryKeyRequest } from '../../components/authentication/ModalRecoveryKeyRequest'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
@@ -27,6 +29,8 @@ function AuthenticatedLayout() {
   return (
     <div>
       <Outlet />
+      <ModalRecoveryKey />
+      <ModalRecoveryKeyRequest />
     </div>
   )
 }

@@ -7,7 +7,7 @@ import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 
 import { CardinalApiState, setNewlyCreatedRecoveryKey } from '../../../core/services/auth.api'
 import { CopyJSONButton } from '../../common/CopyJSONButton'
-import './index.css'
+import './index.less'
 import { CustomModal } from '../../common/CustomModal'
 
 const reduxSelector = createSelector(
@@ -61,9 +61,9 @@ export const ModalRecoveryKey = () => {
   return (
     <CustomModal closable={false} isVisible={!!newlyCreatedRecoveryKey} title={'Your Recovery Key'} handleClose={() => console.log('handleClose')} customFooter={getCustomFooter()}>
       <div className="modalRecoveryKey">
-        <Alert message=" 🎉 Welcome to PetraCare!" description="You have been successfully registered!" type="success" />
+        <Alert title=" 🎉 Welcome to PetraCare!" description="You have been successfully registered!" type="success" />
         <Alert
-          message="🚨 Important: Save Your Recovery Key!"
+          title="🚨 Important: Save Your Recovery Key!"
           description={
             <ul>
               <li>
@@ -87,7 +87,7 @@ export const ModalRecoveryKey = () => {
           type="error"
         />
         <Alert
-          message="Recovery Key"
+          title="Recovery Key"
           description={
             <Typography.Paragraph className="values-token" copyable={{ text: newlyCreatedRecoveryKey }}>
               {newlyCreatedRecoveryKey}

@@ -21,13 +21,12 @@ export interface PatientFormated {
   userNameOneString?: string
   userHomeAddressOneString?: string
   userDateOfBirthOneString?: string
-  picture?: Int8Array
   tags?: CodeStub[]
   age?: string
 }
 
 export const getPatientDataFormated = (patient: DecryptedPatient): PatientFormated => {
-  const { id, names, firstName, lastName, ssin, dateOfBirth, addresses, birthSex, tags, picture, languages } = patient
+  const { id, names, firstName, lastName, ssin, dateOfBirth, addresses, birthSex, tags, languages } = patient
 
   const getTelecomBySystem = (telecomSystem: TelecomType) => {
     const expectedAddress = addresses?.find(({ telecoms }) => telecoms.some(({ telecomType }) => telecomType === telecomSystem))
@@ -67,7 +66,6 @@ export const getPatientDataFormated = (patient: DecryptedPatient): PatientFormat
     userNameOneString: userName,
     userHomeAddressOneString: homeAddressString.length !== 0 ? homeAddressString : '-',
     userDateOfBirthOneString: userDateOfBirth,
-    picture: picture,
     age: getAgeDescription(dateOfBirth),
     language: languages[0],
   }

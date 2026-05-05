@@ -1,4 +1,4 @@
-import './index.css'
+import './index.less'
 import { DecryptedPatient } from '@icure/cardinal-sdk'
 import { Button, Collapse, type CollapseProps } from 'antd'
 import React, { FC, useState } from 'react'

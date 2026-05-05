@@ -2,56 +2,49 @@ import { DecryptedContact, DecryptedContent, Measure, Medication } from '@icure/
 import React from 'react'
 import { useGetHealthElementsQuery } from '../../../../../../../core/api/healthElementApi'
 import { formatTimestampToHumanReadable } from '../../../../../../../helpers/dateFormaters'
-import './index.css'
+import './index.less'
 
 type ConsultationCardProps = {
   contact: DecryptedContact
 }
 
+const getDurationFromDays = (numberOfDays: number | undefined) => {
+  if (!numberOfDays) return {}
+  if (numberOfDays % 7 === 0) {
+    return {
+      duration: numberOfDays / 7,
+      durationTimeUnit: numberOfDays / 7 === 1 ? 'week' : 'weeks',
+    }
+  }
+  return {
+    duration: numberOfDays,
+    durationTimeUnit: numberOfDays === 1 ? 'day' : 'days',
+  }
+}
+
+const PrescriptionShort = ({ medication }: { medication: Medication }) => (
+  <div className="prescriptionTemplate__medication">
+    <div className="prescriptionTemplate__medication__content">
+      <p>DCI group name:</p>
+      <span>{medication?.medicinalProduct?.intendedname ?? medication?.substanceProduct?.intendedname ?? medication?.compoundPrescription}</span>
+    </div>
+    <div className="prescriptionTemplate__medication__content">
+      <p>Dosage:</p>
+      <span>{medication?.instructionForPatient}</span>
+    </div>
+    <div className="prescriptionTemplate__medication__content">
+      <p>Duration:</p>
+      <span>{getDurationFromDays(medication?.duration?.value)?.duration + ' ' + getDurationFromDays(medication?.duration?.value)?.durationTimeUnit}</span>
+    </div>
+  </div>
+)
+
 export const ConsultationCard = ({ contact }: ConsultationCardProps) => {
   const healthElementsIds = contact.subContacts.map((subContact) => subContact.healthElementId).filter((id): id is string => id !== undefined)
   const { data: healthElements } = useGetHealthElementsQuery(healthElementsIds, { skip: healthElementsIds.length === 0 })
 
-  const PrescriptionShort = ({ medication }: { medication: Medication }) => {
-    const getDurationFromDays = (numberOfDays: number | undefined) => {
-      if (!numberOfDays) return {}
-      if (numberOfDays % 7 === 0) {
-        return {
-          duration: numberOfDays / 7,
-          durationTimeUnit: numberOfDays / 7 === 1 ? 'week' : 'weeks',
-        }
-      } else {
-        return {
-          duration: numberOfDays,
-          durationTimeUnit: numberOfDays === 1 ? 'day' : 'days',
-        }
-      }
-    }
-
-    return (
-      <div className="prescriptionTemplate__medication">
-        <div className="prescriptionTemplate__medication__content">
-          <p>DCI group name:</p>
-          <span>{medication?.medicinalProduct?.intendedname ?? medication?.substanceProduct?.intendedname ?? medication?.compoundPrescription}</span>
-        </div>
-        <div className="prescriptionTemplate__medication__content">
-          <p>Dosage:</p>
-          <span>{medication?.instructionForPatient}</span>
-        </div>
-        <div className="prescriptionTemplate__medication__content">
-          <p>Duration:</p>
-          <span>{getDurationFromDays(medication?.duration?.value)?.duration + ' ' + getDurationFromDays(medication?.duration?.value)?.durationTimeUnit}</span>
-        </div>
-        <div className="prescriptionTemplate__medication__content">
-          <p>RID:</p>
-          <span>{medication?.prescriptionRID}</span>
-        </div>
-      </div>
-    )
-  }
-
   const getServicesContentValue = (content: DecryptedContent) => {
-    if (!!content.stringValue) {
+    if (content.stringValue) {
       return <p>{content.stringValue}</p>
     } else if (content.ratio) {
       const systolicPressure = content.ratio.find((el: Measure) => el.comment === 'systolicPressure')

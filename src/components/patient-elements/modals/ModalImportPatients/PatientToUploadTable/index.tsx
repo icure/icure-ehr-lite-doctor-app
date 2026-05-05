@@ -1,6 +1,6 @@
 import React from 'react'
 import { UploadedPatientsTableTitlesEnum, UploadedPatientType } from '../utils/types'
-import './index.css'
+import './index.less'
 
 interface PatientToUploadTableProps {
   patients: UploadedPatientType[]

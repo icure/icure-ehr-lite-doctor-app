@@ -39,7 +39,7 @@ export const practitionerApiRtk = createApi({
           console.log('practitioner')
           console.log(practitioner)
 
-          const updatedPractitioner = !!practitioner.rev ? await practitionerApi.modifyHealthcareParty(practitioner) : await practitionerApi.createHealthcareParty(practitioner)
+          const updatedPractitioner = practitioner.rev ? await practitionerApi.modifyHealthcareParty(practitioner) : await practitionerApi.createHealthcareParty(practitioner)
           if (!updatedPractitioner) {
             throw new Error('Practitioner does not exist')
           }
@@ -47,7 +47,7 @@ export const practitionerApiRtk = createApi({
         })
       },
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'Practitioner', id: 'all' },
               { type: 'Practitioner', id: result.id },

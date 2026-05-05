@@ -1,19 +1,18 @@
 import Icon from '@ant-design/icons'
 import { createSelector } from '@reduxjs/toolkit'
 
-import './index.css'
+import './index.less'
 import type { MenuProps } from 'antd'
 import { Dropdown } from 'antd'
 import React, { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { arrowDownIcn, logOutIcn, manageUserIcn, prescriptionIcn, userIcn } from '../../../assets/CustomIcons'
+import { arrowDownIcn, keypairIcn, logOutIcn, manageUserIcn, userIcn } from '../../../assets/CustomIcons'
 import logo_horizontal from '../../../assets/logo_horizontal.svg'
 import { useGetPractitionerQuery } from '../../../core/api/practitionerApi'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
 import { CardinalApiState, logout } from '../../../core/services/auth.api'
-import { getImgSRC } from '../../../helpers/fileToBase64'
+import { ModalAccessRecoveryKey } from '../../practitioner-elements/ModalAccessRecoveryKey'
 import { ModalManageAccountForm } from '../../practitioner-elements/ModalManageAccountForm'
-import { PrescriptionTemplates } from '../../practitioner-elements/PrescriptionTemplates'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
@@ -26,14 +25,13 @@ const reduxSelector = createSelector(
 export const Header = () => {
   const [isUserDropdownOpen, setUserDropdownOpen] = useState(false)
   const [isModalManageAccountFormOpen, setModalManageAccountFormOpen] = useState(false)
-  const [isPrescriptionTemplatesModalOpen, setPrescriptionTemplateModalOpen] = useState(false)
+  const [isAccessRecoveryKeyModalOpen, setAccessRecoveryKeyModalOpen] = useState(false)
   const dispatch = useAppDispatch()
 
-  const { user, healthcarePartyId, userId } = useAppSelector(reduxSelector)
+  const { healthcarePartyId } = useAppSelector(reduxSelector)
 
   const { data: practitioner, isFetching: isPractitionerFetching } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
 
-  const userAvatarSrc = getImgSRC(practitioner?.picture)
   const handleLogout = () => {
     dispatch(logout())
   }
@@ -49,11 +47,11 @@ export const Header = () => {
       ),
     },
     {
-      key: 'prescriptionTemplates',
+      key: 'accessRecoveryKey',
       label: (
         <div className="header__userDropdown__item">
-          <Icon component={prescriptionIcn} />
-          <span>Prescription Templates</span>
+          <Icon component={keypairIcn} />
+          <span>Access recovery key</span>
         </div>
       ),
     },
@@ -74,8 +72,8 @@ export const Header = () => {
         setModalManageAccountFormOpen(true)
         break
       }
-      case 'prescriptionTemplates': {
-        setPrescriptionTemplateModalOpen(true)
+      case 'accessRecoveryKey': {
+        setAccessRecoveryKeyModalOpen(true)
         break
       }
       case 'logout': {
@@ -103,15 +101,9 @@ export const Header = () => {
                 <p className="header__userDropdown__heading__name">{practitioner?.firstName + ' ' + practitioner?.lastName}</p>
                 <p className="header__userDropdown__heading__ssin">{practitioner?.ssin ?? 'SSIN is not provided'}</p>
               </div>
-              {userAvatarSrc ? (
-                <div className="header__userDropdown__picture">
-                  <img src={userAvatarSrc} alt={user?.name ?? 'Dear User!'} />
-                </div>
-              ) : (
-                <div className="header__userDropdown__userAvatarPlaceholder">
-                  <Icon component={userIcn} />
-                </div>
-              )}
+              <div className="header__userDropdown__userAvatarPlaceholder">
+                <Icon component={userIcn} />
+              </div>
               <div className="header__userDropdown__arrow">
                 <Icon component={arrowDownIcn} />
               </div>
@@ -124,17 +116,8 @@ export const Header = () => {
           <ModalManageAccountForm isVisible={isModalManageAccountFormOpen} onClose={() => setModalManageAccountFormOpen(false)} practitionerToBeUpdated={practitioner} />,
           document.body,
         )}
-      {isPrescriptionTemplatesModalOpen &&
-        userId &&
-        createPortal(
-          <PrescriptionTemplates
-            isVisible={isPrescriptionTemplatesModalOpen}
-            onClose={() => setPrescriptionTemplateModalOpen(false)}
-            userId={userId}
-            practitioner={practitioner}
-          />,
-          document.body,
-        )}
+      {isAccessRecoveryKeyModalOpen &&
+        createPortal(<ModalAccessRecoveryKey isVisible={isAccessRecoveryKeyModalOpen} onClose={() => setAccessRecoveryKeyModalOpen(false)} />, document.body)}
     </>
   )
 }
