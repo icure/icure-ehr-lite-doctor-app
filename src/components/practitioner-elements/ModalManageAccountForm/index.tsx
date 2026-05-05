@@ -1,9 +1,7 @@
 import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, TelecomType } from '@icure/cardinal-sdk'
-import { Form, Input, Upload, UploadFile, UploadProps } from 'antd'
-import ImgCrop from 'antd-img-crop'
-import React, { ReactElement, useEffect, useState } from 'react'
+import { Form, Input } from 'antd'
+import React, { ReactElement, useEffect } from 'react'
 import { useCreateOrUpdatePractitionerMutation } from '../../../core/api/practitionerApi'
-import { getFileUploaderCommonProps, getImgSRC } from '../../../helpers/fileToBase64'
 
 import { CustomModal } from '../../common/CustomModal'
 import { SpinLoader } from '../../common/SpinLoader'
@@ -19,21 +17,6 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
   const [form] = Form.useForm()
   const [updatePractitioner, { isSuccess: isPractitionerUpdatedSuccessfully, isLoading: isPractitionerUpdatingLoading }] = useCreateOrUpdatePractitionerMutation()
 
-  const userAvatarSrc = getImgSRC(practitionerToBeUpdated?.picture)
-
-  const [patientPictureAsBase64, setPatientPictureAsBase64] = useState<Int8Array | undefined>(undefined)
-  const [fileList, setFileList] = useState<UploadFile[]>(
-    !userAvatarSrc
-      ? []
-      : [
-          {
-            uid: '-1',
-            name: 'image.png',
-            status: 'done',
-            url: userAvatarSrc,
-          },
-        ],
-  )
   const handleSubmit = (value: { firstName: string; lastName: string; emailAddress: string; ssin: string; nihii: string }) => {
     const { firstName, lastName, emailAddress, nihii, ssin } = value
     const address = new DecryptedAddress({
@@ -45,8 +28,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
         }),
       ],
     })
-    const picture = patientPictureAsBase64 ?? practitionerToBeUpdated?.picture
-    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, addresses: [address], picture, ssin, nihii }))
+    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, addresses: [address], ssin, nihii }))
     form.resetFields()
   }
 
@@ -57,23 +39,6 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
   }, [isPractitionerUpdatedSuccessfully])
 
   const practitionerEmail = practitionerToBeUpdated?.addresses[0].telecoms.find((item) => item.telecomType === TelecomType.Email)?.telecomNumber
-
-  const fileUploaderProps: UploadProps = {
-    listType: 'picture-card',
-    multiple: false,
-    showUploadList: {
-      showRemoveIcon: true,
-    },
-    maxCount: 1,
-    fileList: fileList,
-    onChange: ({ fileList: newFileList }) => {
-      setFileList(newFileList)
-    },
-    onRemove() {
-      setFileList([])
-      setPatientPictureAsBase64(undefined)
-    },
-  }
 
   return (
     <CustomModal isVisible={isVisible} handleClose={onClose} secondaryBtnTitle="Cancel" handleClickPrimaryBtn={() => form.submit()} primaryBtnTitle="Save" title="Manage Account">
@@ -91,7 +56,6 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             lastName: practitionerToBeUpdated?.lastName,
             ssin: practitionerToBeUpdated?.ssin,
             nihii: practitionerToBeUpdated?.nihii,
-            file: practitionerToBeUpdated?.picture,
           }}
         >
           <div className="modalManageAccountForm__form__inputs">
@@ -113,14 +77,6 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
               rules={[{ required: true, message: 'NIHII is required' }]}
             >
               <Input placeholder="NIHII" size="large" style={{ fontSize: 13 }} />
-            </Form.Item>
-
-            <Form.Item label="Picture" valuePropName="file">
-              <ImgCrop rotationSlider modalClassName="PatientImgCrop">
-                <Upload {...fileUploaderProps} {...getFileUploaderCommonProps((data: Int8Array | undefined) => setPatientPictureAsBase64(data))}>
-                  {fileList.length === 0 ? '+ Upload' : '+ Replace'}
-                </Upload>
-              </ImgCrop>
             </Form.Item>
           </div>
         </Form>
