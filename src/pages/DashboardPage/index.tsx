@@ -1,5 +1,4 @@
 import React from 'react'
-import { ModalRecoveryKey } from '../../components/authentication/ModalRecoveryKey'
 import { Header } from '../../components/common/Header'
 import { Patients } from '../../components/patient-elements/Patients'
 
@@ -10,7 +9,6 @@ export default function DashboardPage() {
     <div className="Dashboard">
       <Header />
       <Patients />
-      <ModalRecoveryKey />
     </div>
   )
 }

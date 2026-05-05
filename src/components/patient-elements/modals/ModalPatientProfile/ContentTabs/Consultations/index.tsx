@@ -8,12 +8,12 @@ import { CommonPlaceholder } from '../../../../../common/CommonPlaceholder'
 import { SpinLoader } from '../../../../../common/SpinLoader'
 import { ConsultationCard } from './ConsultationCard'
 
-interface Consultations {
+interface ConsultationsProps {
   healthcarePartyId?: string
   patient: DecryptedPatient
 }
 
-export const Consultations: FC<Consultations> = ({ healthcarePartyId, patient }) => {
+export const Consultations: FC<ConsultationsProps> = ({ healthcarePartyId, patient }) => {
   const { data: listOfContactsWithDoctor, isLoading: isListOfContactsLoading } = useFindContactsByHcPartyPatientQuery(
     {
       hcPartyId: healthcarePartyId ?? '',

@@ -10,7 +10,7 @@ import { CustomModal } from '../../../common/CustomModal'
 import './index.less'
 import { Consultations } from './ContentTabs/Consultations'
 import { Overview } from './ContentTabs/Overview'
-import { Prescriptions } from './ContentTabs/Prescriptions'
+//import { Prescriptions } from './ContentTabs/Prescriptions'
 
 interface ModalPatientProfileProps {
   isVisible: boolean
@@ -40,12 +40,12 @@ export const ModalPatientProfile = ({ isVisible, onClose, patient, onEdit, onAdd
       label: 'Consultations',
       key: 'consultations_tab',
       children: <Consultations healthcarePartyId={healthcarePartyId} patient={patient} />,
-    },
+    } /*
     {
       label: 'Prescriptions',
       key: 'prescriptions_tab',
       children: <Prescriptions healthcarePartyId={healthcarePartyId} patient={patient} />,
-    },
+    }, */,
     {
       label: 'Allergies',
       key: 'allergies_tab',

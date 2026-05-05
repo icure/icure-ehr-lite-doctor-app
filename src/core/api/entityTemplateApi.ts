@@ -27,7 +27,7 @@ export const entityTemplateApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'EntityTemplate', id: 'all' },
               { type: 'EntityTemplate', id: result.id },
@@ -49,7 +49,7 @@ export const entityTemplateApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'EntityTemplate', id: 'all' },
               { type: 'EntityTemplate', id: result.id },

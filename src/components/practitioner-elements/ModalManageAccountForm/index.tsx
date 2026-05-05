@@ -1,4 +1,4 @@
-import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, TelecomType } from '@icure/cardinal-sdk'
+import { AddressType, DecryptedAddress, DecryptedTelecom, HealthcareParty, Identifier, TelecomType } from '@icure/cardinal-sdk'
 import { Form, Input } from 'antd'
 import React, { ReactElement, useEffect } from 'react'
 import { useCreateOrUpdatePractitionerMutation } from '../../../core/api/practitionerApi'
@@ -6,6 +6,15 @@ import { useCreateOrUpdatePractitionerMutation } from '../../../core/api/practit
 import { CustomModal } from '../../common/CustomModal'
 import { SpinLoader } from '../../common/SpinLoader'
 import './index.less'
+
+const NIHII_IDENTIFIER_SYSTEM = 'NIHII'
+
+const readNihii = (hcp?: HealthcareParty): string | undefined => hcp?.identifier?.find((i) => i.system === NIHII_IDENTIFIER_SYSTEM)?.value
+
+const upsertNihii = (existing: Identifier[] | undefined, nihii: string | undefined): Identifier[] => {
+  const without = (existing ?? []).filter((i) => i.system !== NIHII_IDENTIFIER_SYSTEM)
+  return nihii ? [...without, new Identifier({ system: NIHII_IDENTIFIER_SYSTEM, value: nihii })] : without
+}
 
 interface ModalManageAccountFormProps {
   isVisible: boolean
@@ -28,7 +37,8 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
         }),
       ],
     })
-    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, addresses: [address], ssin, nihii }))
+    const identifier = upsertNihii(practitionerToBeUpdated?.identifier, nihii)
+    updatePractitioner(new HealthcareParty({ ...practitionerToBeUpdated, firstName, lastName, addresses: [address], ssin, identifier }))
     form.resetFields()
   }
 
@@ -55,7 +65,7 @@ export const ModalManageAccountForm = ({ isVisible, onClose, practitionerToBeUpd
             firstName: practitionerToBeUpdated?.firstName,
             lastName: practitionerToBeUpdated?.lastName,
             ssin: practitionerToBeUpdated?.ssin,
-            nihii: practitionerToBeUpdated?.nihii,
+            nihii: readNihii(practitionerToBeUpdated),
           }}
         >
           <div className="modalManageAccountForm__form__inputs">

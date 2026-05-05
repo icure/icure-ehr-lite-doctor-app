@@ -201,7 +201,7 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
             </p>
 
             <Alert
-              message={
+              title={
                 <>
                   <p>
                     Entries will be rejected if required fields are missing: <span className="highlighted"> Fist Name and Last Name.</span>
@@ -221,19 +221,19 @@ export const ModalImportPatients = ({ onClose, isVisible }: ModalImportPatientsP
             <div className="modalImportPatients__import__results">
               {uploadState.missingFieldsRowsList.length !== 0 && (
                 <div className="modalImportPatients__import__results__item">
-                  <Alert message="Entries were rejected due to missing required fields." type="error" showIcon />
+                  <Alert title="Entries were rejected due to missing required fields." type="error" showIcon />
                   <PatientToUploadTable patients={uploadState.missingFieldsRowsList} />
                 </div>
               )}
               {uploadState.unValidEmailRowsList.length !== 0 && (
                 <div className="modalImportPatients__import__results__item">
-                  <Alert message="Entries were rejected due to invalid email." type="error" showIcon />
+                  <Alert title="Entries were rejected due to invalid email." type="error" showIcon />
                   <PatientToUploadTable patients={uploadState.unValidEmailRowsList} />
                 </div>
               )}
               {uploadState.validRowsList.length !== 0 && (
                 <div className="modalImportPatients__import__results__item">
-                  <Alert message="Entries were successfully uploaded and ready to be imported." type="success" showIcon />
+                  <Alert title="Entries were successfully uploaded and ready to be imported." type="success" showIcon />
                   <PatientToUploadTable patients={uploadState.validRowsList} />
                 </div>
               )}

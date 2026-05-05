@@ -33,7 +33,7 @@ export const contactApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },
@@ -61,7 +61,7 @@ export const contactApiRtk = createApi({
       },
 
       invalidatesTags: (result) =>
-        !!result
+        result
           ? [
               { type: 'Contact', id: 'all' },
               { type: 'Contact', id: result.id },

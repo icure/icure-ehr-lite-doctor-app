@@ -8,7 +8,6 @@ import { createPortal } from 'react-dom'
 import { deleteIcn, emailIcn, manageUserIcn, moreVerticalIcn, shareIcn, stethoscopeIcn, userAvatarPlaceholderIcn, userIcn } from '../../../../assets/CustomIcons'
 import { useDeletePatientMutation } from '../../../../core/api/patientApi'
 import { useCreateUserMutation } from '../../../../core/api/userApi'
-import { getImgSRC } from '../../../../helpers/fileToBase64'
 import { getTagColor } from '../../../../helpers/getTagColor'
 import { getPatientDataFormated } from '../../../../helpers/patientDataManipulations'
 import { ModalConfirmAction } from '../../../common/ModalConfirmAction'
@@ -182,23 +181,16 @@ export const PatientRow = ({ patient }: PatientRowProps): ReactElement => {
     }
   }
 
-  const { picture, userDateOfBirthOneString, userNameOneString, phoneNumber, tags, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
-  const patientAvatarSrc = getImgSRC(picture)
+  const { userDateOfBirthOneString, userNameOneString, phoneNumber, tags, emailAddress, userHomeAddressOneString } = getPatientDataFormated(patient)
 
   return (
     <>
       {notificationContextHolder}
       {messageContextHolder}
       <div className="patientRow" onClick={() => setPatientProfileModalOpen(true)}>
-        {patientAvatarSrc ? (
-          <div className="patientRow__picture">
-            <img src={patientAvatarSrc} alt={`${userNameOneString} picture`} />
-          </div>
-        ) : (
-          <div className="patientRow__userAvatarPlaceholder">
-            <Icon component={userAvatarPlaceholderIcn} />
-          </div>
-        )}
+        <div className="patientRow__userAvatarPlaceholder">
+          <Icon component={userAvatarPlaceholderIcn} />
+        </div>
         <div className="patientRow__contentDesktop">
           <div className="patientRow__contentDesktop__item patientRow__contentDesktop__item--name">
             <span className="patientRow__contentDesktop__item__title">Name:</span>

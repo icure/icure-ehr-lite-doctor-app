@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "cardinal": {
+      "command": "npx",
+      "args": ["-y", "@icure/cardinal-mcp-server"]
+    }
+  }
+}

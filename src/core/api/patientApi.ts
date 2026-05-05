@@ -17,7 +17,7 @@ export const patientApiRtk = createApi({
       async queryFn(patient, { getState }) {
         const patientApi = (await cardinalApi(getState))?.patient
         return guard([patientApi], async ([patientApi]): Promise<DecryptedPatient> => {
-          const updatedPatient = !!patient.rev ? await patientApi?.modifyPatient(patient) : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient))
+          const updatedPatient = patient.rev ? await patientApi?.modifyPatient(patient) : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient))
           if (!updatedPatient) {
             throw new Error('Patient does not exist')
           }

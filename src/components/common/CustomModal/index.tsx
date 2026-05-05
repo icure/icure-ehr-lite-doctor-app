@@ -2,7 +2,7 @@ import { Button, ConfigProvider, Modal } from 'antd'
 import React, { CSSProperties, ReactElement } from 'react'
 
 import { DEFAULT_MODAL_WIDTH } from '../../../constants'
-import { breakpoints, getWindowSize } from '../../../helpers/windowSize'
+import { breakpoints, useWindowSize } from '../../../helpers/windowSize'
 
 interface PatientFormModalProps {
   isVisible: boolean
@@ -58,7 +58,7 @@ export const CustomModal = ({
   closable,
   blockAntModalBodyVerticalScroll,
 }: PatientFormModalProps): ReactElement => {
-  const { innerWidth } = getWindowSize()
+  const { innerWidth } = useWindowSize()
   const modalStyles: { [key: string]: CSSProperties } = {
     header: {
       borderBottom: mode === 'danger' ? `1px solid #FAD1D1` : `1px solid #DCE7F2`,

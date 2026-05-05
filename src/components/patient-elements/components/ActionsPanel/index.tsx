@@ -6,7 +6,7 @@ import { createPortal } from 'react-dom'
 import { addIcn, uploadIcn } from '../../../../assets/CustomIcons'
 import './index.less'
 import { useDebounce } from '../../../../core/hooks'
-import { breakpoints, getWindowSize } from '../../../../helpers/windowSize'
+import { breakpoints, useWindowSize } from '../../../../helpers/windowSize'
 import { ModalImportPatients } from '../../modals/ModalImportPatients'
 import { ModalPatientForm } from '../../modals/ModalPatientForm'
 
@@ -30,7 +30,7 @@ export const ActionsPanel = ({ onSearch, onClear }: ActionsPanelProps) => {
     }
   }, [debouncedSearchValue])
 
-  const { innerWidth } = getWindowSize()
+  const { innerWidth } = useWindowSize()
 
   const getComponentsSize = () => {
     if (innerWidth < breakpoints.lg) {

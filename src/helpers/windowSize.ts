@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react'
 
-export const getWindowSize = () => {
+export const useWindowSize = () => {
   const getWindow = () => {
     const { innerWidth, innerHeight } = window
     return { innerWidth, innerHeight }
   }
 
-  const [windowSize, setWindowSize] = useState(getWindow())
+  const [windowSize, setWindowSize] = useState(getWindow)
 
   useEffect(() => {
     const handleWindowResize = () => {

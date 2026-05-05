@@ -18,7 +18,7 @@ import {
 } from '@icure/cardinal-prescription-be-react'
 import { CodeStub, DecryptedContact, DecryptedContent, DecryptedPatient, DecryptedService, Identifier, Medication } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
-import { Alert, Form, Select } from 'antd'
+import { Alert } from 'antd'
 import React, { useEffect, useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { useCreateContactMutation } from '../../../../core/api/contactApi'
@@ -75,12 +75,12 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   const [errorWhileVerifyingCertificate, setErrorWhileVerifyingCertificate] = useState<string | undefined>()
   const [samVersion, setSamVersion] = useState<SamVersion | undefined>()
   const [cardinalSdkInstance, setCardinalSdkInstance] = useState<IccBesamv2Api | undefined>(undefined)
-  const [isPrescriptionModalOpen, setPrescriptionModalOpen] = useState(false)
+  const [isPrescriptionModalOpen, setIsPrescriptionModalOpen] = useState(false)
   const [medicationToPrescribe, setMedicationToPrescribe] = useState<MedicationType>()
   const [prescriptionToModify, setPrescriptionToModify] = useState<PrescribedMedicationType>()
   const [prescriptionModalMode, setPrescriptionModalMode] = useState<'create' | 'modify' | null>(null)
   const [prescriptions, setPrescriptions] = useState<PrescribedMedicationType[]>([])
-  const [isPrescriptionPrintModalOpen, setPrescriptionPrintModalOpen] = useState(false)
+  const [isPrescriptionPrintModalOpen, setISPrescriptionPrintModalOpen] = useState(false)
 
   cardinalLanguage.setLanguage(CARDINAL_PRESCRIPTION_LANGUAGE)
 
@@ -126,7 +126,6 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
       setCertificateUploaded(false)
 
       console.error('Error while validating certificate from the Demo App:', error)
-    } finally {
     }
   }
 
@@ -167,7 +166,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   }
 
   const onCreatePrescription = (medication: MedicationType) => {
-    setPrescriptionModalOpen(true)
+    setIsPrescriptionModalOpen(true)
     setPrescriptionModalMode('create')
     setMedicationToPrescribe(medication)
   }
@@ -175,7 +174,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     setPrescriptionModalMode(null)
     setMedicationToPrescribe(undefined)
     setPrescriptionToModify(undefined)
-    setPrescriptionModalOpen(false)
+    setIsPrescriptionModalOpen(false)
   }
   const onSubmitCreatePrescription = (newPrescriptions: PrescribedMedicationType[]) => {
     setPrescriptions((prev) => [...prev, ...newPrescriptions])
@@ -186,14 +185,14 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     onClosePrescriptionModal()
   }
   const onModifyPrescription = (prescription: PrescribedMedicationType) => {
-    setPrescriptionModalOpen(true)
+    setIsPrescriptionModalOpen(true)
     setPrescriptionModalMode('modify')
     setPrescriptionToModify(prescription)
   }
   const onDeletePrescription = (prescription: PrescribedMedicationType) => {
     setPrescriptions((prev) => prev?.filter((item) => item.uuid !== prescription.uuid))
   }
-  const onClosePrescriptionPrintModal = () => setPrescriptionPrintModalOpen(false)
+  const onClosePrescriptionPrintModal = () => setISPrescriptionPrintModalOpen(false)
   const handleSendPrescriptions = async () => {
     console.log('click')
     const meds = await Promise.all(
@@ -275,7 +274,7 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
   }
   const handlePrintPrescriptions = async () => {
     await handleSendPrescriptions()
-    setPrescriptionPrintModalOpen(true)
+    setISPrescriptionPrintModalOpen(true)
   }
 
   const { data: practitioner } = useGetPractitionerQuery(healthcarePartyId ?? '', { skip: !healthcarePartyId })
@@ -294,13 +293,13 @@ export const ModalAddPrescriptionForm = ({ isVisible, onClose, patient }: modalA
     <CustomModal
       isVisible={isVisible}
       handleClose={handleOnClose}
-      secondaryBtnTitle="CLose"
+      secondaryBtnTitle="Close"
       // handleClickPrimaryBtn={() => form.submit()}
       // primaryBtnTitle="Save"
       title="Add prescription"
     >
       <div className="modalAddConsultationForm">
-        {samVersion?.version ? <Alert type="success" message={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" message="SamVersion: Undefined" />}
+        {samVersion?.version ? <Alert type="success" title={'SamVersion: ' + samVersion?.version} /> : <Alert type="error" title="SamVersion: Undefined" />}
 
         <PractitionerCertificate
           certificateValid={isCertificateValid}

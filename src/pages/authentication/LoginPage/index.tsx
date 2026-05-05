@@ -1,35 +1,24 @@
 import { Solution } from '@icure/cardinal-sdk'
 import { createSelector } from '@reduxjs/toolkit'
 import React, { useEffect } from 'react'
-import { createPortal } from 'react-dom'
 
 import logo from '../../../assets/logo_vertical.svg'
 import '../index.less'
 import LoginForm from '../../../components/authentication/LoginForm'
-import { ModalRecoveryKeyRequest } from '../../../components/authentication/ModalRecoveryKeyRequest'
 import { useAppDispatch, useAppSelector } from '../../../core/hooks'
-import {
-  CardinalApiState,
-  completeAuthentication,
-  setEhealthCertificatePassword,
-  setEmail,
-  setToken,
-  setWaitingForToken,
-  startAuthentication,
-} from '../../../core/services/auth.api'
+import { CardinalApiState, completeAuthentication, setEmail, setToken, setWaitingForToken, startAuthentication } from '../../../core/services/auth.api'
 
 const reduxSelector = createSelector(
   (state: { cardinalApi: CardinalApiState }) => state.cardinalApi,
   (cardinalApi: CardinalApiState) => ({
     waitingForToken: cardinalApi.waitingForToken,
     loginProcessStarted: cardinalApi.loginProcessStarted,
-    recoveryKeyRequest: cardinalApi.recoveryKeyRequest,
   }),
 )
 
 export default function LoginPage() {
   const dispatch = useAppDispatch()
-  const { waitingForToken, loginProcessStarted, recoveryKeyRequest } = useAppSelector(reduxSelector)
+  const { waitingForToken, loginProcessStarted } = useAppSelector(reduxSelector)
 
   const startAuthenticationProcessWithEmailAndCaptchaToken = (email: string, captchaToken: Solution) => {
     dispatch(setEmail({ email: email }))
@@ -57,11 +46,7 @@ export default function LoginPage() {
         state={loginProcessStarted ? 'loading' : waitingForToken ? 'waitingForToken' : 'initialised'}
         submitEmailForTokenRequest={(email: string, captchaToken: Solution) => startAuthenticationProcessWithEmailAndCaptchaToken(email, captchaToken)}
         submitEmailAndValidationTokenForAuthentication={(email: string, validationCode: string) => completeAuthenticationProcessWithEmailAndValidationCode(email, validationCode)}
-        setEhealthCertificatePassword={(password: string) => {
-          dispatch(setEhealthCertificatePassword({ password }))
-        }}
       />
-      {recoveryKeyRequest && createPortal(<ModalRecoveryKeyRequest />, document.body)}
     </div>
   )
 }
