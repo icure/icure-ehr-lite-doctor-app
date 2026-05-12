@@ -19,7 +19,7 @@ import {
 } from '@icure/cardinal-sdk'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-import { MSG_GW_URL, NIGHTLY_ICURE_CLOUD_URL, PROCESS_ID, SPEC_ID } from '../../constants'
+import { MSG_GW_URL, NIGHTLY_ICURE_CLOUD_URL, PROCESS_ID, PROJECT_ID, SPEC_ID } from '../../constants'
 
 import { revertAll, setSavedCredentials } from '../app'
 import { store } from '../store'
@@ -212,7 +212,7 @@ export const startAuthentication = createAsyncThunk(
 
     try {
       const authenticationStep = await CardinalSdk.initializeWithProcess(
-        undefined,
+        PROJECT_ID,
         NIGHTLY_ICURE_CLOUD_URL,
         MSG_GW_URL,
         SPEC_ID!,
@@ -223,7 +223,7 @@ export const startAuthentication = createAsyncThunk(
         StorageFacade.usingBrowserLocalStorage(),
         { firstName, lastName },
         {
-          useHierarchicalDataOwners: false,
+          useHierarchicalDataOwners: true,
           cryptoStrategies: new PetraCareCryptoStrategies(),
         },
       )
@@ -294,12 +294,12 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
 
   try {
     const api = await CardinalSdk.initialize(
-      undefined,
+      PROJECT_ID,
       NIGHTLY_ICURE_CLOUD_URL,
       new AuthenticationMethod.UsingCredentials.UsernamePassword(email, token),
       StorageFacade.usingBrowserLocalStorage(),
       {
-        useHierarchicalDataOwners: false,
+        useHierarchicalDataOwners: true,
         cryptoStrategies: new PetraCareCryptoStrategies(),
       },
     )

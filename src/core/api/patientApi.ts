@@ -16,13 +16,16 @@ export const patientApiRtk = createApi({
     createOrUpdatePatient: builder.mutation<DecryptedPatient | undefined, DecryptedPatient>({
       async queryFn(patient, { getState }) {
         const patientApi = (await cardinalApi(getState))?.patient
-        return guard([patientApi], async ([patientApi]): Promise<DecryptedPatient> => {
-          const updatedPatient = patient.rev ? await patientApi?.modifyPatient(patient) : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient))
+        const userApi = (await cardinalApi(getState))?.user
+        return guard([patientApi, userApi], async ([patientApi, userApi]): Promise<DecryptedPatient> => {
+          const currentUser = await userApi?.getCurrentUser()
+          const updatedPatient = patient.rev
+            ? await patientApi?.modifyPatient(patient)
+            : await patientApi?.createPatient(await patientApi.withEncryptionMetadata(patient, { user: currentUser }))
+          console.log({ updatedPatient })
           if (!updatedPatient) {
             throw new Error('Patient does not exist')
           }
-          console.log(updatedPatient)
-          console.log(updatedPatient)
           return new DecryptedPatient(updatedPatient)
         })
       },
@@ -42,8 +45,11 @@ export const patientApiRtk = createApi({
     createPatients: builder.mutation<DecryptedPatient[] | undefined, DecryptedPatient[]>({
       async queryFn(patients, { getState }) {
         const patientApi = (await cardinalApi(getState))?.patient
-        return guard([patientApi], async (): Promise<Array<DecryptedPatient> | undefined> => {
-          const patientsWithEncryptionMetadata = await Promise.all(patients.map(async (patient) => await patientApi?.withEncryptionMetadata(patient)))
+        const userApi = (await cardinalApi(getState))?.user
+
+        return guard([patientApi, userApi], async (): Promise<Array<DecryptedPatient> | undefined> => {
+          const currentUser = await userApi?.getCurrentUser()
+          const patientsWithEncryptionMetadata = await Promise.all(patients.map(async (patient) => await patientApi?.withEncryptionMetadata(patient, { user: currentUser })))
 
           // Filter out undefined values
           const validPatients = patientsWithEncryptionMetadata.filter((patient): patient is DecryptedPatient => patient !== undefined)
@@ -57,17 +63,14 @@ export const patientApiRtk = createApi({
       },
       invalidatesTags: [{ type: 'Patient', id: 'all' }],
     }),
-    filterPatientsByDataOwner: builder.query<string[] | undefined, string>({
-      async queryFn(practitionerId, { getState }) {
+    filterPatientsByDataOwner: builder.query<string[] | undefined, void>({
+      async queryFn(_, { getState }) {
         const api = await cardinalApi(getState)
 
         return guard([api], async ([api]): Promise<string[]> => {
-          if (!api) {
-            throw new Error('Something went wrong')
-          }
-          const patientApi = api?.patient
-          const filterForMatch = PatientFilters.allPatientsForDataOwner(practitionerId)
-
+          const patientApi = api.patient
+          const parentId = (await api.healthcareParty.getCurrentHealthcareParty()).parentId
+          const filterForMatch = parentId ? union(PatientFilters.allPatientsForSelf(), PatientFilters.allPatientsForDataOwner(parentId)) : PatientFilters.allPatientsForSelf()
           const patientsList = await patientApi?.matchPatientsBy(filterForMatch)
           if (!patientsList) {
             throw new Error('Patients do not found')
@@ -98,6 +101,7 @@ export const patientApiRtk = createApi({
     >({
       async queryFn({ practitionerId, searchString }, { getState }) {
         const api = await cardinalApi(getState)
+        const parentId = (await api?.healthcareParty.getCurrentHealthcareParty())?.parentId
 
         return guard([api], async ([api]): Promise<string[]> => {
           const patientApi = api.patient
@@ -106,8 +110,6 @@ export const patientApiRtk = createApi({
             (await loadFromIterator(await api.code.filterCodesBy(CodeFilters.byRegionTypeCodeVersion('be', { type: CUSTOM_TAG_TYPE })), 1000))
               ?.map((c) => c.code)
               .filter((c) => !!c) || []
-          console.log('customTags')
-          console.log(customTags)
 
           const predicates = searchString
             .trim()
@@ -115,27 +117,29 @@ export const patientApiRtk = createApi({
             .map((word) => {
               const matchingTags = ([...allPatientsTagsEnum, ...customTags] as string[])
                 .filter((e) => e.toLowerCase().includes(word.toLowerCase()))
-                .map((c) => PatientFilters.byTagForDataOwner(practitionerId, CUSTOM_TAG_TYPE, c))
-              const partailFilter = matchingTags.length
-                ? union(
-                    PatientFilters.byFuzzyNameForDataOwner(practitionerId, word),
-                    matchingTags.length == 1 ? matchingTags[0] : union(matchingTags[0], matchingTags[1], ...matchingTags.slice(2)),
-                  )
+                .map((c) =>
+                  parentId
+                    ? union(PatientFilters.byTagForSelf(CUSTOM_TAG_TYPE, c), PatientFilters.byTagForDataOwner(parentId, CUSTOM_TAG_TYPE, c))
+                    : PatientFilters.byTagForSelf(CUSTOM_TAG_TYPE, c),
+                )
+              const practitionerAndParentFilterByFuzzyName = parentId
+                ? union(PatientFilters.byFuzzyNameForDataOwner(parentId, word), PatientFilters.byFuzzyNameForDataOwner(practitionerId, word))
                 : PatientFilters.byFuzzyNameForDataOwner(practitionerId, word)
+              const practitionerAndParentFilterByAddressPostalCodeHouseNumber = parentId
+                ? union(PatientFilters.byAddressPostalCodeHouseNumberForDataOwner(parentId, '', word), PatientFilters.byAddressPostalCodeHouseNumberForSelf('', word))
+                : PatientFilters.byAddressPostalCodeHouseNumberForSelf('', word)
 
-              return word.match(/[0-9]+/) ? union(partailFilter, PatientFilters.byAddressPostalCodeHouseNumberForDataOwner(practitionerId, '', word)) : partailFilter
+              const partialFilterByFuzzyName = matchingTags.length
+                ? union(practitionerAndParentFilterByFuzzyName, matchingTags.length == 1 ? matchingTags[0] : union(matchingTags[0], matchingTags[1], ...matchingTags.slice(2)))
+                : practitionerAndParentFilterByFuzzyName
+
+              return word.match(/[0-9]+/) ? union(partialFilterByFuzzyName, practitionerAndParentFilterByAddressPostalCodeHouseNumber) : partialFilterByFuzzyName
             })
-
-          console.log('predicates')
-          console.log(predicates)
 
           const patientsList = await patientApi?.matchPatientsBy(predicates.length == 1 ? predicates[0] : intersection(predicates[0], predicates[1], ...predicates.slice(2)))
           if (!patientsList) {
             throw new Error('Patients do not found')
           }
-
-          console.log('patientsList')
-          console.log(patientsList)
 
           return patientsList
         })
