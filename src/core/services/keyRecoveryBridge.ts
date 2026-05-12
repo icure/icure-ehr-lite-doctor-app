@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
+import type { CryptoStrategies, KeyPairRecoverer, KeypairFingerprintV1String, SpkiHexString, XCryptoService, XRsaKeypair } from '@icure/cardinal-sdk'
+
 // External-store bridge between the Cardinal SDK's `recoverAndVerifySelfHierarchyKeys`
 // callback and the React UI. Lives outside Redux on purpose:
 //   - No need to serialize SDK handles (cryptoPrimitives, keyPairRecoverer) into Redux
@@ -9,11 +11,20 @@ import { useSyncExternalStore } from 'react'
 //   - Avoids the dispatch-then-`store.subscribe` race that the previous Redux-based
 //     implementation suffered from.
 
-export interface KeyRecoveryRequest {
-  readonly reasons: string[]
+export type RecoveredKeysByOwner = {
+  [ownerId: string]: {
+    [keyRef: KeypairFingerprintV1String | SpkiHexString]: XRsaKeypair
+  }
 }
 
-export type KeyRecoveryOutcome = { kind: 'cancel' } | { kind: 'recovered'; recoveryKeys: string[] }
+export interface KeyRecoveryRequest {
+  readonly reasons: string[]
+  readonly keysData: ReadonlyArray<CryptoStrategies.KeyDataRecoveryRequest>
+  readonly cryptoPrimitives: XCryptoService
+  readonly keyPairRecoverer: KeyPairRecoverer
+}
+
+export type KeyRecoveryOutcome = { kind: 'cancel' } | { kind: 'recovered'; keys: RecoveredKeysByOwner }
 
 let currentRequest: KeyRecoveryRequest | undefined
 let currentResolver: ((outcome: KeyRecoveryOutcome) => void) | undefined
