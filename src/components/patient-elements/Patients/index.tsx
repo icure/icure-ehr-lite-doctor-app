@@ -18,7 +18,7 @@ export const Patients = () => {
   const { healthcarePartyId } = useAppSelector(reduxSelector)
   const [searchString, setSearchString] = useState<string | undefined>(undefined)
 
-  const { data: patientsByDataOwnerIds, isLoading: patientsByDataOwnerIdsAreLoading } = useFilterPatientsByDataOwnerQuery(healthcarePartyId ?? '', {
+  const { data: patientsByDataOwnerIds, isLoading: patientsByDataOwnerIdsAreLoading } = useFilterPatientsByDataOwnerQuery(undefined, {
     skip: !healthcarePartyId || searchString?.length === 0,
   })
   const {

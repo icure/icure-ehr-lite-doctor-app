@@ -71,7 +71,6 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
     const createdDiagnosisHealthElement = await createHealthElement({ patient, healthElement: diagnosisHealthElement }).unwrap()
 
     const complainsService = new DecryptedService({
-      medicalLocationId: undefined,
       id: uuid(),
       label: 'Complains',
       identifier: [new Identifier({ system: 'cardinal', value: 'complains' })],
@@ -82,7 +81,6 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
       },
     })
     const anamnesisService = new DecryptedService({
-      medicalLocationId: undefined,
       id: uuid(),
       label: 'Anamnesis',
       identifier: [new Identifier({ system: 'cardinal', value: 'anamnesis' })],
@@ -93,7 +91,6 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
       },
     })
     const clinicalExamService = new DecryptedService({
-      medicalLocationId: undefined,
       id: uuid(),
       label: 'Clinical Exam',
       identifier: [new Identifier({ system: 'cardinal', value: 'clinicalExam' })],
@@ -104,7 +101,6 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
       },
     })
     const bloodPressureService = new DecryptedService({
-      medicalLocationId: undefined,
       id: uuid(),
       label: 'Blood pressure',
       identifier: [new Identifier({ system: 'cardinal', value: 'bloodPressure' })],
@@ -126,7 +122,6 @@ export const ModalAddConsultationForm = ({ isVisible, onClose, patient }: modalA
       },
     })
     const treatmentService = new DecryptedService({
-      medicalLocationId: undefined,
       id: uuid(),
       label: 'Treatment',
       identifier: [new Identifier({ system: 'cardinal', value: 'clinicalExam' })],

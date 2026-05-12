@@ -8,13 +8,10 @@ import {
   KeypairFingerprintV1String,
   KeyPairRecoverer,
   RecoveryDataKey,
-  RecoveryDataUseFailureReason,
   RecoveryKeyOptions,
   RecoveryKeySize,
-  RecoveryResult,
   Solution,
   spkiHexKeyToFingerprintV1,
-  SpkiHexString,
   StorageFacade,
   User,
   XCryptoService,
@@ -22,7 +19,7 @@ import {
 } from '@icure/cardinal-sdk'
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/query'
-import { MSG_GW_URL, NIGHTLY_ICURE_CLOUD_URL, PROCESS_ID, SPEC_ID } from '../../constants'
+import { MSG_GW_URL, NIGHTLY_ICURE_CLOUD_URL, PROCESS_ID, PROJECT_ID, SPEC_ID } from '../../constants'
 
 import { revertAll, setSavedCredentials } from '../app'
 import { store } from '../store'
@@ -60,61 +57,28 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
 
   async recoverAndVerifySelfHierarchyKeys(
     keysData: Array<CryptoStrategies.KeyDataRecoveryRequest>,
-    _cryptoPrimitives: XCryptoService,
+    cryptoPrimitives: XCryptoService,
     keyPairRecoverer: KeyPairRecoverer,
   ): Promise<{ [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData }> {
-    const aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } } = {}
+    const empty = this.buildRecoveryResult(keysData, {})
 
     const stillMissing = keysData.some((kd) => kd.unavailableKeys.length > 0)
-    if (!stillMissing) {
-      return this.buildRecoveryResult(keysData, aggregate)
-    }
+    if (!stillMissing) return empty
 
-    const reasonCount = Math.max(
-      1,
-      keysData.reduce((sum, kd) => sum + kd.unavailableKeys.length, 0),
-    )
-    const reasons = Array.from({ length: reasonCount }, () => RecoveryDataUseFailureReason.Missing)
-    const recoveryKeys = await this.promptUserForRecoveryKeys(reasons)
+    const outcome = await requestKeyRecovery({
+      reasons: keysData.flatMap((kd) => kd.unavailableKeys.map((k) => k.publicKey.slice(0, 16))),
+      keysData,
+      cryptoPrimitives,
+      keyPairRecoverer,
+    })
+    if (outcome.kind === 'cancel') return empty
 
-    if (recoveryKeys?.length) {
-      await this.tryRecoverKeys(recoveryKeys, keyPairRecoverer, aggregate)
-    }
-
-    return this.buildRecoveryResult(keysData, aggregate)
-  }
-
-  private async tryRecoverKeys(
-    recoveryKeys: string[],
-    keyPairRecoverer: KeyPairRecoverer,
-    aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } },
-  ): Promise<void> {
-    for (const rk of recoveryKeys) {
-      let decoded: RecoveryDataKey | undefined
-      try {
-        decoded = RecoveryDataKey.fromBase32(rk)
-      } catch (e) {
-        console.warn('Invalid recovery key, skipping:', e)
-        continue
-      }
-
-      const res = await keyPairRecoverer.recoverWithRecoveryKey(decoded, false)
-      if (res instanceof RecoveryResult.Success) {
-        const data = res.data
-        for (const dataOwnerId of Object.keys(data)) {
-          aggregate[dataOwnerId] = aggregate[dataOwnerId] ?? {}
-          const perOwner = data[dataOwnerId]
-          for (const pub of Object.keys(perOwner)) {
-            aggregate[dataOwnerId][pub as SpkiHexString] = perOwner[pub as SpkiHexString]
-          }
-        }
-      }
-    }
+    return this.buildRecoveryResult(keysData, outcome.keys)
   }
 
   private buildRecoveryResult(
     keysData: Array<CryptoStrategies.KeyDataRecoveryRequest>,
-    aggregate: { [dataOwnerId: string]: { [pub: SpkiHexString]: XRsaKeypair } },
+    aggregate: { [dataOwnerId: string]: { [keyRef: string]: XRsaKeypair } },
   ): { [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData } {
     const result: { [dataOwnerId: string]: CryptoStrategies.RecoveredKeyData } = {}
     for (const recoveryRequest of keysData) {
@@ -124,9 +88,10 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
       const recoveredForThisOwner: { [fp: KeypairFingerprintV1String]: XRsaKeypair } = {}
       if (perOwnerRecovered) {
         for (const unavailable of recoveryRequest.unavailableKeys) {
-          const recoveredKey = perOwnerRecovered[unavailable.publicKey]
+          const fp = spkiHexKeyToFingerprintV1(unavailable.publicKey) as KeypairFingerprintV1String
+          const recoveredKey = perOwnerRecovered[fp] ?? perOwnerRecovered[unavailable.publicKey]
           if (recoveredKey) {
-            recoveredForThisOwner[spkiHexKeyToFingerprintV1(unavailable.publicKey) as KeypairFingerprintV1String] = recoveredKey
+            recoveredForThisOwner[fp] = recoveredKey
           }
         }
       }
@@ -137,14 +102,6 @@ export class PetraCareCryptoStrategies extends CryptoStrategies {
       }
     }
     return result
-  }
-
-  // Bridge to the React UI via an external promise-based store (see keyRecoveryBridge).
-  // Submitting in the dialog resolves with `recovered`; closing/skipping resolves with `cancel`.
-  private async promptUserForRecoveryKeys(reasons: RecoveryDataUseFailureReason[]): Promise<string[] | undefined> {
-    const outcome = await requestKeyRecovery({ reasons: reasons.map((r) => r.toString()) })
-    if (outcome.kind === 'cancel') return undefined
-    return outcome.recoveryKeys.map((k) => k.replace(/-/g, '').replace(/0/g, 'O').replace(/1/g, 'I').replace(/8/g, 'B'))
   }
 }
 
@@ -255,7 +212,7 @@ export const startAuthentication = createAsyncThunk(
 
     try {
       const authenticationStep = await CardinalSdk.initializeWithProcess(
-        undefined,
+        PROJECT_ID,
         NIGHTLY_ICURE_CLOUD_URL,
         MSG_GW_URL,
         SPEC_ID!,
@@ -266,7 +223,7 @@ export const startAuthentication = createAsyncThunk(
         StorageFacade.usingBrowserLocalStorage(),
         { firstName, lastName },
         {
-          useHierarchicalDataOwners: false,
+          useHierarchicalDataOwners: true,
           cryptoStrategies: new PetraCareCryptoStrategies(),
         },
       )
@@ -337,12 +294,12 @@ export const login = createAsyncThunk('cardinalApi/login', async (_, { getState,
 
   try {
     const api = await CardinalSdk.initialize(
-      undefined,
+      PROJECT_ID,
       NIGHTLY_ICURE_CLOUD_URL,
       new AuthenticationMethod.UsingCredentials.UsernamePassword(email, token),
       StorageFacade.usingBrowserLocalStorage(),
       {
-        useHierarchicalDataOwners: false,
+        useHierarchicalDataOwners: true,
         cryptoStrategies: new PetraCareCryptoStrategies(),
       },
     )
